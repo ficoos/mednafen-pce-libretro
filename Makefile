@@ -16,13 +16,13 @@ endif
 ifeq ($(platform), unix)
    TARGET := libretro.so
    fpic := -fPIC
-   SHARED := -shared -Wl,-version-script=link.T -Wl,-no-undefined -DARCH_X86
-   ENDIANNESS_DEFINES = -DLSB_FIRST
+   SHARED := -shared -Wl,-version-script=link.T -Wl,-no-undefined
+   ENDIANNESS_DEFINES = -DLSB_FIRST -DARCH_X86 -msse -msse2
 else ifeq ($(platform), osx)
    TARGET := libretro.dylib
    fpic := -fPIC
    SHARED := -dynamiclib
-   ENDIANNESS_DEFINES = -DLSB_FIRST-DARCH_X86
+   ENDIANNESS_DEFINES = -DLSB_FIRST-DARCH_X86 -msse -msse2
 else ifeq ($(platform), ps3)
    TARGET := libretro.a
    CC = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-gcc.exe
@@ -56,7 +56,7 @@ else
    CC = gcc
    CXX = g++
    SHARED := -shared -static-libgcc -static-libstdc++ -Wl,-no-undefined -Wl,-version-script=link.T
-   ENDIANNESS_DEFINES = -DLSB_FIRST -DARCH_X86
+   ENDIANNESS_DEFINES = -DLSB_FIRST -DARCH_X86 -msse -msse2
 endif
 
 ifeq ($(DEBUG), 1)
@@ -158,7 +158,7 @@ all: $(TARGET)
 
 
 LDFLAGS += -Wl,--no-undefined -lz -Wl,--version-script=link.T -pthread
-FLAGS += -ffast-math -msse -msse2 -funroll-loops
+FLAGS += -ffast-math -funroll-loops
 FLAGS += -I. -Imednafen -Imednafen/include -Imednafen/intl -Imednafen/hw_cpu -Imednafen/hw_misc -Imednafen/hw_sound -Imednafen/hw_video $(ENDIANNESS_DEFINES) -pthread
 
 WARNINGS := -Wall \
