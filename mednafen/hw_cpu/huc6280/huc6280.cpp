@@ -30,7 +30,7 @@
 	The 21MHz master clock penalty when executing(not explicitly branching) across a 8KiB page boundary is not emulated.
 */
 
-#include "../../mednafen.h"
+#include "mednafen/mednafen.h"
 #include "huc6280.h"
 
 #include <string.h>
