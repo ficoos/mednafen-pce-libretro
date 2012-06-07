@@ -5,11 +5,7 @@
 #include "mednafen/mednafen-driver.h"
 
 #include <iostream>
-
-#ifdef USE_THREADS
 #include <pthread.h>
-#endif
-
 #include <unistd.h>
 #include <sys/time.h>
 
@@ -38,7 +34,6 @@ void MDFND_PrintError(const char* err)
    std::cerr << err;
 }
 
-#ifdef USE_THREADS
 MDFN_Thread *MDFND_CreateThread(int (*fn)(void *), void *data)
 {
    pthread_t *thread = new pthread_t;
@@ -47,12 +42,10 @@ MDFN_Thread *MDFND_CreateThread(int (*fn)(void *), void *data)
 
    return (MDFN_Thread*)thread;
 }
-#endif
 
 void MDFND_SetMovieStatus(StateStatusStruct *) {}
 void MDFND_SetStateStatus(StateStatusStruct *) {}
 
-#ifdef USE_THREADS
 void MDFND_WaitThread(MDFN_Thread *thr, int *val)
 {
    pthread_t *thread = (pthread_t*)thr;
@@ -64,9 +57,7 @@ void MDFND_WaitThread(MDFN_Thread *thr, int *val)
 
    delete thread;
 }
-#endif
 
-#ifdef USE_THREADS
 void MDFND_KillThread(MDFN_Thread *thr)
 {
    pthread_t *thread = (pthread_t*)thr;
@@ -74,44 +65,33 @@ void MDFND_KillThread(MDFN_Thread *thr)
    pthread_join(*thread, NULL);
    delete thread;
 }
-#endif
 
 MDFN_Mutex *MDFND_CreateMutex()
 {
-#ifdef USE_MUTEXES
    pthread_mutex_t *mutex = new pthread_mutex_t;
    pthread_mutex_init(mutex, NULL);
    return (MDFN_Mutex*)mutex;
-#else
-   return NULL;
-#endif
 }
 
 void MDFND_DestroyMutex(MDFN_Mutex *lock)
 {
-#ifdef USE_MUTEXES
    pthread_mutex_t *mutex = (pthread_mutex_t*)lock;
    pthread_mutex_destroy(mutex);
    delete mutex;
-#endif
 }
 
 int MDFND_LockMutex(MDFN_Mutex *lock)
 {
-#ifdef USE_MUTEXES
    pthread_mutex_t *mutex = (pthread_mutex_t*)lock;
    pthread_mutex_lock(mutex);
    return 0;
-#endif
 }
 
 int MDFND_UnlockMutex(MDFN_Mutex *lock)
 {
-#ifdef USE_MUTEXES
    pthread_mutex_t *mutex = (pthread_mutex_t*)lock;
    pthread_mutex_unlock(mutex);
    return 0;
-#endif
 }
 
 int MDFND_SendData(const void*, uint32) { return 0; }
