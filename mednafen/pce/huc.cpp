@@ -604,15 +604,11 @@ bool HuC_IsBRAMAvailable(void)
 
 uint8 HuC_PeekBRAM(uint32 A)
 {
- assert(HuC_IsBRAMAvailable());
-
  return(SaveRAM[A & 2047]);
 }
 
 void HuC_PokeBRAM(uint32 A, uint8 V)
 {
- assert(HuC_IsBRAMAvailable());
-
  SaveRAM[A & 2047] = V;
 }
 

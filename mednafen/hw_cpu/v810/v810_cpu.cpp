@@ -867,15 +867,6 @@ INLINE bool V810::Do_BSTR_Search(v810_timestamp_t &timestamp, const int inc_mul,
         uint32 src = (P_REG[30] & 0xFFFFFFFC);
 	bool found = false;
 
-	#if 0
-	// TODO: Better timing.
-	if(!in_bstr)	// If we're just starting the execution of this instruction(kind of spaghetti-code), so FIXME if we change
-			// bstr handling in v810_oploop.inc
-	{
-	 timestamp += 13 - 1;
-	}
-	#endif
-
 	while(len)
 	{
 		if(!have_src_cache)

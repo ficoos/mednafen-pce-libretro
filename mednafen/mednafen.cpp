@@ -927,15 +927,6 @@ bool MDFNI_InitializeModules(const std::vector<MDFNGI *> &ExternalSystems)
 
  MDFNSystemsPrio.sort(MDFNSystemsPrio_CompareFunc);
 
- #if 0
- std::string a_modules;
-
- std::list<MDFNGI *>:iterator it;
-
- for(it = MDFNSystemsPrio.
- f
- #endif
-
  CDUtility::CDUtility_Init();
 
  return(1);
@@ -1048,15 +1039,11 @@ static void ProcessAudio(EmulateSpecStruct *espec)
    {
     if(MDFNGameInfo->soundchan == 2)
     {
-     assert(ff_resampler.max_write() >= SoundBufSize * 2);
-
      for(int i = 0; i < SoundBufSize * 2; i++)
       ff_resampler.buffer()[i] = SoundBuf[i];
     }
     else
     {
-     assert(ff_resampler.max_write() >= SoundBufSize * 2);
-
      for(int i = 0; i < SoundBufSize; i++)
      {
       ff_resampler.buffer()[i * 2] = SoundBuf[i];
@@ -1138,8 +1125,6 @@ void MDFNI_Emulate(EmulateSpecStruct *espec)
 {
  multiplier_save = 1;
  volume_save = 1;
-
- assert((bool)(espec->SoundBuf != NULL) == (bool)espec->SoundRate && (bool)espec->SoundRate == (bool)espec->SoundBufMaxSize);
 
  espec->SoundBufSize = 0;
 
@@ -1318,15 +1303,11 @@ void MDFN_QSimpleCommand(int cmd)
 
 void MDFNI_Power(void)
 {
- assert(MDFNGameInfo);
-
  MDFN_QSimpleCommand(MDFN_MSC_POWER);
 }
 
 void MDFNI_Reset(void)
 {
- assert(MDFNGameInfo);
-
  MDFN_QSimpleCommand(MDFN_MSC_RESET);
 }
 
@@ -1338,45 +1319,32 @@ void MDFNI_ToggleDIPView(void)
 
 void MDFNI_ToggleDIP(int which)
 {
- assert(MDFNGameInfo);
- assert(which >= 0);
-
  MDFN_QSimpleCommand(MDFN_MSC_TOGGLE_DIP0 + which);
 }
 
 void MDFNI_InsertCoin(void)
 {
- assert(MDFNGameInfo);
- 
  MDFN_QSimpleCommand(MDFN_MSC_INSERT_COIN);
 }
 
 // Disk/Disc-based system support functions
 void MDFNI_DiskInsert(int which)
 {
- assert(MDFNGameInfo);
-
  MDFN_QSimpleCommand(MDFN_MSC_INSERT_DISK0 + which);
 }
 
 void MDFNI_DiskSelect()
 {
- assert(MDFNGameInfo);
-
  MDFN_QSimpleCommand(MDFN_MSC_SELECT_DISK);
 }
 
 void MDFNI_DiskInsert()
 {
- assert(MDFNGameInfo);
-
  MDFN_QSimpleCommand(MDFN_MSC_INSERT_DISK);
 }
 
 void MDFNI_DiskEject()
 {
- assert(MDFNGameInfo);
-
  MDFN_QSimpleCommand(MDFN_MSC_EJECT_DISK);
 }
 

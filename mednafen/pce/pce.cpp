@@ -405,10 +405,6 @@ static int Load(const char *name, MDFNFILE *fp)
  else
  {
   HuCLoad(fp->data + headerlen, fp->size - headerlen, crc, MDFN_GetSettingB("pce.disable_bram_hucard"));
-  #if 0	// For testing
-  PCE_IsCD = 1;
-  PCECD_Init(NULL, PCECDIRQCB, PCE_MASTER_CLOCK, 1, &sbuf[0], &sbuf[1]);
-  #endif
  }
  if(!strcasecmp(fp->ext, "sgx"))
   IsSGX = TRUE;
@@ -542,23 +538,6 @@ static int LoadCommon(void)
  //
 
  PCE_Power();
-
- //
- // REMOVE ME, debugging stuff
- //
- #if 0
- {
-  uint8 er[8] = { 0x47, 0x6E, 0x31, 0x14, 0xB3, 0xEB, 0xEC, 0x2B };
-
-  for(int i = 0; i < 8; i++)
-   SubHW_WriteIOPage(0x1C00, er[i]);
-
-  SubHW_WriteIOPage(0x1FF7, 0x80);
- }
- #endif
- //
- //
- //
 
  MDFNGameInfo->LayerNames = IsSGX ? "BG0\0SPR0\0BG1\0SPR1\0" : "Background\0Sprites\0";
  MDFNGameInfo->fps = (uint32)((double)7159090.90909090 / 455 / 263 * 65536 * 256);
@@ -859,16 +838,6 @@ static void Emulate(EmulateSpecStruct *espec)
 
  if(IsHES)
   HES_Update(espec, INPUT_HESHack());	//Draw(espec->skip ? NULL : espec->surface, espec->skip ? NULL : &espec->DisplayRect, espec->SoundBuf, espec->SoundBufSize, INPUT_HESHack());
-
-#if 0
- if(espec->SoundRate)
- {
-  unsigned long long crf = (unsigned long long)sbuf[0].clock_rate_factor(sbuf[0].clock_rate());
-  double real_rate = (double)crf * sbuf[0].clock_rate() / (1ULL << BLIP_BUFFER_ACCURACY);
-
-  printf("%f\n", real_rate);
- }
-#endif
 }
 
 void PCE_MidSync(void)

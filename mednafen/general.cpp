@@ -213,40 +213,6 @@ static std::string EvalPathFS(const std::string &fstring, /*const (won't work be
  return(ret);
 }
 
-#if 0
-static void CreateMissingDirs(const char *path)
-{
- const char *s = path;
- bool first_psep = true;
- char last_char = 0;
- const char char_test1 = '/', char_test2 = '/';
-
-
- while(*s)
- {
-  if(*s == char_test1 || *s == char_test2)
-  {
-   if(last_char != *s)	//char_test1 && last_char != char_test2)
-   {
-    if(!first_psep)
-    {
-     char tmpbuf[(s - path) + 1];
-     tmpbuf[s - path] = 0;
-     strncpy(tmpbuf, path, s - path);
-
-     puts(tmpbuf);
-     //MDFN_mkdir(tmpbuf, S_IRWXU);
-    }
-   }
-
-   first_psep = false;
-  }
-  last_char = *s;
-  s++;
- }
-}
-#endif
-
 std::string MDFN_MakeFName(MakeFName_Type type, int id1, const char *cd1)
 {
  char tmp_path[4096];

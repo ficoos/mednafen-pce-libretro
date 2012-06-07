@@ -95,22 +95,6 @@ void CDAccess_Physical::DetermineFeatures(void)
 
 void CDAccess_Physical::PreventAllowMediumRemoval(bool prevent)
 {
-#if 0
- mmc_cdb_t cdb = {{0, }};
- uint8 buf[8];
-
- cdb.field[0] = 0x1E;
- cdb.field[1] = 0x00;
- cdb.field[2] = 0x00;
- cdb.field[3] = 0x00;
- cdb.field[4] = 0x00; //prevent;
- cdb.field[5] = 0x00;
-
- printf("%d\n", mmc_run_cmd_len (p_cdio, MMC_TIMEOUT_DEFAULT,
-                      &cdb, 6,
-                      SCSI_MMC_DATA_READ, 0, buf));
- assert(0);
-#endif
 }
 
 void CDAccess_Physical::ReadPhysDiscInfo(unsigned retry)

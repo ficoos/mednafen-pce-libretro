@@ -206,18 +206,6 @@ static uint32 DoRealDraw(uint32 *dest, uint32 pitch, uint32 width_limit, uint32 
   dest += poot / 2;
  }
 
-#if 0
- // TODO to prevent writing past width
- // Shadow support kludge
- //
- if(width_limit < ex_offset)
-  return(0);
- dest += ex_offset + pitch;
- width_limit -= ex_offset;
- //
- //
-#endif
-
  pixwidth = 0;
 
  for(uint32 n = 0; n < slen; n++)
@@ -305,18 +293,3 @@ uint32 DrawTextTransShadow(uint32 *dest, int pitch, uint32 width, const std::str
  DrawTextTrans(dest + 1 + (pitch >> 2), pitch, width, (const UTF8 *)tmp, shadcolor, centered, which_font);
  return(DrawTextTrans(dest, pitch, width, (const UTF8 *)tmp, fgcolor, centered, which_font));
 }
-
-#if 0
-uint32 DrawText(MDFN_Surface *surface, const MDFN_Rect &rect, const std::string &textmsg, uint32 color,
-		bool centered, uint32 which_font)
-{
- MDFN_Rect tr = rect;
-
- if((tr.x + tr.w) > surface->w)
-  tr.w = surface->w - tr.x;
-
- if((tr.y + tr.h) > surface->h)
-  tr.h = surface->h - tr.y;
-
-}
-#endif

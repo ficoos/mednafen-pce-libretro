@@ -45,28 +45,6 @@ typedef uint64_t uint64;
 #define HAVE_NATIVE64BIT 1
 #endif
 
-#if 0
-// Multi-type union array!
-template<size_t array_byte_size>
-struct mtuarray
-{
- union
- {
-  uint64 u64[array_byte_size / sizeof(uint64)];
-  int64 s64[array_byte_size / sizeof(uint64)];
-
-  uint8 u8[array_byte_size];
-  int8 s8[array_byte_size];
-
-  uint16 u16[array_byte_size / sizeof(uint16)];
-  int16 s16[array_byte_size / sizeof(int16)];
-
-  uint32 u32[array_byte_size / sizeof(uint32)];
-  int32 s32[array_byte_size / sizeof(int32)];
- };
-};
-#endif
-
 #ifdef __GNUC__
 
   #define INLINE inline __attribute__((always_inline))

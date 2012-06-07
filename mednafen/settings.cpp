@@ -640,22 +640,6 @@ bool MDFNI_SetSetting(const char *name, const char *value, bool NetplayOverride)
  }
 }
 
-#if 0
-// TODO after a game is loaded, but should we?
-void MDFN_CallSettingsNotification(void)
-{
- for(unsigned int x = 0; x < CurrentSettings.size(); x++)
- {
-  if(CurrentSettings[x].ChangeNotification)
-  {
-   // TODO, always call driver notification function, regardless of whether a game is loaded.
-   if(MDFNGameInfo)
-    CurrentSettings[x].ChangeNotification(CurrentSettings[x].name);
-  }
- }
-}
-#endif
-
 bool MDFNI_SetSettingB(const char *name, bool value)
 {
  char tmpstr[2];

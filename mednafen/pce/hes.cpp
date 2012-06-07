@@ -211,8 +211,6 @@ int PCE_HESLoad(const uint8 *buf, uint32 size)
  *IBP_WR++ = 0x80;               // BRA
  *IBP_WR++ = 0xFD;               //  -3
 
- assert((unsigned int)(IBP_WR - IBP) <= sizeof(IBP));
-
  Player_Init(TotalSongs, "", "", ""); //NULL, NULL, NULL, NULL); //UTF8 **snames);
 
  for(int x = 0; x < 0x88; x++)

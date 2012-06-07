@@ -71,29 +71,21 @@ class VCE : public HuC6280_Support
         // Peek(VRAM/SAT) and Poke(VRAM/SAT) work in 16-bit VRAM word units(Address and Length, both).
         INLINE uint16 PeekVDCVRAM(unsigned int which, uint16 Address)
         {
-	 assert(which < (unsigned int)chip_count);
-
 	 return(vdc[which]->PeekVRAM(Address));
         }
 
         INLINE uint16 PeekVDCSAT(unsigned int which, uint8 Address)
         {
-	 assert(which < (unsigned int)chip_count);
-
 	 return(vdc[which]->PeekSAT(Address));
         }
 
         INLINE void PokeVDCVRAM(const unsigned int which, const uint16 Address, const uint16 Data)
 	{
-	 assert(which < (unsigned int)chip_count);
-
 	 vdc[which]->PokeVRAM(Address, Data);
 	}
 
         INLINE void PokeVDCSAT(const unsigned int which, const uint8 Address, const uint16 Data)
 	{
-	 assert(which < (unsigned int)chip_count);
-
 	 vdc[which]->PokeSAT(Address, Data);
 	}
 
@@ -192,8 +184,6 @@ class VCE : public HuC6280_Support
 	INLINE void SetCDEvent(const int32 cycles)
 	{
 	 const int32 time_behind = HuCPU->Timestamp() - last_ts;
-
-	 assert(time_behind >= 0);
 
 	 cd_event = cycles + time_behind;
 	 HuCPU->SetEvent(CalcNextEvent() - time_behind);

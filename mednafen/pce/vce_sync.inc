@@ -18,8 +18,6 @@
   #endif
    int fwoom = (child_event[chip] * dot_clock_ratio - clock_divider);
 
-   assert(fwoom >= 1);
-
    if(chunk_clocks > fwoom)
     chunk_clocks = fwoom;
   }
@@ -170,10 +168,6 @@
     {
      HuCPU->Exit();
     }
-
-#if 0	// Testing code
-    HuCPU->Exit();
-#endif
 
     //printf("VCE New scanline: %d\n", scanline);
 
