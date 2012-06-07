@@ -155,8 +155,6 @@ static uint32 PortDataLenCache[16];
 
 MDFNGI *MDFNGameInfo = NULL;
 
-static QTRecord *qtrecorder = NULL;
-static WAVRecord *wavrecorder = NULL;
 static Fir_Resampler<16> ff_resampler;
 static double LastSoundMultiplier;
 
@@ -172,80 +170,20 @@ static std::vector<CDIF *> CDInterfaces;	// FIXME: Cleanup on error out.
 
 bool MDFNI_StartWAVRecord(const char *path, double SoundRate)
 {
- try
- {
-  wavrecorder = new WAVRecord(path, SoundRate, MDFNGameInfo->soundchan);
- }
- catch(std::exception &e)
- {
-  MDFND_PrintError(e.what());
-  return(false);
- }
-
  return(true);
 }
 
 bool MDFNI_StartAVRecord(const char *path, double SoundRate)
 {
- try
- {
-  QTRecord::VideoSpec spec;
-
-  memset(&spec, 0, sizeof(spec));
-
-  spec.SoundRate = SoundRate;
-  spec.SoundChan = MDFNGameInfo->soundchan;
-  spec.VideoWidth = MDFNGameInfo->lcm_width;
-  spec.VideoHeight = MDFNGameInfo->lcm_height;
-  spec.VideoCodec = MDFN_GetSettingI("qtrecord.vcodec");
-
-  if(spec.VideoWidth < MDFN_GetSettingUI("qtrecord.w_double_threshold"))
-   spec.VideoWidth *= 2;
-
-  if(spec.VideoHeight < MDFN_GetSettingUI("qtrecord.h_double_threshold"))
-   spec.VideoHeight *= 2;
-
-
-  spec.AspectXAdjust = ((double)MDFNGameInfo->nominal_width * 2) / spec.VideoWidth;
-  spec.AspectYAdjust = ((double)MDFNGameInfo->nominal_height * 2) / spec.VideoHeight;
-
-  MDFN_printf("\n");
-  MDFN_printf(_("Starting QuickTime recording to file \"%s\":\n"), path);
-  MDFN_indent(1);
-  MDFN_printf(_("Video width: %u\n"), spec.VideoWidth);
-  MDFN_printf(_("Video height: %u\n"), spec.VideoHeight);
-  MDFN_printf(_("Video codec: %s\n"), MDFN_GetSettingS("qtrecord.vcodec").c_str());
-  MDFN_printf(_("Sound rate: %u\n"), spec.SoundRate);
-  MDFN_printf(_("Sound channels: %u\n"), spec.SoundChan);
-  MDFN_indent(-1);
-  MDFN_printf("\n");
-
-  qtrecorder = new QTRecord(path, spec);
- }
- catch(std::exception &e)
- {
-  MDFND_PrintError(e.what());
-  return(false);
- }
  return(true);
 }
 
 void MDFNI_StopAVRecord(void)
 {
- if(qtrecorder)
- {
-  delete qtrecorder;
-  qtrecorder = NULL;
- }
 }
 
 void MDFNI_StopWAVRecord(void)
 {
- if(wavrecorder)
- {
-  delete wavrecorder;
-  wavrecorder = NULL;
- }
 }
 
 void MDFNI_CloseGame(void)
@@ -603,7 +541,6 @@ MDFNGI *MDFNI_LoadCD(const char *force_module, const char *devicename)
  #endif
 
  MDFNSS_CheckStates();
- MDFNMOV_CheckMovies();
 
  MDFN_ResetMessages();   // Save state, status messages, etc.
 
@@ -808,7 +745,6 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
 	#endif
 
 	MDFNSS_CheckStates();
-	MDFNMOV_CheckMovies();
 
 	MDFN_ResetMessages();	// Save state, status messages, etc.
 
@@ -1143,53 +1079,6 @@ static void ProcessAudio(EmulateSpecStruct *espec)
   int32 SoundBufSize = espec->SoundBufSize - espec->SoundBufSizeALMS;
   const int32 SoundBufMaxSize = espec->SoundBufMaxSize - espec->SoundBufSizeALMS;
 
-
-  if(qtrecorder && (volume_save != 1 || multiplier_save != 1))
-  {
-   int32 orig_size = SoundBufPristine.size();
-
-   SoundBufPristine.resize(orig_size + SoundBufSize * MDFNGameInfo->soundchan);
-   for(int i = 0; i < SoundBufSize * MDFNGameInfo->soundchan; i++)
-    SoundBufPristine[orig_size + i] = SoundBuf[i];
-  }
-
-  if(espec->NeedSoundReverse)
-  {
-   int16 *yaybuf = SoundBuf;
-   int32 slen = SoundBufSize;
-
-   if(MDFNGameInfo->soundchan == 1)
-   {
-    for(int x = 0; x < (slen / 2); x++)    
-    {
-     int16 cha = yaybuf[slen - x - 1];
-     yaybuf[slen - x - 1] = yaybuf[x];
-     yaybuf[x] = cha;
-    }
-   }
-   else if(MDFNGameInfo->soundchan == 2)
-   {
-    for(int x = 0; x < (slen * 2) / 2; x++)
-    {
-     int16 cha = yaybuf[slen * 2 - (x&~1) - ((x&1) ^ 1) - 1];
-     yaybuf[slen * 2 - (x&~1) - ((x&1) ^ 1) - 1] = yaybuf[x];
-     yaybuf[x] = cha;
-    }
-   }
-  }
-
-  try
-  {
-   if(wavrecorder)
-    wavrecorder->WriteSound(SoundBuf, SoundBufSize);
-  }
-  catch(std::exception &e)
-  {
-   MDFND_PrintError(e.what());
-   delete wavrecorder;
-   wavrecorder = NULL;
-  }
-
   if(multiplier_save != LastSoundMultiplier)
   {
    ff_resampler.time_ratio(multiplier_save, 0.9965);
@@ -1327,50 +1216,9 @@ void MDFNI_Emulate(EmulateSpecStruct *espec)
   ff_resampler.buffer_size((espec->SoundRate / 2) * 2);
  }
 
- // We want to record movies without any dropped video frames and without fast-forwarding sound distortion and without custom volume.
- // The same goes for WAV recording(sans the dropped video frames bit :b).
- if(qtrecorder || wavrecorder)
- {
-  multiplier_save = espec->soundmultiplier;
-  espec->soundmultiplier = 1;
-
-  volume_save = espec->SoundVolume;
-  espec->SoundVolume = 1;
- }
-
- if(MDFNnetplay)
- {
-  NetplayUpdate((const char**)PortDeviceCache, PortDataCache, PortDataLenCache, MDFNGameInfo->InputInfo->InputPorts);
- }
-
  for(int x = 0; x < 16; x++)
   if(PortDataCache[x])
    MDFNMOV_AddJoy(PortDataCache[x], PortDataLenCache[x]);
-
- if(qtrecorder)
-  espec->skip = 0;
-
- if(TBlur_IsOn())
-  espec->skip = 0;
-
- if(espec->NeedRewind)
- {
-  if(MDFNMOV_IsPlaying())
-  {
-   espec->NeedRewind = 0;
-   MDFN_DispMessage(_("Can't rewind during movie playback(yet!)."));
-  }
-  else if(MDFNnetplay)
-  {
-   espec->NeedRewind = 0;
-   MDFN_DispMessage(_("Silly-billy, can't rewind during netplay."));
-  }
-  else if(MDFNGameInfo->GameType == GMT_PLAYER)
-  {
-   espec->NeedRewind = 0;
-   MDFN_DispMessage(_("Music player rewinding is unsupported."));
-  }
- }
 
  espec->NeedSoundReverse = MDFN_StateEvil(espec->NeedRewind);
 
@@ -1392,36 +1240,6 @@ void MDFNI_Emulate(EmulateSpecStruct *espec)
   PrevInterlaced = false;
 
  ProcessAudio(espec);
-
- if(qtrecorder)
- {
-  int16 *sb_backup = espec->SoundBuf;
-  int32 sbs_backup = espec->SoundBufSize;
-
-  if(SoundBufPristine.size())
-  {
-   espec->SoundBuf = &SoundBufPristine[0];
-   espec->SoundBufSize = SoundBufPristine.size() / MDFNGameInfo->soundchan;
-  }
-
-  try
-  {
-   qtrecorder->WriteFrame(espec->surface, espec->DisplayRect, espec->LineWidths, espec->SoundBuf, espec->SoundBufSize);
-  }
-  catch(std::exception &e)
-  {
-   MDFND_PrintError(e.what());
-   delete qtrecorder;
-   qtrecorder = NULL;
-  }
-
-  SoundBufPristine.clear();
-
-  espec->SoundBuf = sb_backup;
-  espec->SoundBufSize = sbs_backup;
- }
-
- TBlur_Run(espec);
 }
 
 // This function should only be called for state rewinding.
