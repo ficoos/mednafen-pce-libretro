@@ -1,4 +1,75 @@
-TARGET := libretro-pce.so
+DEBUG=0
+#set later according to platform
+IS_X86 = 0
+
+ifeq ($(platform),)
+platform = unix
+ifeq ($(shell uname -a),)
+   platform = win
+else ifneq ($(findstring MINGW,$(shell uname -a)),)
+   platform = win
+else ifneq ($(findstring Darwin,$(shell uname -a)),)
+   platform = osx
+else ifneq ($(findstring win,$(shell uname -a)),)
+   platform = win
+endif
+endif
+
+ifeq ($(platform), unix)
+   TARGET := libretro.so
+   fpic := -fPIC
+   SHARED := -shared -Wl,--version-script=link.T -Wl,-no-undefined
+   ENDIANNESS_DEFINES := -DLSB_FIRST
+   IS_X86 = 1
+else ifeq ($(platform), osx)
+   TARGET := libretro.dylib
+   fpic := -fPIC
+   SHARED := -dynamiclib
+   ENDIANNESS_DEFINES := -DLSB_FIRST
+   IS_X86 = 1
+else ifeq ($(platform), ps3)
+   TARGET := libretro.a
+   CC = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-gcc.exe
+   CXX = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-gcc.exe
+   AR = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-ar.exe
+   ENDIANNESS_DEFINES :=
+else ifeq ($(platform), sncps3)
+   TARGET := libretro.a
+   CC = $(CELL_SDK)/host-win32/sn/bin/ps3ppusnc.exe
+   CXX = $(CELL_SDK)/host-win32/sn/bin/ps3ppusnc.exe
+   AR = $(CELL_SDK)/host-win32/sn/bin/ps3snarl.exe
+   CFLAGS += -DWORDS_BIGENDIAN=1 -D_GNU_SOURCE=1 -DHAVE_LIBMAD -DMUSIC_SUPPORT
+else ifeq ($(platform), xenon)
+   TARGET := libretro.a
+   CC = xenon-gcc
+   CXX = xenon-g++
+   AR = xenon-ar
+   CFLAGS += -D__LIBXENON__ -m32 -D__ppc__
+else ifeq ($(platform), wii)
+   TARGET := libretro.a
+   CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc
+   CXX = $(DEVKITPPC)/bin/powerpc-eabi-g++
+   AR = $(DEVKITPPC)/bin/powerpc-eabi-ar
+   CFLAGS += -DGEKKO -mrvl -mcpu=750 -meabi -mhard-float
+else
+   TARGET := retro.dll
+   CC = gcc
+   SHARED := -shared -static-libgcc -static-libstdc++ -s -Wl,--version-script=link.T
+   CFLAGS += -D__WIN32__ -D__WIN32_LIBRETRO__ -Wno-missing-field-initializers
+   IS_X86 = 1
+endif
+
+ifeq ($(IS_X86), 1)
+X86_DEFINES = -DARCH_X86 -msse -msse2
+CFLAGS +=  $(X86_DEFINES)
+CXXFLAGS +=  $(X86_DEFINES)
+endif
+
+ifeq ($(DEBUG), 1)
+CFLAGS += -O0 -g
+else
+CFLAGS += -O3
+endif
 
 MEDNAFEN_DIR := mednafen
 PCE_DIR := $(MEDNAFEN_DIR)/pce
@@ -90,8 +161,8 @@ OBJECTS := $(SOURCES:.cpp=.o) $(SOURCES_C:.c=.o)
 all: $(TARGET)
 
 
-LDFLAGS += -Wl,--no-undefined -fPIC -shared -lz -Wl,--version-script=link.T -pthread
-FLAGS += -ffast-math -msse -msse2 -funroll-loops -O3 -g -Wall -fPIC -fno-strict-overflow
+LDFLAGS += -Wl,--no-undefined -shared -lz -Wl,--version-script=link.T -pthread $(fpic)
+FLAGS += -ffast-math  -funroll-loops -O3 -g -Wall -fno-strict-overflow
 FLAGS += -I. -Imednafen -Imednafen/include -Imednafen/intl -Imednafen/hw_cpu -Imednafen/hw_misc -Imednafen/hw_sound -Imednafen/hw_video -pthread
 
 WARNINGS := -Wall \
@@ -105,12 +176,10 @@ WARNINGS := -Wall \
 	-Wno-strict-aliasing \
 	-Wno-overflow
 
-FLAGS += -DLSB_FIRST -DHAVE_MKDIR -DSIZEOF_DOUBLE=8 $(WARNINGS) \
-			-DMEDNAFEN_VERSION=\"0.9.22\" -DMEDNAFEN_VERSION_NUMERIC=922 -DPSS_STYLE=1 -DMPC_FIXED_POINT -DARCH_X86 \
-			-DWANT_PCE_EMU -DSTDC_HEADERS
+FLAGS += -DLSB_FIRST -DHAVE_MKDIR -DSIZEOF_DOUBLE=8 $(WARNINGS) -DMEDNAFEN_VERSION=\"0.9.22\" -DMEDNAFEN_VERSION_NUMERIC=922 -DPSS_STYLE=1 -DMPC_FIXED_POINT -DWANT_PCE_EMU -DSTDC_HEADERS
 
-CXXFLAGS += $(FLAGS)
-CFLAGS += $(FLAGS) -std=gnu99
+CXXFLAGS += $(FLAGS) $(fpic)
+CFLAGS += $(FLAGS) $(fpic) -std=gnu99
 
 $(TARGET): $(OBJECTS)
 	$(CXX) -o $@ $^ $(LDFLAGS)
