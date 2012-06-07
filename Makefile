@@ -54,7 +54,6 @@ MEDNAFEN_SOURCES := $(MEDNAFEN_DIR)/cdrom/cdromif.cpp \
 	$(MEDNAFEN_DIR)/video/video.cpp \
 	$(MEDNAFEN_DIR)/video/text.cpp \
 	$(MEDNAFEN_DIR)/video/font-data.cpp \
-	$(MEDNAFEN_DIR)/video/png.cpp \
 	$(MEDNAFEN_DIR)/video/Deinterlacer.cpp \
 	$(MEDNAFEN_DIR)/video/surface.cpp \
 	$(MEDNAFEN_DIR)/video/resize.cpp \
