@@ -259,7 +259,9 @@ int CDIF::ReadThreadStart(const char *device_name)
     error_condition = true;
    }
    
+#ifdef USE_MUTEX
    MDFND_LockMutex(SBMutex);
+#endif
 
    SectorBuffers[SBWritePos].lba = ra_lba;
    memcpy(SectorBuffers[SBWritePos].data, tmpbuf, 2352 + 96);
@@ -267,7 +269,9 @@ int CDIF::ReadThreadStart(const char *device_name)
    SectorBuffers[SBWritePos].error = error_condition;
    SBWritePos = (SBWritePos + 1) % SBSize;
 
+#ifdef USE_MUTEX
    MDFND_UnlockMutex(SBMutex);
+#endif
 
    ra_lba++;
    ra_count--;
@@ -288,13 +292,17 @@ CDIF::CDIF(const char *device_name)
  CDIF_Message msg;
  RTS_Args s;
 
+#ifdef USE_MUTEX
  SBMutex = MDFND_CreateMutex();
+#endif
  UnrecoverableError = false;
 
  s.cdif_ptr = this;
  s.device_name = device_name;
 
+#ifdef USE_THREADS
  CDReadThread = MDFND_CreateThread(ReadThreadStart_C, &s);
+#endif
  EmuThreadQueue.Read(&msg);
 }
 
@@ -310,18 +318,24 @@ CDIF::~CDIF()
  catch(std::exception &e)
  {
   MDFND_PrintError(e.what());
+#ifdef USE_THREADS
   MDFND_KillThread(CDReadThread);
+#endif
   thread_murdered_with_kitchen_knife = true;
  }
 
+#ifdef USE_THREADS
  if(!thread_murdered_with_kitchen_knife)
   MDFND_WaitThread(CDReadThread, NULL);
+#endif
 
+#ifdef USE_MUTEX
  if(SBMutex)
  {
   MDFND_DestroyMutex(SBMutex);
   SBMutex = NULL;
  }
+#endif
 }
 
 bool CDIF::ValidateRawSector(uint8 *buf)
@@ -360,7 +374,9 @@ bool CDIF::ReadRawSector(uint8 *buf, uint32 lba)
 
  do
  {
+#ifdef USE_MUTEX
   MDFND_LockMutex(SBMutex);
+#endif
 
   for(int i = 0; i < SBSize; i++)
   {
@@ -372,7 +388,9 @@ bool CDIF::ReadRawSector(uint8 *buf, uint32 lba)
    }
   }
 
+#ifdef USE_MUTEX
   MDFND_UnlockMutex(SBMutex);
+#endif
 
   if(!found)
    MDFND_Sleep(1);

@@ -161,9 +161,9 @@ OBJECTS := $(SOURCES:.cpp=.o) $(SOURCES_C:.c=.o)
 all: $(TARGET)
 
 
-LDFLAGS += -Wl,--no-undefined -shared -lz -Wl,--version-script=link.T -pthread $(fpic)
+LDFLAGS += -Wl,--no-undefined -shared -lz -Wl,--version-script=link.T $(fpic)
 FLAGS += -ffast-math  -funroll-loops -O3 -g -Wall -fno-strict-overflow
-FLAGS += -I. -Imednafen -Imednafen/include -Imednafen/intl -Imednafen/hw_cpu -Imednafen/hw_misc -Imednafen/hw_sound -Imednafen/hw_video -pthread
+FLAGS += -I. -Imednafen -Imednafen/include -Imednafen/intl -Imednafen/hw_cpu -Imednafen/hw_misc -Imednafen/hw_sound -Imednafen/hw_video
 
 WARNINGS := -Wall \
 	-Wno-narrowing \
