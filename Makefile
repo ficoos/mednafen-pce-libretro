@@ -74,9 +74,10 @@ endif
 MEDNAFEN_DIR := mednafen
 PCE_DIR := $(MEDNAFEN_DIR)/pce
 
-HW_CPU_SOURCES := $(MEDNAFEN_DIR)/hw_cpu/huc6280/huc6280.cpp \
-	$(MEDNAFEN_DIR)/hw_cpu/c68k/c68k.c \
+HW_CPU_SOURCES_C := $(MEDNAFEN_DIR)/hw_cpu/c68k/c68k.c \
 	$(MEDNAFEN_DIR)/hw_cpu/c68k/c68kexec.c
+
+HW_CPU_SOURCES := $(MEDNAFEN_DIR)/hw_cpu/huc6280/huc6280.cpp
 
 HW_MISC_SOURCES := $(MEDNAFEN_DIR)/hw_misc/arcade_card/arcade_card.cpp
 
@@ -152,6 +153,8 @@ SOURCES_C := $(MEDNAFEN_DIR)/trio/trio.c \
 	$(MEDNAFEN_DIR)/compress/quicklz.c \
 	$(MEDNAFEN_DIR)/compress/ioapi.c \
 	$(MEDNAFEN_DIR)/resampler/resample.c
+
+SOURCES_C += $(HW_CPU_SOURCES_C)
 
 LIBRETRO_SOURCES := libretro.cpp stubs.cpp
 
