@@ -18,7 +18,6 @@
 //#include <mednafen/mednafen.h>
 #include "mednafen.h"
 #include "cdrom/cdromif.h"
-#include "netplay.h"
 #include <blip/Blip_Buffer.h>
 #include <trio/trio.h>
 #include <vector>
@@ -465,11 +464,6 @@ static void SetInput(int port, const char *type, void *ptr)
 
 static void DoSimpleCommand(int cmd)
 {
- switch(cmd)
- {
-  case MDFNNPCMD_POWER:
-  case MDFNNPCMD_RESET: break;
- }
 }
 
 static MDFNSetting CDPlaySettings[] =

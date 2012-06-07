@@ -27,22 +27,17 @@
 #include	<list>
 #include	<algorithm>
 
-#include	"netplay.h"
-#include	"netplay-driver.h"
 #include	"general.h"
 
+#include        "FileWrapper.h"
 #include	"state.h"
-#include	"movie.h"
 #include        "video.h"
 #include	"video/Deinterlacer.h"
 #include	"file.h"
-#include	"sound/WAVRecord.h"
 #include	"cdrom/cdromif.h"
 #include	"mempatcher.h"
 #include	"compress/minilzo.h"
 #include	"tests.h"
-#include	"video/tblur.h"
-#include	"qtrecord.h"
 #include	"md5.h"
 #include	"clamp.h"
 #include	"Fir_Resampler.h"
@@ -53,9 +48,6 @@
 
 static const char *CSD_forcemono = gettext_noop("Force monophonic sound output.");
 static const char *CSD_enable = gettext_noop("Enable (automatic) usage of this module.");
-static const char *CSD_tblur = gettext_noop("Enable video temporal blur(50/50 previous/current frame by default).");
-static const char *CSD_tblur_accum = gettext_noop("Accumulate color data rather than discarding it.");
-static const char *CSD_tblur_accum_amount = gettext_noop("Blur amount in accumulation mode, specified in percentage of accumulation buffer to mix with the current frame.");
 
 static MDFNSetting_EnumList CompressorList[] =
 {
@@ -63,20 +55,6 @@ static MDFNSetting_EnumList CompressorList[] =
  { "minilzo", -1, "MiniLZO" },
  { "quicklz", -1, "QuickLZ" },
  { "blz", -1, "BLZ" },
-
- { NULL, 0 },
-};
-
-static MDFNSetting_EnumList VCodec_List[] =
-{
- { "raw", (int)QTRecord::VCODEC_RAW, "Raw",
-	gettext_noop("A fast codec, computationally, but will cause enormous file size and may exceed your storage medium's sustained write rate.") },
-
- { "cscd", (int)QTRecord::VCODEC_CSCD, "CamStudio Screen Codec",
-	gettext_noop("A good balance between performance and compression ratio.") },
-
- { "png", (int)QTRecord::VCODEC_PNG, "PNG",
-	gettext_noop("Has a better compression ratio than \"cscd\", but is much more CPU intensive.  Use for compatibility with official QuickTime in cases where you have insufficient disk space for \"raw\".") },
 
  { NULL, 0 },
 };
@@ -112,7 +90,6 @@ static MDFNSetting MednafenSettings[] =
   { "qtrecord.w_double_threshold", MDFNSF_NOFLAGS, gettext_noop("Double the raw image's width if it's below this threshold."), NULL, MDFNST_UINT, "384", "0", "1073741824" },
   { "qtrecord.h_double_threshold", MDFNSF_NOFLAGS, gettext_noop("Double the raw image's height if it's below this threshold."), NULL, MDFNST_UINT, "256", "0", "1073741824" },
 
-  { "qtrecord.vcodec", MDFNSF_NOFLAGS, gettext_noop("Video codec to use."), NULL, MDFNST_ENUM, "cscd", NULL, NULL, NULL, NULL, VCodec_List },
   { NULL }
 };
 
@@ -190,11 +167,6 @@ void MDFNI_CloseGame(void)
 {
  if(MDFNGameInfo)
  {
-  if(MDFNnetplay)
-   MDFNI_NetplayStop();
-
-  MDFNMOV_Stop();
-
   if(MDFNGameInfo->GameType != GMT_PLAYER)
    MDFN_FlushGameCheats(0);
 
@@ -213,7 +185,6 @@ void MDFNI_CloseGame(void)
    delete CDInterfaces[i];
   CDInterfaces.clear();
  }
- TBlur_Kill();
 
  #ifdef WANT_DEBUGGER
  MDFNDBG_Kill();
@@ -232,12 +203,6 @@ void MDFNI_CloseGame(void)
  memset(PortDataLenCache, 0, sizeof(PortDataLenCache));
  memset(PortDeviceCache, 0, sizeof(PortDeviceCache));
 }
-
-int MDFNI_NetplayStart(uint32 local_players, uint32 netmerge, const std::string &nickname, const std::string &game_key, const std::string &connect_password)
-{
- return(NetplayStart((const char**)PortDeviceCache, PortDataLenCache, local_players, netmerge, nickname, game_key, connect_password));
-}
-
 
 #ifdef WANT_NES_EMU
 extern MDFNGI EmulatedNES;
@@ -544,8 +509,6 @@ MDFNGI *MDFNI_LoadCD(const char *force_module, const char *devicename)
 
  MDFN_ResetMessages();   // Save state, status messages, etc.
 
- TBlur_Init();
-
  MDFN_StateEvilBegin();
 
 
@@ -768,8 +731,6 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
 
 	PrevInterlaced = false;
 	deint.ClearState();
-
-	TBlur_Init();
 
         MDFN_StateEvilBegin();
 
@@ -1020,15 +981,6 @@ int MDFNI_Initialize(const char *basedir, const std::vector<MDFNSetting> &Driver
 
 	 BuildDynamicSetting(&setting, sysname, "enable", MDFNSF_COMMON_TEMPLATE, CSD_enable, MDFNST_BOOL, "1");
 	 dynamic_settings.push_back(setting);
-
-	 BuildDynamicSetting(&setting, sysname, "tblur", MDFNSF_COMMON_TEMPLATE | MDFNSF_CAT_VIDEO, CSD_tblur, MDFNST_BOOL, "0");
-         dynamic_settings.push_back(setting);
-
-         BuildDynamicSetting(&setting, sysname, "tblur.accum", MDFNSF_COMMON_TEMPLATE | MDFNSF_CAT_VIDEO, CSD_tblur_accum, MDFNST_BOOL, "0");
-         dynamic_settings.push_back(setting);
-
-         BuildDynamicSetting(&setting, sysname, "tblur.accum.amount", MDFNSF_COMMON_TEMPLATE | MDFNSF_CAT_VIDEO, CSD_tblur_accum_amount, MDFNST_FLOAT, "50", "0", "100");
-	 dynamic_settings.push_back(setting);
 	}
 
 	// First merge all settable settings, then load the settings from the SETTINGS FILE OF DOOOOM
@@ -1174,16 +1126,9 @@ static void ProcessAudio(EmulateSpecStruct *espec)
 
 void MDFN_MidSync(EmulateSpecStruct *espec)
 {
- if(MDFNnetplay)
-  return;
-
  ProcessAudio(espec);
 
  MDFND_MidSync(espec);
-
- for(int x = 0; x < 16; x++)
-  if(PortDataCache[x])
-   MDFNMOV_AddJoy(PortDataCache[x], PortDataLenCache[x]);
 
  espec->SoundBufSizeALMS = espec->SoundBufSize;
  espec->MasterCyclesALMS = espec->MasterCycles;
@@ -1215,10 +1160,6 @@ void MDFNI_Emulate(EmulateSpecStruct *espec)
 
   ff_resampler.buffer_size((espec->SoundRate / 2) * 2);
  }
-
- for(int x = 0; x < 16; x++)
-  if(PortDataCache[x])
-   MDFNMOV_AddJoy(PortDataCache[x], PortDataLenCache[x]);
 
  espec->NeedSoundReverse = MDFN_StateEvil(espec->NeedRewind);
 
@@ -1372,16 +1313,7 @@ void MDFN_DoSimpleCommand(int cmd)
 
 void MDFN_QSimpleCommand(int cmd)
 {
- if(MDFNnetplay)
-  MDFNNET_SendCommand(cmd, 0);
- else
- {
-  if(!MDFNMOV_IsPlaying())
-  {
    MDFN_DoSimpleCommand(cmd);
-   MDFNMOV_AddCommand(cmd);
-  }
- }
 }
 
 void MDFNI_Power(void)

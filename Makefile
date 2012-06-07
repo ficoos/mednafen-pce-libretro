@@ -30,16 +30,13 @@ MEDNAFEN_SOURCES := $(MEDNAFEN_DIR)/cdrom/cdromif.cpp \
 	$(MEDNAFEN_DIR)/error.cpp \
 	$(MEDNAFEN_DIR)/math_ops.cpp \
 	$(MEDNAFEN_DIR)/settings.cpp \
-	$(MEDNAFEN_DIR)/netplay.cpp \
 	$(MEDNAFEN_DIR)/general.cpp \
 	$(MEDNAFEN_DIR)/player.cpp \
 	$(MEDNAFEN_DIR)/cdplay.cpp \
 	$(MEDNAFEN_DIR)/FileWrapper.cpp \
 	$(MEDNAFEN_DIR)/state.cpp \
 	$(MEDNAFEN_DIR)/tests.cpp \
-	$(MEDNAFEN_DIR)/movie.cpp \
 	$(MEDNAFEN_DIR)/endian.cpp \
-	$(MEDNAFEN_DIR)/qtrecord.cpp \
 	$(MEDNAFEN_DIR)/cdrom/CDAccess.cpp \
 	$(MEDNAFEN_DIR)/cdrom/CDAccess_Image.cpp \
 	$(MEDNAFEN_DIR)/cdrom/CDUtility.cpp \
@@ -57,7 +54,6 @@ MEDNAFEN_SOURCES := $(MEDNAFEN_DIR)/cdrom/cdromif.cpp \
 	$(MEDNAFEN_DIR)/video/video.cpp \
 	$(MEDNAFEN_DIR)/video/text.cpp \
 	$(MEDNAFEN_DIR)/video/font-data.cpp \
-	$(MEDNAFEN_DIR)/video/tblur.cpp \
 	$(MEDNAFEN_DIR)/video/png.cpp \
 	$(MEDNAFEN_DIR)/video/Deinterlacer.cpp \
 	$(MEDNAFEN_DIR)/video/surface.cpp \
@@ -67,7 +63,6 @@ MEDNAFEN_SOURCES := $(MEDNAFEN_DIR)/cdrom/cdromif.cpp \
 	$(MEDNAFEN_DIR)/sound/Blip_Buffer.cpp \
 	$(MEDNAFEN_DIR)/sound/Fir_Resampler.cpp \
 	$(MEDNAFEN_DIR)/sound/Stereo_Buffer.cpp \
-	$(MEDNAFEN_DIR)/sound/WAVRecord.cpp \
 	$(MEDNAFEN_DIR)/sound/sound.cpp \
 	$(MEDNAFEN_DIR)/file.cpp \
 	$(MEDNAFEN_DIR)/okiadpcm.cpp \

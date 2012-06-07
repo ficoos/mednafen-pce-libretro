@@ -3,7 +3,6 @@
 #include "mednafen/git.h"
 #include "mednafen/general.h"
 #include "mednafen/mednafen-driver.h"
-#include "mednafen/netplay-driver.h"
 
 #include <iostream>
 #include <pthread.h>
