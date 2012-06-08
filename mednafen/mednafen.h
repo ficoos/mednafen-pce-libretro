@@ -19,11 +19,6 @@ void MDFN_PrintError(const char *format, ...) throw() MDFN_FORMATSTR(printf, 1, 
 void MDFN_printf(const char *format, ...) throw() MDFN_FORMATSTR(printf, 1, 2);
 void MDFN_DispMessage(const char *format, ...) throw() MDFN_FORMATSTR(printf, 1, 2);
 
-void MDFN_DebugPrintReal(const char *file, const int line, const char *format, ...) MDFN_FORMATSTR(printf, 3, 4);
-
-#define MDFN_DebugPrint(format, ...) MDFN_DebugPrintReal(__FILE__, __LINE__, format, ## __VA_ARGS__)
-
-
 class MDFNException
 {
 	public:

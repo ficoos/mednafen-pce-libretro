@@ -36,11 +36,6 @@ enum
  PCEINPUT_TSUSHINKB = 3,
 };
 
-//PCE_Input_Device::PCE_Input_Device(int which)
-//{
-//
-//}
-
 PCE_Input_Device::~PCE_Input_Device()
 {
 

@@ -867,7 +867,6 @@ void MDFNSS_CheckStates(void)
         }
 
 	CurrentState = 0;
-	MDFND_SetStateStatus(NULL);
 }
 
 void MDFNSS_GetStateInfo(const char *filename, StateStatusStruct *status)
@@ -922,7 +921,6 @@ void MDFNI_SelectState(int w)
 
  if(w == -1) 
  {  
-  MDFND_SetStateStatus(NULL);
   return; 
  }
 
@@ -948,7 +946,6 @@ void MDFNI_SelectState(int w)
  status->recently_saved = RecentlySavedState;
 
  MDFNSS_GetStateInfo(MDFN_MakeFName(MDFNMKF_STATE,CurrentState,NULL).c_str(), status);
- MDFND_SetStateStatus(status);
 }  
 
 void MDFNI_SaveState(const char *fname, const char *suffix, const MDFN_Surface *surface, const MDFN_Rect *DisplayRect, const MDFN_Rect *LineWidths)
@@ -956,7 +953,6 @@ void MDFNI_SaveState(const char *fname, const char *suffix, const MDFN_Surface *
  if(!MDFNGameInfo->StateAction) 
   return;
 
- MDFND_SetStateStatus(NULL);
  MDFNSS_Save(fname, suffix, surface, DisplayRect, LineWidths);
 }
 
@@ -965,7 +961,6 @@ void MDFNI_LoadState(const char *fname, const char *suffix)
  if(!MDFNGameInfo->StateAction) 
   return;
 
- MDFND_SetStateStatus(NULL);
 
  /* For network play and movies, be load the state locally, and then save the state to a temporary buffer,
     and send or record that.  This ensures that if an older state is loaded that is missing some

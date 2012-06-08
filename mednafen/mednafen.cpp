@@ -139,8 +139,6 @@ static bool FFDiscard = FALSE; // TODO:  Setting to discard sound samples instea
 static MDFN_PixelFormat last_pixel_format;
 static double last_sound_rate;
 
-static bool PrevInterlaced;
-
 static std::vector<CDIF *> CDInterfaces;	// FIXME: Cleanup on error out.
 
 void MDFNI_CloseGame(void)
@@ -695,8 +693,6 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
           *tmp = 0;
         }
 
-	PrevInterlaced = false;
-
         MDFN_StateEvilBegin();
 
 
@@ -1109,8 +1105,6 @@ void MDFNI_Emulate(EmulateSpecStruct *espec)
 
  MDFNGameInfo->Emulate(espec);
 
- PrevInterlaced = false;
-
  ProcessAudio(espec);
 }
 
@@ -1217,21 +1211,6 @@ void MDFN_PrintError(const char *format, ...) throw()
 
  temp = trio_vaprintf(format, ap);
  MDFND_PrintError(temp);
- free(temp);
-
- va_end(ap);
-}
-
-void MDFN_DebugPrintReal(const char *file, const int line, const char *format, ...)
-{
- char *temp;
-
- va_list ap;
-
- va_start(ap, format);
-
- temp = trio_vaprintf(format, ap);
- printf("%s:%d  %s\n", file, line, temp);
  free(temp);
 
  va_end(ap);

@@ -43,9 +43,6 @@ MDFN_Thread *MDFND_CreateThread(int (*fn)(void *), void *data)
    return (MDFN_Thread*)thread;
 }
 
-void MDFND_SetMovieStatus(StateStatusStruct *) {}
-void MDFND_SetStateStatus(StateStatusStruct *) {}
-
 void MDFND_WaitThread(MDFN_Thread *thr, int *val)
 {
    pthread_t *thread = (pthread_t*)thr;
