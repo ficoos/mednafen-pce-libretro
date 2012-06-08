@@ -240,8 +240,6 @@ extern MDFNGI EmulatedWSwan;
 extern MDFNGI EmulatedSMS, EmulatedGG;
 #endif
 
-extern MDFNGI EmulatedCDPlay;
-
 std::vector<MDFNGI *> MDFNSystems;
 static std::list<MDFNGI *> MDFNSystemsPrio;
 
@@ -876,8 +874,6 @@ bool MDFNI_InitializeModules(const std::vector<MDFNGI *> &ExternalSystems)
   &EmulatedSMS,
   &EmulatedGG,
   #endif
-
-  &EmulatedCDPlay
  };
  std::string i_modules_string, e_modules_string;
 

@@ -178,7 +178,6 @@ class MDFN_Surface //typedef struct
 
  MDFN_PixelFormat format;
 
- void Fill(uint8 r, uint8 g, uint8 b, uint8 a);
  void SetFormat(const MDFN_PixelFormat &new_format, bool convert);
 
  // Creates a 32-bit value for the surface corresponding to the R/G/B/A color passed.

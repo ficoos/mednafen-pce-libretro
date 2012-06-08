@@ -240,26 +240,6 @@ void MDFN_Surface::SetFormat(const MDFN_PixelFormat &nf, bool convert)
  format = nf;
 }
 
-void MDFN_Surface::Fill(uint8 r, uint8 g, uint8 b, uint8 a)
-{
- uint32 color = MakeColor(r, g, b, a);
-
- if(format.bpp == 16)
- {
-  assert(pixels16);
-
-  for(int32 i = 0; i < pitchinpix * h; i++)
-   pixels16[i] = color;
- }
- else
- {
-  assert(pixels);
-
-  for(int32 i = 0; i < pitchinpix * h; i++)
-   pixels[i] = color;
- }
-}
-
 MDFN_Surface::~MDFN_Surface()
 {
  if(!pixels_is_external)
