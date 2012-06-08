@@ -62,116 +62,6 @@ class VCE : public HuC6280_Support
 
 	void SetLayerEnableMask(uint64 mask);
 
-	#ifdef WANT_DEBUGGER
-
-	uint16 PeekPRAM(const uint16 Address);
-	void PokePRAM(const uint16 Address, const uint16 Data);
-
-
-        // Peek(VRAM/SAT) and Poke(VRAM/SAT) work in 16-bit VRAM word units(Address and Length, both).
-        INLINE uint16 PeekVDCVRAM(unsigned int which, uint16 Address)
-        {
-	 return(vdc[which]->PeekVRAM(Address));
-        }
-
-        INLINE uint16 PeekVDCSAT(unsigned int which, uint8 Address)
-        {
-	 return(vdc[which]->PeekSAT(Address));
-        }
-
-        INLINE void PokeVDCVRAM(const unsigned int which, const uint16 Address, const uint16 Data)
-	{
-	 vdc[which]->PokeVRAM(Address, Data);
-	}
-
-        INLINE void PokeVDCSAT(const unsigned int which, const uint8 Address, const uint16 Data)
-	{
-	 vdc[which]->PokeSAT(Address, Data);
-	}
-
-	void SetGraphicsDecode(MDFN_Surface *surface, int line, int which, int xscroll, int yscroll, int pbn);
-
-        enum
-        {
-         GSREG_CR = 0,
-         GSREG_CTA,
-         GSREG_SCANLINE,
-
-	 // VPC:
-	 GSREG_PRIORITY_0,
-	 GSREG_PRIORITY_1,
-	 GSREG_WINDOW_WIDTH_0,
-	 GSREG_WINDOW_WIDTH_1,
-	 GSREG_ST_MODE
-	};
-
-        uint32 GetRegister(const unsigned int id, char *special, const uint32 special_len);
-        void SetRegister(const unsigned int id, const uint32 value);
-
-
-        uint32 GetRegisterVDC(const unsigned int which_vdc, const unsigned int id, char *special, const uint32 special_len);
-        void SetRegisterVDC(const unsigned int which_vdc, const unsigned int id, const uint32 value);
-	
-	INLINE void ResetSimulateVDC(void)
-	{
-	 for(int chip = 0; chip < chip_count; chip++)
-	  vdc[chip]->ResetSimulate();
-	}
-
-	INLINE int SimulateReadVDC(uint32 A, VDC_SimulateResult *result)
-	{
-	 if(!sgfx)
-	 {
-	  vdc[0]->SimulateRead(A, result);
-	  return(0);
-	 }
-	 else
-	 {
-	  int chip = 0;
-
-	  A &= 0x1F;
-
-	  if(!(A & 0x8))
-	  {
-	   chip = (A & 0x10) >> 4;
-	   vdc[chip]->SimulateRead(A & 0x3, result);
-	   return(chip);
-	  }
-	 }
-
-         result->ReadCount = result->WriteCount = 0;
-         return(0);
-	}
-
-	// If the simulated write is due to a ST0, ST1, or ST2 instruction, set the high bit of the passed address to 1.
-	INLINE int SimulateWriteVDC(uint32 A, uint8 V, VDC_SimulateResult *result)
-	{
-	 if(!sgfx)
-	 {
-	  vdc[0]->SimulateWrite(A, V, result);
-	  return(0);
-	 }
-	 else
-	 {
-	  // For ST0/ST1/ST2
-	  A |= ((A >> 31) & st_mode) << 4;
-
-	  A &= 0x1F;
-
-	  if(!(A & 0x8))
-	  {
-	   int chip = (A & 0x10) >> 4;
-	   vdc[chip]->SimulateWrite(A & 0x3, V, result);
-	   return(chip);
-	  }
-	 }
-
-	 result->ReadCount = result->WriteCount = 0;
-	 result->ReadStart = result->WriteStart = 0;
-	 return(0);
-	}
-	#endif
-
         void IRQChangeCheck(void);
 
         bool WS_Hook(int32 vdc_cycles);
@@ -193,10 +83,6 @@ class VCE : public HuC6280_Support
 
         void FixPCache(int entry);
         void SetVCECR(uint8 V);
-
-	#ifdef WANT_DEBUGGER
-	void DoGfxDecode(void);
-	#endif
 
 	INLINE int32 CalcNextEvent(void)
 	{
@@ -283,15 +169,6 @@ class VCE : public HuC6280_Support
         uint16 winwidths[2];
         uint8 st_mode;
 	int32 window_counter[2];
-
-
-	#ifdef WANT_DEBUGGER
-	MDFN_Surface *GfxDecode_Buf;// = NULL;
-	int GfxDecode_Line;// = -1;
-	int GfxDecode_Layer;// = 0;
-	int GfxDecode_Scroll;// = 0;
-	int GfxDecode_Pbn;// = 0;
-	#endif
 
 	bool ShowHorizOS;
 

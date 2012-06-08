@@ -166,10 +166,6 @@ void MDFNI_CloseGame(void)
   CDInterfaces.clear();
  }
 
- #ifdef WANT_DEBUGGER
- MDFNDBG_Kill();
- #endif
-
  for(unsigned int x = 0; x < sizeof(PortDeviceCache) / sizeof(char *); x++)
  {
   if(PortDeviceCache[x])
@@ -479,10 +475,6 @@ MDFNGI *MDFNI_LoadCD(const char *force_module, const char *devicename)
 
  MDFNI_SetLayerEnableMask(~0ULL);
 
- #ifdef WANT_DEBUGGER
- MDFNDBG_PostGameLoad(); 
- #endif
-
  MDFNSS_CheckStates();
 
  MDFN_ResetMessages();   // Save state, status messages, etc.
@@ -680,10 +672,6 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
 	}
 
 	MDFNI_SetLayerEnableMask(~0ULL);
-
-	#ifdef WANT_DEBUGGER
-	MDFNDBG_PostGameLoad();
-	#endif
 
 	MDFNSS_CheckStates();
 
@@ -967,10 +955,6 @@ int MDFNI_Initialize(const char *basedir, const std::vector<MDFNSetting> &Driver
 
         if(!MFDN_LoadSettings(basedir))
 	 return(0);
-
-	#ifdef WANT_DEBUGGER
-	MDFNDBG_Init();
-	#endif
 
         return(1);
 }

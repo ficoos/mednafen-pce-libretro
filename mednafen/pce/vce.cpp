@@ -29,7 +29,6 @@
 #include "../video.h"
 #include "vce.h"
 #include "huc6270/vdc.h"
-#include "debug.h"
 #include "subhw.h"
 #include "../cdrom/pcecd.h"
 #include <trio/trio.h>
@@ -137,15 +136,6 @@ VCE::VCE(bool want_sgfx, bool nospritelimit)
 
  memset(systemColorMap32, 0, sizeof(systemColorMap32));
  memset(bw_systemColorMap32, 0, sizeof(bw_systemColorMap32));
-
- #ifdef WANT_DEBUGGER
- GfxDecode_Buf = NULL;
- GfxDecode_Line = -1;
- GfxDecode_Layer = 0;
- GfxDecode_Scroll = 0;
- GfxDecode_Pbn = 0;
- #endif
-
 
  SetShowHorizOS(false);
 }
@@ -671,137 +661,5 @@ int VCE::StateAction(StateMem *sm, int load, int data_only)
  return(ret);
 }
 
-
-#ifdef WANT_DEBUGGER
-
-uint32 VCE::GetRegister(const unsigned int id, char *special, const uint32 special_len)
-{
- uint32 value = 0xDEADBEEF;
-
- switch(id)
- {
-  case GSREG_CR:
-		value = CR;
-		if(special)
-		{
-		 trio_snprintf(special, special_len, "Clock: %.2fMHz, %d lines/frame, Strip colorburst: %s",
-				round(PCE_MASTER_CLOCK / 1e4 / vce_ratios[(value & 0x3) &~ ((value & 0x2) >> 1)]) / 100,
-				(value & 0x04) ? 263 : 262,
-				(value & 0x80) ? "On" : "Off");
-		}
-		break;
-
-  case GSREG_CTA:
-		value = ctaddress;
-		break;
-
-  case GSREG_SCANLINE:
-		value = scanline;
-		break;
-
-  // VPC:
-  case GSREG_ST_MODE:
-		value = st_mode;
-		break;
-
-  case GSREG_WINDOW_WIDTH_0:
-  case GSREG_WINDOW_WIDTH_1:
-		value = winwidths[id - GSREG_WINDOW_WIDTH_0];
-		if(special)
-		{
-		 trio_snprintf(special, special_len, "Window width: %d%s", value - 0x40, (value <= 0x40) ? "(window disabled)" : "");
-		}
-		break;
-
-  case GSREG_PRIORITY_0:
-  case GSREG_PRIORITY_1:
-		value = priority[id - GSREG_PRIORITY_0];
-		break;
- }
- return(value);
-}
-
-void VCE::SetRegister(const unsigned int id, const uint32 value)
-{
- switch(id)
- {
-  case GSREG_CR:
-		SetVCECR(value);
-		break;
-
-  case GSREG_CTA:
-		ctaddress = value & 0x1FF;
-		break;
-  // VPC:
-  case GSREG_ST_MODE:
-                st_mode = (bool)value;
-                break;
-
-  case GSREG_WINDOW_WIDTH_0:
-  case GSREG_WINDOW_WIDTH_1:
-                winwidths[id - GSREG_WINDOW_WIDTH_0] = value & 0x3FF;
-                break;
-
-  case GSREG_PRIORITY_0:
-  case GSREG_PRIORITY_1:
-                priority[id - GSREG_PRIORITY_0] = value;
-                break;
-
- }
-}
-
-void VCE::SetGraphicsDecode(MDFN_Surface *surface, int line, int which, int xscroll, int yscroll, int pbn)
-{
- GfxDecode_Buf = surface;
- GfxDecode_Line = line;
- GfxDecode_Layer = which;
- GfxDecode_Scroll = yscroll;
- GfxDecode_Pbn = pbn;
-
- if(GfxDecode_Buf && GfxDecode_Line == -1)
-  DoGfxDecode();
-}
-
-uint32 VCE::GetRegisterVDC(const unsigned int which_vdc, const unsigned int id, char *special, const uint32 special_len)
-{
- return(vdc[which_vdc]->GetRegister(id, special, special_len));
-}
-
-void VCE::SetRegisterVDC(const unsigned int which_vdc, const unsigned int id, const uint32 value)
-{
- vdc[which_vdc]->SetRegister(id, value);
-}
-
-
-uint16 VCE::PeekPRAM(const uint16 Address)
-{
- return(color_table[Address & 0x1FF]);
-}
-
-void VCE::PokePRAM(const uint16 Address, const uint16 Data)
-{ 
- color_table[Address & 0x1FF] = Data & 0x1FF;
- FixPCache(Address);
-}
-
-
-void VCE::DoGfxDecode(void)
-{
- const int which_vdc = (GfxDecode_Layer >> 1) & 1;
- const bool DecodeSprites = GfxDecode_Layer & 1;
- uint32 neo_palette[16];
-
- if(GfxDecode_Pbn == -1)
- {
-  for(int x = 0; x < 16; x++)
-   neo_palette[x] = GfxDecode_Buf->MakeColor(x * 17, x * 17, x * 17, 0xFF);
- }
- else
-  for(int x = 0; x < 16; x++)
-   neo_palette[x] = color_table_cache[x | (DecodeSprites ? 0x100 : 0x000) | ((GfxDecode_Pbn & 0xF) << 4)] | GfxDecode_Buf->MakeColor(0, 0, 0, 0xFF);
-
- vdc[which_vdc]->DoGfxDecode(GfxDecode_Buf->pixels, neo_palette, GfxDecode_Buf->MakeColor(0, 0, 0, 0xFF), DecodeSprites, GfxDecode_Buf->w, GfxDecode_Buf->h, GfxDecode_Scroll);
-}
-#endif
 
 };

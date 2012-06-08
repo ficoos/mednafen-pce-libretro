@@ -532,9 +532,6 @@
 /* Version number of package */
 #undef VERSION
 
-/* Define if we are compiling with debugger. */
-#undef WANT_DEBUGGER
-
 /* Define if we are compiling with GBA emulation. */
 #undef WANT_GBA_EMU
 

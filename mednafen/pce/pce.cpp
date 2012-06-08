@@ -24,7 +24,6 @@
 #include "../cdrom/pcecd.h"
 #include "../cdrom/scsicd.h"
 #include "hes.h"
-#include "debug.h"
 #include "tsushin.h"
 #include "arcade_card/arcade_card.h"
 #include "../mempatcher.h"
@@ -557,11 +556,6 @@ static int LoadCommon(void)
 
  vce->SetShowHorizOS(MDFN_GetSettingB("pce.h_overscan")); 
 
-#ifdef WANT_DEBUGGER
- PCEDBG_Init(IsSGX, psg);
-#endif
-
-
  return(1);
 }
 
@@ -1092,11 +1086,7 @@ MDFNGI EmulatedPCE =
  "PC Engine (CD)/TurboGrafx 16 (CD)/SuperGrafx",
  KnownExtensions,
  MODPRIO_INTERNAL_HIGH,
- #ifdef WANT_DEBUGGER
- &PCEDBGInfo,
- #else
  NULL,
- #endif
  &PCEInputInfo,
  Load,
  TestMagic,

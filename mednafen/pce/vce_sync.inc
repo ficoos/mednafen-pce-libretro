@@ -173,11 +173,6 @@
 
     scanline_out_ptr = &fb[scanline * pitch32];
 
-#ifdef WANT_DEBUGGER
-    if(GfxDecode_Buf && GfxDecode_Line == scanline)
-     DoGfxDecode();
-#endif
-
     pixel_offset = 0;
     NeedSLReset = FALSE;
 
