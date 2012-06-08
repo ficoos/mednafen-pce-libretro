@@ -119,12 +119,6 @@ void MDFNI_DiskSelect();
 void MDFNI_DiskInsert();
 void MDFNI_DiskEject();
 
-bool MDFNI_StartAVRecord(const char *path, double SoundRate);
-void MDFNI_StopAVRecord(void);
-
-bool MDFNI_StartWAVRecord(const char *path, double SoundRate);
-void MDFNI_StopWAVRecord(void);
-
 void MDFNI_DumpModulesDef(const char *fn);
 
 

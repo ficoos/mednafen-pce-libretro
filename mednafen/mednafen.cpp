@@ -143,24 +143,6 @@ static bool PrevInterlaced;
 
 static std::vector<CDIF *> CDInterfaces;	// FIXME: Cleanup on error out.
 
-bool MDFNI_StartWAVRecord(const char *path, double SoundRate)
-{
- return(true);
-}
-
-bool MDFNI_StartAVRecord(const char *path, double SoundRate)
-{
- return(true);
-}
-
-void MDFNI_StopAVRecord(void)
-{
-}
-
-void MDFNI_StopWAVRecord(void)
-{
-}
-
 void MDFNI_CloseGame(void)
 {
  if(MDFNGameInfo)
