@@ -32,7 +32,6 @@
 #include        "FileWrapper.h"
 #include	"state.h"
 #include        "video.h"
-#include	"video/Deinterlacer.h"
 #include	"file.h"
 #include	"cdrom/cdromif.h"
 #include	"mempatcher.h"
@@ -141,7 +140,6 @@ static MDFN_PixelFormat last_pixel_format;
 static double last_sound_rate;
 
 static bool PrevInterlaced;
-static Deinterlacer deint;
 
 static std::vector<CDIF *> CDInterfaces;	// FIXME: Cleanup on error out.
 
@@ -730,7 +728,6 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
         }
 
 	PrevInterlaced = false;
-	deint.ClearState();
 
         MDFN_StateEvilBegin();
 
@@ -1150,20 +1147,7 @@ void MDFNI_Emulate(EmulateSpecStruct *espec)
 
  MDFNGameInfo->Emulate(espec);
 
- if(espec->InterlaceOn)
- {
-  if(!PrevInterlaced)
-   deint.ClearState();
-
-  deint.Process(espec->surface, espec->DisplayRect, espec->LineWidths, espec->InterlaceField);
-
-  PrevInterlaced = true;
-
-  espec->InterlaceOn = false;
-  espec->InterlaceField = 0;
- }
- else
-  PrevInterlaced = false;
+ PrevInterlaced = false;
 
  ProcessAudio(espec);
 }
