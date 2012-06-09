@@ -36,7 +36,7 @@ MDFN_PixelFormat::MDFN_PixelFormat()
 
 MDFN_PixelFormat::MDFN_PixelFormat(const unsigned int p_colorspace, const uint8 p_rs, const uint8 p_gs, const uint8 p_bs, const uint8 p_as)
 {
- bpp = 32;
+ bpp = 16;
  colorspace = p_colorspace;
 
  Rshift = p_rs;
@@ -112,11 +112,7 @@ void MDFN_Surface::SetFormat(const MDFN_PixelFormat &nf, bool convert)
  assert(format.bpp == 16 || format.bpp == 32);
  assert(nf.bpp == 16 || nf.bpp == 32);
 
- if(nf.bpp == 16)
- {
-
- }
- else
+ if(nf.bpp != 16)
  {
   assert((nf.Rshift + nf.Gshift + nf.Bshift + nf.Ashift) == 48);
   assert(!((nf.Rshift | nf.Gshift | nf.Bshift | nf.Ashift) & 0x7));
@@ -152,32 +148,6 @@ void MDFN_Surface::SetFormat(const MDFN_PixelFormat &nf, bool convert)
 
    oldpix = pixels;
    pixels = NULL;
-  }
-  else			// 16bpp to 32bpp
-  {
-   pixels = (uint32 *)rpix;
-
-   if(convert)
-   {
-    puts("16bpp to 32bpp convert");
-    for(int y = 0; y < h; y++)
-    {
-     uint16 *srow = &pixels16[y * pitchinpix];
-     uint32 *drow = &pixels[y * pitchinpix];
-
-     for(int x = 0; x < w; x++)
-     {
-      uint32 c = srow[x];
-      int r, g, b, a;
-
-      DecodeColor(c, r, g, b, a);
-      drow[x] = nf.MakeColor(r, g, b, a);
-     }
-    }
-   }
-
-   oldpix = pixels16;
-   pixels16 = NULL;
   }
   if(oldpix && !pixels_is_external)
    free(oldpix);

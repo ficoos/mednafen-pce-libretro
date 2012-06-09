@@ -115,7 +115,7 @@ class VCE : public HuC6280_Support
 
         int32 cd_event;
 
-	uint32 *fb;	// Pointer to the framebuffer.
+	uint16 *fb;	// Pointer to the framebuffer.
 	uint32 pitch32;	// Pitch(in 32-bit pixels)
 	bool FrameDone;
 
@@ -128,7 +128,7 @@ class VCE : public HuC6280_Support
 	int32 clock_divider;
 
 	int32 scanline;
-	uint32 *scanline_out_ptr;	// Pointer into fb
+	uint16 *scanline_out_ptr;	// Pointer into fb
 	int32 pixel_offset;
 
 	int32 hblank_counter;

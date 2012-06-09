@@ -52,42 +52,18 @@ class MDFN_PixelFormat
  // Creates a color value for the surface corresponding to the 8-bit R/G/B/A color passed.
  INLINE uint32 MakeColor(uint8 r, uint8 g, uint8 b, uint8 a = 0) const
  {
-   if(bpp == 16)
-   {
-    uint32 ret = 0;
-/*
-    ret |= std::min(((r * ((1 << Rprec) - 1) + 127) / 255), 255) << Rshift;
-    ret |= std::min(((g * ((1 << Gprec) - 1) + 127) / 255), 255) << Gshift;
-    ret |= std::min(((b * ((1 << Bprec) - 1) + 127) / 255), 255) << Bshift;
-    ret |= std::min(((a * ((1 << Aprec) - 1) + 127) / 255), 255) << Ashift;
-*/
-    ret |= ((r * ((1 << Rprec) - 1) + 127) / 255) << Rshift;
-    ret |= ((g * ((1 << Gprec) - 1) + 127) / 255) << Gshift;
-    ret |= ((b * ((1 << Bprec) - 1) + 127) / 255) << Bshift;
-    ret |= ((a * ((1 << Aprec) - 1) + 127) / 255) << Ashift;
-    return(ret);
-   }
-   else
-    return((r << Rshift) | (g << Gshift) | (b << Bshift) | (a << Ashift));
+    r >>= 3;
+    g >>= 3;
+    b >>= 3;
+    return ((r << 10) | (g << 5) | (b << 0));
  }
 
  // Gets the R/G/B/A values for the passed 32-bit surface pixel value
  INLINE void DecodeColor(uint32 value, int &r, int &g, int &b, int &a) const
  {
-   if(bpp == 16)
-   {
-    r = ((value >> Rshift) & ((1 << Rprec) - 1)) * 255 / ((1 << Rprec) - 1);
-    g = ((value >> Gshift) & ((1 << Gprec) - 1)) * 255 / ((1 << Gprec) - 1);
-    b = ((value >> Bshift) & ((1 << Bprec) - 1)) * 255 / ((1 << Bprec) - 1);
-    a = ((value >> Ashift) & ((1 << Aprec) - 1)) * 255 / ((1 << Aprec) - 1);
-   }
-   else
-   {
-    r = (value >> Rshift) & 0xFF;
-    g = (value >> Gshift) & 0xFF;
-    b = (value >> Bshift) & 0xFF;
-    a = (value >> Ashift) & 0xFF;
-   }
+    r = ((value & 0x1f) << 10) & 0x7fff; 
+    g = (((value & 0x3e0) << 5) <<5) & 0x7fff;
+    b = (((value & 0x7c00) >> 10)) & 0x7fff;
  }
 
 }; // MDFN_PixelFormat;

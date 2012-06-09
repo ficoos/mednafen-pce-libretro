@@ -18,8 +18,7 @@ static retro_input_state_t input_state_cb;
 
 static MDFN_Surface *surf;
 
-static uint16_t conv_buf[WIDTH * HEIGHT] __attribute__((aligned(16)));
-static uint32_t mednafen_buf[WIDTH * HEIGHT] __attribute__((aligned(16)));
+static uint16_t mednafen_buf[WIDTH * HEIGHT] __attribute__((aligned(16)));
 
 void retro_init()
 {
@@ -78,32 +77,6 @@ void retro_unload_game()
 // core to begin with will be at least that powerful (as of writing).
 static inline void convert_surface()
 {
-   const uint32_t *pix = surf->pixels;
-   for (unsigned i = 0; i <  WIDTH * HEIGHT; i += 8)
-   {
-      __m128i pix0 = _mm_load_si128((const __m128i*)(pix + i + 0));
-      __m128i pix1 = _mm_load_si128((const __m128i*)(pix + i + 4));
-
-      __m128i red0   = _mm_and_si128(pix0, _mm_set1_epi32(0xf80000));
-      __m128i green0 = _mm_and_si128(pix0, _mm_set1_epi32(0x00f800));
-      __m128i blue0  = _mm_and_si128(pix0, _mm_set1_epi32(0x0000f8));
-      __m128i red1   = _mm_and_si128(pix1, _mm_set1_epi32(0xf80000));
-      __m128i green1 = _mm_and_si128(pix1, _mm_set1_epi32(0x00f800));
-      __m128i blue1  = _mm_and_si128(pix1, _mm_set1_epi32(0x0000f8));
-
-      red0   = _mm_srli_epi32(red0,   19 - 10); 
-      green0 = _mm_srli_epi32(green0, 11 -  5); 
-      blue0  = _mm_srli_epi32(blue0,   3 -  0); 
-
-      red1   = _mm_srli_epi32(red1,   19 - 10); 
-      green1 = _mm_srli_epi32(green1, 11 -  5); 
-      blue1  = _mm_srli_epi32(blue1,   3 -  0); 
-
-      __m128i res0 = _mm_or_si128(_mm_or_si128(red0, green0), blue0);
-      __m128i res1 = _mm_or_si128(_mm_or_si128(red1, green1), blue1);
-
-      _mm_store_si128((__m128i*)(conv_buf + i), _mm_packs_epi32(res0, res1));
-   }
 }
 
 // Hardcoded for PSX. No reason to parse lots of structures ...
@@ -163,8 +136,8 @@ void retro_run()
    unsigned width = 320;
    unsigned height = 240;
 
-   convert_surface();
-   video_cb(conv_buf, width, height, WIDTH << 1);
+   const uint16_t *pix = surf->pixels16;
+   video_cb(pix, width, height, WIDTH << 1);
 
    audio_batch_cb(spec.SoundBuf, spec.SoundBufSize);
 }
