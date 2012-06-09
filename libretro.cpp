@@ -17,8 +17,43 @@ static retro_input_poll_t input_poll_cb;
 static retro_input_state_t input_state_cb;
 
 static MDFN_Surface *surf;
+static char g_rom_dir[1024];
 
 static uint16_t mednafen_buf[WIDTH * HEIGHT] __attribute__((aligned(16)));
+
+static void extract_basename(char *buf, const char *path, size_t size)
+{
+   const char *base = strrchr(path, '/');
+   if (!base)
+      base = strrchr(path, '\\');
+   if (!base)
+      base = path;
+
+   if (*base == '\\' || *base == '/')
+      base++;
+
+   strncpy(buf, base, size - 1);
+   buf[size - 1] = '\0';
+
+   char *ext = strrchr(buf, '.');
+   if (ext)
+      *ext = '\0';
+}
+
+static void extract_directory(char *buf, const char *path, size_t size)
+{
+   strncpy(buf, path, size - 1);
+   buf[size - 1] = '\0';
+
+   char *base = strrchr(buf, '/');
+   if (!base)
+      base = strrchr(buf, '\\');
+
+   if (base)
+      *base = '\0';
+   else
+      buf[0] = '\0';
+}
 
 void retro_init()
 {
@@ -27,15 +62,6 @@ void retro_init()
 
    std::vector<MDFNGI*> ext;
    MDFNI_InitializeModules(ext);
-
-   std::vector<MDFNSetting> settings;
-   std::string home = getenv("HOME");
-   home += "/.mednafen";
-   MDFNI_Initialize(home.c_str(), settings);
-
-   // Hints that we need a fairly powerful system to run this.
-   unsigned level = 3;
-   environ_cb(RETRO_ENVIRONMENT_SET_PERFORMANCE_LEVEL, &level);
 }
 
 void retro_deinit()
@@ -56,6 +82,11 @@ bool retro_load_game_special(unsigned, const struct retro_game_info *, size_t)
 
 bool retro_load_game(const struct retro_game_info *info)
 {
+   extract_directory(g_rom_dir, info->path, sizeof(g_rom_dir));
+
+   std::vector<MDFNSetting> settings;
+   MDFNI_Initialize(g_rom_dir, settings);
+
    game = MDFNI_LoadGame("pce", info->path);
    return game;
 }
@@ -63,20 +94,6 @@ bool retro_load_game(const struct retro_game_info *info)
 void retro_unload_game()
 {
    MDFNI_CloseGame();
-}
-
-#ifndef __SSE2__
-#error "SSE2 required."
-#endif
-
-#include <emmintrin.h>
-
-// PSX core should be able to output ARGB1555 directly,
-// so we can avoid this conversion step.
-// Done in SSE2 here because any system that can run this
-// core to begin with will be at least that powerful (as of writing).
-static inline void convert_surface()
-{
 }
 
 // Hardcoded for PSX. No reason to parse lots of structures ...
