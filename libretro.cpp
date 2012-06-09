@@ -5,8 +5,8 @@
 #include <iostream>
 #include "libretro.h"
 
-#define WIDTH 680
-#define HEIGHT 480
+#define WIDTH 256
+#define HEIGHT 240
 
 static MDFNGI *game;
 static retro_video_refresh_t video_cb;
@@ -147,7 +147,7 @@ void retro_run()
    update_input();
 
    static int16_t sound_buf[0x10000];
-   static MDFN_Rect rects[HEIGHT];
+   static MDFN_Rect rects[WIDTH];
 
    EmulateSpecStruct spec = {0}; 
    spec.surface = surf;
@@ -160,11 +160,11 @@ void retro_run()
 
    MDFNI_Emulate(&spec);
 
-   unsigned width = rects[0].w;
-   unsigned height = spec.DisplayRect.h;
+   unsigned width = WIDTH;
+   unsigned height = HEIGHT; 
 
    convert_surface();
-   video_cb(conv_buf, width, height, WIDTH << 1);
+   video_cb(conv_buf, width, height, width << 1);
 
    audio_batch_cb(spec.SoundBuf, spec.SoundBufSize);
 }
