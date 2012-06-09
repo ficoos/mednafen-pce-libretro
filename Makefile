@@ -21,41 +21,47 @@ ifeq ($(platform), unix)
    SHARED := -shared -Wl,--version-script=link.T -Wl,-no-undefined
    ENDIANNESS_DEFINES := -DLSB_FIRST
    IS_X86 = 1
+   LIBS := -pthread -lz
 else ifeq ($(platform), osx)
    TARGET := libretro.dylib
    fpic := -fPIC
    SHARED := -dynamiclib
    ENDIANNESS_DEFINES := -DLSB_FIRST
    IS_X86 = 1
+   LIBS := -pthread -lz
 else ifeq ($(platform), ps3)
    TARGET := libretro.a
    CC = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-gcc.exe
    CXX = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-gcc.exe
    AR = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-ar.exe
-   ENDIANNESS_DEFINES :=
+   ENDIANNESS_DEFINES := MSB_FIRST
+   HAVE_RZLIB := 1
 else ifeq ($(platform), sncps3)
    TARGET := libretro.a
    CC = $(CELL_SDK)/host-win32/sn/bin/ps3ppusnc.exe
    CXX = $(CELL_SDK)/host-win32/sn/bin/ps3ppusnc.exe
    AR = $(CELL_SDK)/host-win32/sn/bin/ps3snarl.exe
-   CFLAGS += -DWORDS_BIGENDIAN=1 -D_GNU_SOURCE=1 -DHAVE_LIBMAD -DMUSIC_SUPPORT
+   ENDIANNESS_DEFINES := -DMSB_FIRST
+   HAVE_RZLIB := 1
 else ifeq ($(platform), xenon)
    TARGET := libretro.a
    CC = xenon-gcc
    CXX = xenon-g++
    AR = xenon-ar
-   CFLAGS += -D__LIBXENON__ -m32 -D__ppc__
+   ENDIANNESS_DEFINES += -D__LIBXENON__ -m32 -D__ppc__ -DMSB_FIRST
+   LIBS := -pthread -lz
 else ifeq ($(platform), wii)
    TARGET := libretro.a
    CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc
    CXX = $(DEVKITPPC)/bin/powerpc-eabi-g++
    AR = $(DEVKITPPC)/bin/powerpc-eabi-ar
-   CFLAGS += -DGEKKO -mrvl -mcpu=750 -meabi -mhard-float
+   ENDIANNESS_DEFINES += -DGEKKO -mrvl -mcpu=750 -meabi -mhard-float -DMSB_FIRST
+   HAVE_RZLIB := 1
 else
    TARGET := retro.dll
    CC = gcc
    SHARED := -shared -static-libgcc -static-libstdc++ -s -Wl,--version-script=link.T
-   CFLAGS += -D__WIN32__ -D__WIN32_LIBRETRO__ -Wno-missing-field-initializers
+   ENDIANNESS_DEFINES += -D__WIN32__ -D__WIN32_LIBRETRO__ -Wno-missing-field-initializers -DMSB_FIRST
    IS_X86 = 1
 endif
 
@@ -67,9 +73,12 @@ endif
 
 ifeq ($(DEBUG), 1)
 CFLAGS += -O0 -g
+CXXFLAGS += -O0 -g
 else
 CFLAGS += -O3
+CXXFLAGS += -O3
 endif
+
 
 MEDNAFEN_DIR := mednafen
 PCE_DIR := $(MEDNAFEN_DIR)/pce
@@ -84,6 +93,13 @@ HW_MISC_SOURCES := $(MEDNAFEN_DIR)/hw_misc/arcade_card/arcade_card.cpp
 HW_SOUND_SOURCES := $(MEDNAFEN_DIR)/hw_sound/pce_psg/pce_psg.cpp
 
 HW_VIDEO_SOURCES := $(MEDNAFEN_DIR)/hw_video/huc6270/vdc.cpp
+
+ifeq ($(HAVE_RZLIB), 1)
+CFLAGS += -DHAVE_RZLIB=1
+CXXFLAGS += -DHAVE_RZLIB=1
+else
+ZLIB_SRC = $(MEDNAFEN_DIR)/compress/unzip.c
+endif
 
 PCE_SOURCES := $(PCE_DIR)/vce.cpp \
 	$(PCE_DIR)/pce.cpp \
@@ -143,7 +159,7 @@ SOURCES_C := $(MEDNAFEN_DIR)/trio/trio.c \
 	$(MEDNAFEN_DIR)/trio/triostr.c \
 	$(MEDNAFEN_DIR)/string/world_strtod.c \
 	$(MEDNAFEN_DIR)/compress/blz.c \
-	$(MEDNAFEN_DIR)/compress/unzip.c \
+        $(ZLIB_SRC) \
 	$(MEDNAFEN_DIR)/compress/minilzo.c \
 	$(MEDNAFEN_DIR)/compress/quicklz.c \
 	$(MEDNAFEN_DIR)/compress/ioapi.c \
@@ -158,29 +174,26 @@ OBJECTS := $(SOURCES:.cpp=.o) $(SOURCES_C:.c=.o)
 
 all: $(TARGET)
 
+FLAGS += -ffast-math  -funroll-loops
+FLAGS += -I. -Imednafen -Imednafen/include -Imednafen/intl -Imednafen/hw_cpu -Imednafen/hw_misc -Imednafen/hw_sound -Imednafen/hw_video
 
-LDFLAGS += -Wl,--no-undefined -shared -lz -Wl,--version-script=link.T -pthread $(fpic)
-FLAGS += -ffast-math  -funroll-loops -O3 -g -Wall -fno-strict-overflow
-FLAGS += -I. -Imednafen -Imednafen/include -Imednafen/intl -Imednafen/hw_cpu -Imednafen/hw_misc -Imednafen/hw_sound -Imednafen/hw_video -pthread
-
-WARNINGS := -Wall \
-	-Wno-narrowing \
-	-Wno-unused-but-set-variable \
-	-Wno-sign-compare \
-	-Wno-unused-variable \
-	-Wno-unused-function \
-	-Wno-uninitialized \
-	-Wno-unused-result \
-	-Wno-strict-aliasing \
-	-Wno-overflow
-
-FLAGS += -DLSB_FIRST -DHAVE_MKDIR -DSIZEOF_DOUBLE=8 $(WARNINGS) -DMEDNAFEN_VERSION=\"0.9.22\" -DMEDNAFEN_VERSION_NUMERIC=922 -DPSS_STYLE=1 -DMPC_FIXED_POINT -DWANT_PCE_EMU -DSTDC_HEADERS
+FLAGS += $(ENDIANNESS_DEFINES) -DHAVE_MKDIR -DSIZEOF_DOUBLE=8 $(WARNINGS) -DMEDNAFEN_VERSION=\"0.9.22\" -DMEDNAFEN_VERSION_NUMERIC=922 -DPSS_STYLE=1 -DMPC_FIXED_POINT -DWANT_PCE_EMU -DSTDC_HEADERS
 
 CXXFLAGS += $(FLAGS) $(fpic)
 CFLAGS += $(FLAGS) $(fpic) -std=gnu99
 
 $(TARGET): $(OBJECTS)
-	$(CXX) -o $@ $^ $(LDFLAGS)
+ifeq ($(platform), ps3)
+	$(AR) rcs $@ $(OBJECTS)
+else ifeq ($(platform), sncps3)
+	$(AR) rcs $@ $(OBJECTS)
+else ifeq ($(platform), xenon)
+	$(AR) rcs $@ $(OBJECTS)
+else ifeq ($(platform), wii)
+	$(AR) rcs $@ $(OBJECTS)
+else
+	$(CXX) $(SHARED) -o $@ $^ $(LDFLAGS) $(LIBS)
+endif
 
 %.o: %.cpp
 	$(CXX) -c -o $@ $< $(CXXFLAGS)
