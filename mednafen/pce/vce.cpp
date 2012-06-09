@@ -36,8 +36,6 @@
 namespace MDFN_IEN_PCE
 {
 
-#define SUPERDUPERMODE	0
-
 static const int vce_ratios[4] = { 4, 3, 2, 2 };
 
 static void IRQChange_Hook(bool newstatus)

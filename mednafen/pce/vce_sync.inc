@@ -93,9 +93,6 @@
      }
      pix = color_table_cache[((vdc1_pixel & 0xF) ? vdc1_pixel : vdc2_pixel) & 0x1FF];
 
-     #if SUPERDUPERMODE
-     for(int32 s_i = 0; s_i < dot_clock_ratio; s_i++)
-     #endif
      {
       scanline_out_ptr[pixel_offset] = pix;
       pixel_offset++;
@@ -104,26 +101,12 @@
    }
    #else
    {
-    #if SUPERDUPERMODE
-    for(int32 i = 0; i < div_clocks; i++)
-    {
-     for(int32 si = 0; si < dot_clock_ratio; si++)
-     {
-      uint32 pix = color_table_cache[pixels[0][i] & 0x3FF];
-
-      scanline_out_ptr[pixel_offset] = pix;
-      pixel_offset++;
-     }
-    }
-    #else
     for(int32 i = 0; i < div_clocks; i++) // * vce_ratios[dot_clock]; i++)
     {
      uint32 pix = color_table_cache[pixels[0][i] & 0x3FF];
      scanline_out_ptr[pixel_offset] = pix;
      pixel_offset++;
     }
-    #endif
-
    }
    #endif
   }
@@ -189,28 +172,10 @@
 
      int rect_x, rect_w;
 
-     #if SUPERDUPERMODE
-     {
-      if(dot_clock >= 2)
-       rect_x = 208;
-      else if(dot_clock == 1)
-       rect_x = 136;
-      else
-       rect_x = 128;
-      rect_w = 1024;
-
-      if(ShowHorizOS)
-      {
-       rect_x -= 48;
-       rect_w += 96;
-      }
-     }
-     #else
      {
       rect_x = x_offsets[ShowHorizOS][dot_clock]; 
       rect_w = w_cows[ShowHorizOS][dot_clock];
      }
-     #endif
 
      LW[scanline].x = rect_x;
      LW[scanline].w = rect_w;
