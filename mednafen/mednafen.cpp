@@ -1155,72 +1155,18 @@ void MDFN_indent(int indent)
 static uint8 lastchar = 0;
 void MDFN_printf(const char *format, ...)
 {
-#if 0
- char *format_temp;
- char *temp;
- unsigned int x, newlen;
-
  va_list ap;
  va_start(ap,format);
-
-
- // First, determine how large our format_temp buffer needs to be.
- uint8 lastchar_backup = lastchar; // Save lastchar!
- for(newlen=x=0;x<strlen(format);x++)
- {
-  if(lastchar == '\n' && format[x] != '\n')
-  {
-   int y;
-   for(y=0;y<curindent;y++)
-    newlen++;
-  }
-  newlen++;
-  lastchar = format[x];
- }
-
- format_temp = (char *)malloc(newlen + 1); // Length + NULL character, duh
- 
- // Now, construct our format_temp string
- lastchar = lastchar_backup; // Restore lastchar
- for(newlen=x=0;x<strlen(format);x++)
- {
-  if(lastchar == '\n' && format[x] != '\n')
-  {
-   int y;
-   for(y=0;y<curindent;y++)
-    format_temp[newlen++] = ' ';
-  }
-  format_temp[newlen++] = format[x];
-  lastchar = format[x];
- }
-
- format_temp[newlen] = 0;
-
- temp = trio_vaprintf(format_temp, ap);
- free(format_temp);
-
- MDFND_Message(temp);
- free(temp);
-
+ printf(format, ap);
  va_end(ap);
-#endif
 }
 
 void MDFN_PrintError(const char *format, ...)
 {
-#if 0
- char *temp;
-
  va_list ap;
-
  va_start(ap, format);
-
- temp = trio_vaprintf(format, ap);
- MDFND_PrintError(temp);
- free(temp);
-
+ printf(format, ap);
  va_end(ap);
-#endif
 }
 
 void MDFN_DoSimpleCommand(int cmd)

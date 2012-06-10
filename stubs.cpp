@@ -34,9 +34,7 @@ void MDFND_DispMessage(unsigned char *str)
 
 void MDFND_Message(const char *str)
 {
-#if 0
-   std::cerr << str;
-#endif
+printf(str);
 }
 
 void MDFND_MidSync(const EmulateSpecStruct *)
@@ -44,9 +42,7 @@ void MDFND_MidSync(const EmulateSpecStruct *)
 
 void MDFND_PrintError(const char* err)
 {
-#if 0
-   std::cerr << err;
-#endif
+printf(err);
 }
 
 MDFN_Thread *MDFND_CreateThread(int (*fn)(void *), void *data)

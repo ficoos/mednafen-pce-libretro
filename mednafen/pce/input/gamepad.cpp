@@ -63,7 +63,7 @@ void PCE_Input_Gamepad::Update(const void *data)
  if((new_data & 0x1000) && !(buttons & 0x1000))
  {
   AVPad6Enabled = !AVPad6Enabled;
-  MDFN_DispMessage("%d-button mode selected for pad %d", AVPad6Enabled ? 6 : 2, which_this + 1);
+  //MDFN_DispMessage("%d-button mode selected for pad %d", AVPad6Enabled ? 6 : 2, which_this + 1);
  }
 
  buttons = new_data;
