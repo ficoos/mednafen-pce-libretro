@@ -189,7 +189,7 @@ int FileWrapper::scanf(const char *format, ...)
 
  va_start(ap, format);
 
- ret = trio_vfscanf(fp, format, ap);
+ ret = vfscanf(fp, format, ap);
 
  va_end(ap);
 
@@ -201,7 +201,7 @@ int FileWrapper::scanf(const char *format, ...)
  }
 
  //if(ret < 0 || ret == EOF)
- // throw(MDFN_Error(0, _("%s error on format string \"%s\""), "trio_vfscanf()", format));
+ // throw(MDFN_Error(0, _("%s error on format string \"%s\""), "vfscanf()", format));
 
  return(ret);
 }

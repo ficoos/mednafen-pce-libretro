@@ -15,9 +15,9 @@ extern MDFNGI *MDFNGameInfo;
 
 #include "settings.h"
 
-void MDFN_PrintError(const char *format, ...) throw() MDFN_FORMATSTR(printf, 1, 2);
-void MDFN_printf(const char *format, ...) throw() MDFN_FORMATSTR(printf, 1, 2);
-void MDFN_DispMessage(const char *format, ...) throw() MDFN_FORMATSTR(printf, 1, 2);
+void MDFN_PrintError(const char *format, ...);
+void MDFN_printf(const char *format, ...);
+void MDFN_DispMessage(const char *format, ...);
 
 class MDFNException
 {

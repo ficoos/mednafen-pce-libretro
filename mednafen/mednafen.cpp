@@ -1154,8 +1154,9 @@ void MDFN_indent(int indent)
 }
 
 static uint8 lastchar = 0;
-void MDFN_printf(const char *format, ...) throw()
+void MDFN_printf(const char *format, ...)
 {
+#if 0
  char *format_temp;
  char *temp;
  unsigned int x, newlen;
@@ -1203,10 +1204,12 @@ void MDFN_printf(const char *format, ...) throw()
  free(temp);
 
  va_end(ap);
+#endif
 }
 
-void MDFN_PrintError(const char *format, ...) throw()
+void MDFN_PrintError(const char *format, ...)
 {
+#if 0
  char *temp;
 
  va_list ap;
@@ -1218,6 +1221,7 @@ void MDFN_PrintError(const char *format, ...) throw()
  free(temp);
 
  va_end(ap);
+#endif
 }
 
 void MDFN_DoSimpleCommand(int cmd)

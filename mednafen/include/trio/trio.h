@@ -118,7 +118,6 @@ int trio_vscanf TRIO_PROTO((TRIO_CONST char *format, va_list args));
 int trio_scanfv TRIO_PROTO((TRIO_CONST char *format, void **args));
 
 int trio_fscanf TRIO_PROTO((FILE *file, TRIO_CONST char *format, ...));
-int trio_vfscanf TRIO_PROTO((FILE *file, TRIO_CONST char *format, va_list args));
 int trio_fscanfv TRIO_PROTO((FILE *file, TRIO_CONST char *format, void **args));
 
 int trio_dscanf TRIO_PROTO((int fd, TRIO_CONST char *format, ...));
@@ -182,10 +181,6 @@ void trio_locale_set_grouping TRIO_PROTO((char *grouping));
 #ifndef HAVE_FSCANF
 # undef fscanf
 # define fscanf trio_fscanf
-#endif
-#ifndef HAVE_VFSCANF
-# undef vfscanf
-# define vfscanf trio_vfscanf
 #endif
 #ifndef HAVE_VSSCANF
 # undef vsscanf

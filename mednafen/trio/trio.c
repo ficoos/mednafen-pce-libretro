@@ -7353,32 +7353,6 @@ TRIO_VARGS3((file, format, va_alist),
  */
 #if TRIO_FEATURE_FILE
 TRIO_PUBLIC int
-trio_vfscanf
-TRIO_ARGS3((file, format, args),
-	   FILE *file,
-	   TRIO_CONST char *format,
-	   va_list args)
-{
-  assert(VALID(file));
-  assert(VALID(format));
-  
-  return TrioScan((trio_pointer_t)file, 0,
-		  TrioInStreamFile,
-		  TrioUndoStreamFile,
-		  format, args, NULL);
-}
-#endif /* TRIO_FEATURE_FILE */
-
-/**
-   Scan characters from file.
-
-   @param file File pointer.
-   @param format Formatting string.
-   @param args Arguments.
-   @return Number of scanned characters.
- */
-#if TRIO_FEATURE_FILE
-TRIO_PUBLIC int
 trio_fscanfv
 TRIO_ARGS3((file, format, args),
 	   FILE *file,
