@@ -388,11 +388,7 @@ static int Load(const char *name, MDFNFILE *fp)
 
  uint32 crc = crc32(0, fp->data + headerlen, fp->size - headerlen);
 
-#ifdef __LIBRETRO__
- HuCLoad(fp->data + headerlen, fp->size - headerlen, crc, true);
-#else
  HuCLoad(fp->data + headerlen, fp->size - headerlen, crc, MDFN_GetSettingB("pce.disable_bram_hucard"));
-#endif
 
  if(!strcasecmp(fp->ext, "sgx"))
   IsSGX = TRUE;
