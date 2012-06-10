@@ -13,7 +13,7 @@
 #endif
 
 #include <assert.h>
-#include <inttypes.h>
+#include <stdint.h>
 
 #if HAVE_MKDIR
  #if MKDIR_TAKES_ONE_ARG
