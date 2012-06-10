@@ -36,11 +36,17 @@
 #  define M_PI (3.1415926536f)
 #endif
 
-#ifdef _WIN32
+#if defined(_WIN32)
 #  include <malloc.h>
 #  define rint(x)   (floor((x)+0.5f)) 
 #  define NO_FLOAT_MATH_LIB
 #  define FAST_HYPOT(a, b) sqrt((a)*(a) + (b)*(b))
+#endif
+
+#if defined(MSB_FIRST)
+#  define BIG_ENDIAN 1
+#  define BYTE_ORDER BIG_ENDIAN
+#else
 #  define LITTLE_ENDIAN 1
 #  define BYTE_ORDER LITTLE_ENDIAN
 #endif

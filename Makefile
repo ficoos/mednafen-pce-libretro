@@ -34,28 +34,32 @@ else ifeq ($(platform), ps3)
    CC = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-gcc.exe
    CXX = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-gcc.exe
    AR = $(CELL_SDK)/host-win32/ppu/bin/ppu-lv2-ar.exe
-   ENDIANNESS_DEFINES := MSB_FIRST
+   ENDIANNESS_DEFINES := MSB_FIRST -DBYTE_ORDER=BIG_ENDIAN
    HAVE_RZLIB := 1
 else ifeq ($(platform), sncps3)
    TARGET := libretro.a
    CC = $(CELL_SDK)/host-win32/sn/bin/ps3ppusnc.exe
    CXX = $(CELL_SDK)/host-win32/sn/bin/ps3ppusnc.exe
    AR = $(CELL_SDK)/host-win32/sn/bin/ps3snarl.exe
-   ENDIANNESS_DEFINES := -DMSB_FIRST
+   ENDIANNESS_DEFINES := -DMSB_FIRST -DBYTE_ORDER=BIG_ENDIAN
+
    HAVE_RZLIB := 1
+   CXXFLAGS += -Xc+=exceptions
 else ifeq ($(platform), xenon)
    TARGET := libretro.a
    CC = xenon-gcc
    CXX = xenon-g++
    AR = xenon-ar
-   ENDIANNESS_DEFINES += -D__LIBXENON__ -m32 -D__ppc__ -DMSB_FIRST
+   ENDIANNESS_DEFINES += -D__LIBXENON__ -m32 -D__ppc__ -DMSB_FIRST -DBYTE_ORDER=BIG_ENDIAN
+
    LIBS := -pthread -lz
 else ifeq ($(platform), wii)
    TARGET := libretro.a
    CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc
    CXX = $(DEVKITPPC)/bin/powerpc-eabi-g++
    AR = $(DEVKITPPC)/bin/powerpc-eabi-ar
-   ENDIANNESS_DEFINES += -DGEKKO -mrvl -mcpu=750 -meabi -mhard-float -DMSB_FIRST
+   ENDIANNESS_DEFINES += -DGEKKO -mrvl -mcpu=750 -meabi -mhard-float -DMSB_FIRST -DBYTE_ORDER=BIG_ENDIAN
+
    HAVE_RZLIB := 1
 else
    TARGET := retro.dll
@@ -73,10 +77,10 @@ endif
 
 ifeq ($(DEBUG), 1)
 CFLAGS += -O0 -g
-CXXFLAGS += -O0 -g -fexceptions
+CXXFLAGS += -O0 -g
 else
-CFLAGS += -O3
-CXXFLAGS += -O3
+CFLAGS += -O3 -g
+CXXFLAGS += -O3 -g
 endif
 
 

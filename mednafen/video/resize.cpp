@@ -23,7 +23,7 @@
 #include <math.h>
 
 #define INT(x) ((int)(x))
-#define FRACT(x) ((x) - floor(x))
+#define FRACT(x) ((x) - floorf(x))
 
 #define READ_PIXEL(src_x, src_y, components)	\
 {	\

@@ -8,13 +8,22 @@
 #include <pthread.h>
 #include <unistd.h>
 #include <sys/time.h>
+
+#ifdef __CELLOS_LV2__
+#include <sys/timer.h>
+#endif
+
 #include "thread.h"
 
 // Stubs
 
 void MDFND_Sleep(unsigned int time)
 {
+#ifdef __CELLOS_LV2__
+   sys_timer_usleep(time * 1000);
+#else
    usleep(time * 1000);
+#endif
 }
 
 void MDFND_DispMessage(unsigned char *str)

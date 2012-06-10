@@ -688,34 +688,6 @@ int MDFNSS_Save(const char *fname, const char *suffix, const MDFN_Surface *surfa
 	return(1);
 }
 
-// Convenience function for movie.cpp
-int MDFNSS_SaveFP(gzFile fp, const MDFN_Surface *surface, const MDFN_Rect *DisplayRect, const MDFN_Rect *LineWidths)
-{
- StateMem st;
-
- memset(&st, 0, sizeof(StateMem));
-
- if(!MDFNSS_SaveSM(&st, (DisplayRect && LineWidths), 0, surface, DisplayRect, LineWidths))
- {
-  if(st.data)
-   free(st.data);
-  return(0);
- }
-
- if(gzwrite(fp, st.data, st.len) != (int32)st.len)
- {
-  if(st.data)
-   free(st.data);
-  return(0);
- }
-
- if(st.data)
-  free(st.data);
-
- return(1);
-}
-
-
 int MDFNSS_LoadSM(StateMem *st, int haspreview, int data_only)
 {
         uint8 header[32];
