@@ -23,15 +23,13 @@
 #include <string.h>
 #include <stdarg.h>
 
-#include <trio/trio.h>
-
 void MDFN_DispMessage(const char *format, ...) throw()
 {
  va_list ap;
  va_start(ap,format);
  char *msg = NULL;
 
- trio_vasprintf(&msg, format,ap);
+ vasprintf(&msg, format,ap);
  va_end(ap);
 
  MDFND_DispMessage((UTF8*)msg);

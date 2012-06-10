@@ -72,11 +72,9 @@ TRIO_CONST char *trio_strerror TRIO_PROTO((int));
  */
 
 int trio_printf TRIO_PROTO((TRIO_CONST char *format, ...));
-int trio_vprintf TRIO_PROTO((TRIO_CONST char *format, va_list args));
 int trio_printfv TRIO_PROTO((TRIO_CONST char *format, void **args));
 
 int trio_fprintf TRIO_PROTO((FILE *file, TRIO_CONST char *format, ...));
-int trio_vfprintf TRIO_PROTO((FILE *file, TRIO_CONST char *format, va_list args));
 int trio_fprintfv TRIO_PROTO((FILE *file, TRIO_CONST char *format, void **args));
 
 int trio_dprintf TRIO_PROTO((int fd, TRIO_CONST char *format, ...));
@@ -110,7 +108,6 @@ char *trio_vaprintf TRIO_PROTO((TRIO_CONST char *format, va_list args));
 #endif
 
 int trio_asprintf TRIO_PROTO((char **ret, TRIO_CONST char *format, ...));
-int trio_vasprintf TRIO_PROTO((char **ret, TRIO_CONST char *format, va_list args));
 int trio_asprintfv TRIO_PROTO((char **result, TRIO_CONST char *format, trio_pointer_t * args));
 
 /*************************************************************************
@@ -154,17 +151,9 @@ void trio_locale_set_grouping TRIO_PROTO((char *grouping));
 # undef printf
 # define printf trio_printf
 #endif
-#ifndef HAVE_VPRINTF
-# undef vprintf
-# define vprintf trio_vprintf
-#endif
 #ifndef HAVE_FPRINTF
 # undef fprintf
 # define fprintf trio_fprintf
-#endif
-#ifndef HAVE_VFPRINTF
-# undef vfprintf
-# define vfprintf trio_vfprintf
 #endif
 #ifndef HAVE_SPRINTF
 # undef sprintf
@@ -213,8 +202,6 @@ void trio_locale_set_grouping TRIO_PROTO((char *grouping));
 #define vaprintf trio_vaprintf
 #undef asprintf
 #define asprintf trio_asprintf
-#undef vasprintf
-#define vasprintf trio_vasprintf
 #undef dscanf
 #define dscanf trio_dscanf
 #undef vdscanf

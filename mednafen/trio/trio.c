@@ -4183,26 +4183,6 @@ TRIO_VARGS2((format, va_alist),
  */
 #if TRIO_FEATURE_STDIO
 TRIO_PUBLIC int
-trio_vprintf
-TRIO_ARGS2((format, args),
-	   TRIO_CONST char *format,
-	   va_list args)
-{
-  assert(VALID(format));
-
-  return TrioFormat(stdout, 0, TrioOutStreamFile, format, args, NULL);
-}
-#endif /* TRIO_FEATURE_STDIO */
-
-/**
-   Print to standard output stream.
-
-   @param format Formatting string.
-   @param args Arguments.
-   @return Number of printed characters.
- */
-#if TRIO_FEATURE_STDIO
-TRIO_PUBLIC int
 trio_printfv
 TRIO_ARGS2((format, args),
 	   TRIO_CONST char *format,
@@ -4246,29 +4226,6 @@ TRIO_VARGS3((file, format, va_alist),
   status = TrioFormat(file, 0, TrioOutStreamFile, format, args, NULL);
   TRIO_VA_END(args);
   return status;
-}
-#endif /* TRIO_FEATURE_FILE */
-
-/**
-   Print to file.
-
-   @param file File pointer.
-   @param format Formatting string.
-   @param args Arguments.
-   @return Number of printed characters.
- */
-#if TRIO_FEATURE_FILE
-TRIO_PUBLIC int
-trio_vfprintf
-TRIO_ARGS3((file, format, args),
-	   FILE *file,
-	   TRIO_CONST char *format,
-	   va_list args)
-{
-  assert(VALID(file));
-  assert(VALID(format));
-  
-  return TrioFormat(file, 0, TrioOutStreamFile, format, args, NULL);
 }
 #endif /* TRIO_FEATURE_FILE */
 
@@ -4775,51 +4732,6 @@ TRIO_VARGS3((result, format, va_alist),
       status = TrioFormat(info, 0, TrioOutStreamStringDynamic,
 			  format, args, NULL);
       TRIO_VA_END(args);
-      if (status >= 0)
-	{
-	  trio_string_terminate(info);
-	  *result = trio_string_extract(info);
-	}
-      trio_string_destroy(info);
-    }
-  return status;
-}
-#endif /* TRIO_FEATURE_DYNAMICSTRING */
-
-/**
-   Allocate and print to string.
-   The memory allocated and returned by @p result must be freed by the
-   calling application.
-
-   @param result Output string.
-   @param format Formatting string.
-   @param args Arguments.
-   @return Number of printed characters.
- */
-#if TRIO_FEATURE_DYNAMICSTRING
-TRIO_PUBLIC int
-trio_vasprintf
-TRIO_ARGS3((result, format, args),
-	   char **result,
-	   TRIO_CONST char *format,
-	   va_list args)
-{
-  int status;
-  trio_string_t *info;
-  
-  assert(VALID(format));
-
-  *result = NULL;
-  
-  info = trio_xstring_duplicate("");
-  if (info == NULL)
-    {
-      status = TRIO_ERROR_RETURN(TRIO_ENOMEM, 0);
-    }
-  else
-    {
-      status = TrioFormat(info, 0, TrioOutStreamStringDynamic,
-			  format, args, NULL);
       if (status >= 0)
 	{
 	  trio_string_terminate(info);

@@ -214,7 +214,7 @@ void FileWrapper::printf(const char *format, ...)
 
  va_start(ap, format);
 
- trio_vfprintf(fp, format, ap);
+ vfprintf(fp, format, ap);
 
  va_end(ap);
 
