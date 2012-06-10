@@ -124,7 +124,6 @@ MEDNAFEN_SOURCES := $(MEDNAFEN_DIR)/cdrom/cdromif.cpp \
 	$(MEDNAFEN_DIR)/math_ops.cpp \
 	$(MEDNAFEN_DIR)/settings.cpp \
 	$(MEDNAFEN_DIR)/general.cpp \
-	$(MEDNAFEN_DIR)/player.cpp \
 	$(MEDNAFEN_DIR)/FileWrapper.cpp \
 	$(MEDNAFEN_DIR)/state.cpp \
 	$(MEDNAFEN_DIR)/tests.cpp \
@@ -143,9 +142,6 @@ MEDNAFEN_SOURCES := $(MEDNAFEN_DIR)/cdrom/cdromif.cpp \
 	$(MEDNAFEN_DIR)/cdrom/crc32.cpp \
 	$(MEDNAFEN_DIR)/memory.cpp \
 	$(MEDNAFEN_DIR)/mempatcher.cpp \
-	$(MEDNAFEN_DIR)/video/video.cpp \
-	$(MEDNAFEN_DIR)/video/text.cpp \
-	$(MEDNAFEN_DIR)/video/font-data.cpp \
 	$(MEDNAFEN_DIR)/video/surface.cpp \
 	$(MEDNAFEN_DIR)/video/resize.cpp \
 	$(MEDNAFEN_DIR)/string/escape.cpp \
@@ -171,7 +167,7 @@ SOURCES_C := $(MPC_SRC) \
 
 SOURCES_C += $(HW_CPU_SOURCES_C)
 
-LIBRETRO_SOURCES := libretro.cpp stubs.cpp thread.cpp
+LIBRETRO_SOURCES := libretro.cpp stubs.cpp thread.cpp mednafen_libretro.cpp
 
 SOURCES := $(LIBRETRO_SOURCES) $(HW_CPU_SOURCES) $(HW_MISC_SOURCES) $(HW_SOUND_SOURCES) $(HW_VIDEO_SOURCES) $(PCE_SOURCES) $(MEDNAFEN_SOURCES)
 OBJECTS := $(SOURCES:.cpp=.o) $(SOURCES_C:.c=.o)

@@ -1154,30 +1154,6 @@ void MDFN_indent(int indent)
 
 static uint8 lastchar = 0;
 
-void MDFN_printf(const char *format, ...)
-{
- char msg[256];
- va_list ap;
- va_start(ap,format);
-
- vsnprintf(msg, sizeof(msg), format, ap);
- fprintf(stderr, msg);
-
- va_end(ap);
-}
-
-void MDFN_PrintError(const char *format, ...)
-{
- char msg[256];
- va_list ap;
- va_start(ap,format);
-
- vsnprintf(msg, sizeof(msg), format, ap);
- fprintf(stderr,msg);
-
- va_end(ap);
-}
-
 void MDFN_DoSimpleCommand(int cmd)
 {
  MDFNGameInfo->DoSimpleCommand(cmd);
