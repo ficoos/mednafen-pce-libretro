@@ -25,9 +25,13 @@
 
 void MDFN_DispMessage(const char *format, ...)
 {
+ char msg[256];
  va_list ap;
  va_start(ap,format);
- printf(format, ap);
+
+ vsnprintf(msg, sizeof(msg), format, ap);
+ fprintf(stderr, msg);
+
  va_end(ap);
 }
 

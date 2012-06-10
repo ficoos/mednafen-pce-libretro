@@ -271,7 +271,7 @@ void MDFNI_DumpModulesDef(const char *fn)
 static void ReadM3U(std::vector<std::string> &file_list, std::string path, unsigned depth = 0)
 {
  std::vector<std::string> ret;
- FileWrapper m3u_file(path.c_str(), FileWrapper::MODE_READ, _("M3U CD Set"));
+ FileWrapper m3u_file(path.c_str(), FileWrapper::MODE_READ, "M3U CD Set");
  std::string dir_path;
  char linebuf[2048];
 
@@ -290,10 +290,10 @@ static void ReadM3U(std::vector<std::string> &file_list, std::string path, unsig
   if(efp.size() >= 4 && efp.substr(efp.size() - 4) == ".m3u")
   {
    if(efp == path)
-    throw(MDFN_Error(0, _("M3U at \"%s\" references self."), efp.c_str()));
+    throw(MDFN_Error(0, "M3U at \"%s\" references self.", efp.c_str()));
 
    if(depth == 99)
-    throw(MDFN_Error(0, _("M3U load recursion too deep!")));
+    throw(MDFN_Error(0, "M3U load recursion too deep!"));
 
    ReadM3U(file_list, efp, depth++);
   }
@@ -312,7 +312,7 @@ MDFNGI *MDFNI_LoadCD(const char *force_module, const char *devicename)
 
  LastSoundMultiplier = 1;
 
- MDFN_printf(_("Loading %s...\n\n"), devicename ? devicename : _("PHYSICAL CD"));
+ MDFN_printf("Loading %s...\n\n", devicename ? devicename : "PHYSICAL CD");
 
  try
  {
@@ -343,7 +343,7 @@ MDFNGI *MDFNI_LoadCD(const char *force_module, const char *devicename)
  catch(std::exception &e)
  {
   MDFND_PrintError(e.what());
-  MDFN_PrintError(_("Error opening CD."));
+  MDFN_PrintError("Error opening CD.");
   return(0);
  }
 
@@ -357,12 +357,12 @@ MDFNGI *MDFNI_LoadCD(const char *force_module, const char *devicename)
 
   CDInterfaces[i]->ReadTOC(&toc);
 
-  MDFN_printf(_("CD %d Layout:\n"), i + 1);
+  MDFN_printf("CD %d Layout:\n", i + 1);
   MDFN_indent(1);
 
   for(int32 track = toc.first_track; track <= toc.last_track; track++)
   {
-   MDFN_printf(_("Track %2d, LBA: %6d  %s\n"), track, toc.tracks[track].lba, (toc.tracks[track].control & 0x4) ? "DATA" : "AUDIO");
+   MDFN_printf("Track %2d, LBA: %6d  %s\n", track, toc.tracks[track].lba, (toc.tracks[track].control & 0x4) ? "DATA" : "AUDIO");
   }
 
   MDFN_printf("Leadout: %6d\n", toc.tracks[100].lba);
@@ -497,20 +497,20 @@ static bool LoadIPS(MDFNFILE &GameFile, const char *path)
 {
  FILE *IPSFile;
 
- MDFN_printf(_("Applying IPS file \"%s\"...\n"), path);
+ MDFN_printf("Applying IPS file \"%s\"...\n", path);
 
  IPSFile = fopen(path, "rb");
  if(!IPSFile)
  {
   ErrnoHolder ene(errno);
 
-  MDFN_printf(_("Failed: %s\n"), ene.StrError());
+  MDFN_printf("Failed: %s\n", ene.StrError());
 
   if(ene.Errno() == ENOENT)
    return(1);
   else
   {
-   MDFN_PrintError(_("Error opening IPS file: %s\n"), ene.StrError());
+   MDFN_PrintError("Error opening IPS file: %s\n", ene.StrError());
    return(0);
   }  
  }
@@ -551,7 +551,7 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
 
 	MDFNGameInfo = NULL;
 
-	MDFN_printf(_("Loading %s...\n"),name);
+	MDFN_printf("Loading %s...\n",name);
 
 	MDFN_indent(1);
 
@@ -578,7 +578,7 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
 	 valid_iae.push_back(tmpext);
 	}
 
-	if(!GameFile.Open(name, &valid_iae[0], _("game")))
+	if(!GameFile.Open(name, &valid_iae[0], "game"))
         {
 	 MDFNGameInfo = NULL;
 	 return 0;
@@ -609,7 +609,7 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
 	    if((*it)->LoadCD)
              MDFN_PrintError(_("Specified system only supports CD(physical, or image files, such as *.cue and *.toc) loading."));
 	    else
-             MDFN_PrintError(_("Specified system does not support normal file loading."));
+             MDFN_PrintError("Specified system does not support normal file loading.");
             MDFN_indent(-1);
             MDFNGameInfo = NULL;
             return 0;
@@ -640,16 +640,16 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
 	 GameFile.Close();
 
 	 if(force_module)
-          MDFN_PrintError(_("Unrecognized system \"%s\"!"), force_module);
+          MDFN_PrintError("Unrecognized system \"%s\"!", force_module);
 	 else
-          MDFN_PrintError(_("Unrecognized file format.  Sorry."));
+          MDFN_PrintError("Unrecognized file format.  Sorry.");
 
          MDFN_indent(-1);
          MDFNGameInfo = NULL;
          return 0;
         }
 
-	MDFN_printf(_("Using module: %s(%s)\n\n"), MDFNGameInfo->shortname, MDFNGameInfo->fullname);
+	MDFN_printf("Using module: %s (%s)\n", MDFNGameInfo->shortname, MDFNGameInfo->fullname);
 	MDFN_indent(1);
 
 	assert(MDFNGameInfo->soundchan != 0);
@@ -880,8 +880,8 @@ bool MDFNI_InitializeModules(const std::vector<MDFNGI *> &ExternalSystems)
   e_modules_string += std::string(ExternalSystems[i]->shortname);
  }
 
- MDFNI_printf(_("Internal emulation modules: %s\n"), i_modules_string.c_str());
- MDFNI_printf(_("External emulation modules: %s\n"), e_modules_string.c_str());
+ MDFNI_printf("Internal emulation modules: %s\n", i_modules_string.c_str());
+ MDFNI_printf("External emulation modules: %s\n", e_modules_string.c_str());
 
 
  for(unsigned int i = 0; i < MDFNSystems.size(); i++)
@@ -1153,19 +1153,28 @@ void MDFN_indent(int indent)
 }
 
 static uint8 lastchar = 0;
+
 void MDFN_printf(const char *format, ...)
 {
+ char msg[256];
  va_list ap;
  va_start(ap,format);
- printf(format, ap);
+
+ vsnprintf(msg, sizeof(msg), format, ap);
+ fprintf(stderr, msg);
+
  va_end(ap);
 }
 
 void MDFN_PrintError(const char *format, ...)
 {
+ char msg[256];
  va_list ap;
- va_start(ap, format);
- printf(format, ap);
+ va_start(ap,format);
+
+ vsnprintf(msg, sizeof(msg), format, ap);
+ fprintf(stderr,msg);
+
  va_end(ap);
 }
 

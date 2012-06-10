@@ -280,15 +280,19 @@ static bool LoadCustomPalette(const char *path)
 {
  uint8 CustomColorMap[1024 * 3];
 
- MDFN_printf(_("Loading custom palette from \"%s\"...\n"),  path);
- MDFN_indent(1);
+ printf("path: %s\n", path);
+ if(strcmp(path,"") != 0)
+ {
+    MDFN_printf("Loading custom palette from %s...\n",  path);
+    MDFN_indent(1);
+ }
 
  gzFile gp = gzopen(path, "rb");
  if(!gp)
  {
   ErrnoHolder ene(errno);
 
-  MDFN_printf(_("Error opening file: %s\n"), ene.StrError());        // FIXME, zlib and errno...
+  MDFN_printf("Error opening file: %s\n", ene.StrError());        // FIXME, zlib and errno...
   MDFN_indent(-1);
   return(FALSE);
  }
@@ -303,7 +307,7 @@ static bool LoadCustomPalette(const char *path)
 
   if(length_read != 1024 * 3 && length_read != 512 * 3)
   {
-   MDFN_printf(_("Error reading file\n"));
+   MDFN_printf("Error reading file\n");
    MDFN_indent(-1);
    return(FALSE);
   }
@@ -343,10 +347,10 @@ static void SetCDSettings(bool silent_status = false)
  if(!silent_status)
  {
   if(cd_settings.CDDA_Volume != 1.0)
-   MDFN_printf(_("CD-DA Volume: %d%%\n"), (int)(100 * cd_settings.CDDA_Volume));
+   MDFN_printf("CD-DA Volume: %d%%\n", (int)(100 * cd_settings.CDDA_Volume));
 
   if(cd_settings.ADPCM_Volume != 1.0)
-   MDFN_printf(_("ADPCM Volume: %d%%\n"), (int)(100 * cd_settings.ADPCM_Volume));
+   MDFN_printf("ADPCM Volume: %d%%\n", (int)(100 * cd_settings.ADPCM_Volume));
  }
 
 
@@ -354,7 +358,7 @@ static void SetCDSettings(bool silent_status = false)
 
  if(cdpsgvolume != 100)
  {
-  MDFN_printf(_("CD PSG Volume: %d%%\n"), cdpsgvolume);
+  MDFN_printf("CD PSG Volume: %d%%\n", cdpsgvolume);
  }
 
  psg->SetVolume(0.678 * cdpsgvolume / 100);
@@ -491,7 +495,7 @@ static int LoadCommon(void)
   {
    if(el->number == psgrevision)
    {
-    MDFN_printf(_("PSG Revision: %s\n"), el->description);
+    MDFN_printf("PSG Revision: %s\n", el->description);
     break;
    }
   }
@@ -645,7 +649,7 @@ static int LoadCD(std::vector<CDIF *> *CDInterfaces)
  const char *bios_sname = DetectGECD((*CDInterfaces)[0]) ? "pce.gecdbios" : "pce.cdbios";
  std::string bios_path = MDFN_MakeFName(MDFNMKF_FIRMWARE, 0, MDFN_GetSettingS(bios_sname).c_str() );
 
- if(!fp.Open(bios_path, KnownBIOSExtensions, _("CD BIOS")))
+ if(!fp.Open(bios_path, KnownBIOSExtensions, "CD BIOS"))
  {
   return(0);
  }
@@ -662,7 +666,7 @@ static int LoadCD(std::vector<CDIF *> *CDInterfaces)
  bool disable_bram_cd = MDFN_GetSettingB("pce.disable_bram_cd");
 
  if(disable_bram_cd)
-  MDFN_printf(_("Warning: BRAM is disabled per pcfx.disable_bram_cd setting.  This is simulating a malfunction.\n"));
+  MDFN_printf("Warning: BRAM is disabled per pcfx.disable_bram_cd setting.  This is simulating a malfunction.\n");
 
  if(!HuCLoad(fp.Data() + headerlen, fp.Size() - headerlen, 0, disable_bram_cd, PCE_ACEnabled ? SYSCARD_ARCADE : SYSCARD_3))
  {
@@ -686,8 +690,8 @@ static int LoadCD(std::vector<CDIF *> *CDInterfaces)
  SCSICD_SetDisc(false, (*CDInterfaces)[0], true);
 
 
- MDFN_printf(_("CD Layout:   0x%s\n"), md5_context::asciistr(MDFNGameInfo->MD5, 0).c_str());
- MDFN_printf(_("Arcade Card Emulation:  %s\n"), PCE_ACEnabled ? _("Enabled") : _("Disabled"));
+ MDFN_printf("CD Layout:   0x%s\n", md5_context::asciistr(MDFNGameInfo->MD5, 0).c_str());
+ MDFN_printf("Arcade Card Emulation: %s\n", PCE_ACEnabled ? "Enabled" : "Disabled");
 
  return(LoadCommon());
 }
@@ -877,15 +881,15 @@ static void CDInsertEject(void)
  {
   if(!(*cdifs)[disc]->Eject(CD_TrayOpen))
   {
-   MDFN_DispMessage(_("Eject error."));
+   MDFN_DispMessage("Eject error.");
    CD_TrayOpen = !CD_TrayOpen;
   }
  }
 
  if(CD_TrayOpen)
-  MDFN_DispMessage(_("Virtual CD Drive Tray Open"));
+  MDFN_DispMessage("Virtual CD Drive Tray Open");
  else
-  MDFN_DispMessage(_("Virtual CD Drive Tray Closed"));
+  MDFN_DispMessage("Virtual CD Drive Tray Closed");
 
  SCSICD_SetDisc(CD_TrayOpen, (CD_SelectedDisc >= 0 && !CD_TrayOpen) ? (*cdifs)[CD_SelectedDisc] : NULL);
 }
@@ -906,9 +910,9 @@ static void CDSelect(void)
    CD_SelectedDisc = -1;
 
   if(CD_SelectedDisc == -1)
-   MDFN_DispMessage(_("Disc absence selected."));
+   MDFN_DispMessage("Disc absence selected.");
   else
-   MDFN_DispMessage(_("Disc %d of %d selected."), CD_SelectedDisc + 1, (int)cdifs->size());
+   MDFN_DispMessage("Disc %d of %d selected.", CD_SelectedDisc + 1, (int)cdifs->size());
  }
 }
 
