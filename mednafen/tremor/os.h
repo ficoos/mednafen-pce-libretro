@@ -44,10 +44,14 @@
 #endif
 
 #if defined(MSB_FIRST)
+#ifndef BIG_ENDIAN
 #  define BIG_ENDIAN 1
+#endif
 #  define BYTE_ORDER BIG_ENDIAN
 #else
+#ifndef LITTLE_ENDIAN
 #  define LITTLE_ENDIAN 1
+#endif
 #  define BYTE_ORDER LITTLE_ENDIAN
 #endif
 

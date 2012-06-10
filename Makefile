@@ -167,7 +167,7 @@ SOURCES_C := $(MPC_SRC) \
 
 SOURCES_C += $(HW_CPU_SOURCES_C)
 
-LIBRETRO_SOURCES := libretro.cpp stubs.cpp thread.cpp mednafen_libretro.cpp
+LIBRETRO_SOURCES := libretro.cpp thread.cpp mednafen_libretro.cpp
 
 SOURCES := $(LIBRETRO_SOURCES) $(HW_CPU_SOURCES) $(HW_MISC_SOURCES) $(HW_SOUND_SOURCES) $(HW_VIDEO_SOURCES) $(PCE_SOURCES) $(MEDNAFEN_SOURCES)
 OBJECTS := $(SOURCES:.cpp=.o) $(SOURCES_C:.c=.o)
