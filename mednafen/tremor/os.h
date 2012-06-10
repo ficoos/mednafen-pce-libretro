@@ -47,12 +47,16 @@
 #ifndef BIG_ENDIAN
 #  define BIG_ENDIAN 1
 #endif
+#ifndef BYTE_ORDER
 #  define BYTE_ORDER BIG_ENDIAN
+#endif
 #else
 #ifndef LITTLE_ENDIAN
 #  define LITTLE_ENDIAN 1
 #endif
+#ifndef BYTE_ORDER
 #  define BYTE_ORDER LITTLE_ENDIAN
+#endif
 #endif
 
 #ifdef HAVE_ALLOCA_H
