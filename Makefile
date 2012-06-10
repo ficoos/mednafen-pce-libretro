@@ -156,11 +156,8 @@ MEDNAFEN_SOURCES := $(MEDNAFEN_DIR)/cdrom/cdromif.cpp \
 MPC_SRC := $(wildcard $(MEDNAFEN_DIR)/mpcdec/*.c)
 TREMOR_SRC := $(wildcard $(MEDNAFEN_DIR)/tremor/*.c)
 
-SOURCES_C := $(MEDNAFEN_DIR)/trio/trio.c \
-	$(MPC_SRC) \
+SOURCES_C := $(MPC_SRC) \
 	$(TREMOR_SRC) \
-	$(MEDNAFEN_DIR)/trio/trionan.c \
-	$(MEDNAFEN_DIR)/trio/triostr.c \
 	$(MEDNAFEN_DIR)/string/world_strtod.c \
 	$(MEDNAFEN_DIR)/compress/blz.c \
         $(ZLIB_SRC) \

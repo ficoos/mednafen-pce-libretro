@@ -19,7 +19,6 @@
 #include "error.h"
 #include <string.h>
 #include <stdarg.h>
-#include <trio/trio.h>
 
 MDFN_Error::MDFN_Error() throw()
 {
@@ -28,12 +27,14 @@ MDFN_Error::MDFN_Error() throw()
 
 MDFN_Error::MDFN_Error(int errno_code_new, const char *format, ...) throw()
 {
+#if 0
  errno_code = errno_code_new;
 
  va_list ap;
  va_start(ap, format);
  error_message = trio_vaprintf(format, ap);
  va_end(ap);
+#endif
 }
 
 MDFN_Error::~MDFN_Error() throw()

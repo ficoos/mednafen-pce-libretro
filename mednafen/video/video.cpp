@@ -23,7 +23,7 @@
 #include <string.h>
 #include <stdarg.h>
 
-void MDFN_DispMessage(const char *format, ...) throw()
+void MDFN_DispMessage(const char *format, ...)
 {
  va_list ap;
  va_start(ap,format);
