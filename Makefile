@@ -109,6 +109,7 @@ PCE_SOURCES := $(PCE_DIR)/vce.cpp \
 	$(PCE_DIR)/pce.cpp \
 	$(PCE_DIR)/input.cpp \
 	$(PCE_DIR)/huc.cpp \
+	$(PCE_DIR)/hes.cpp \
 	$(PCE_DIR)/tsushin.cpp \
 	$(PCE_DIR)/subhw.cpp \
 	$(PCE_DIR)/mcgenjin.cpp \
@@ -122,6 +123,7 @@ MEDNAFEN_SOURCES := $(MEDNAFEN_DIR)/cdrom/cdromif.cpp \
 	$(MEDNAFEN_DIR)/math_ops.cpp \
 	$(MEDNAFEN_DIR)/settings.cpp \
 	$(MEDNAFEN_DIR)/general.cpp \
+	$(MEDNAFEN_DIR)/player.cpp \
 	$(MEDNAFEN_DIR)/FileWrapper.cpp \
 	$(MEDNAFEN_DIR)/state.cpp \
 	$(MEDNAFEN_DIR)/tests.cpp \

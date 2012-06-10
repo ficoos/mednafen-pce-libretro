@@ -23,6 +23,7 @@
 #include "subhw.h"
 #include "../cdrom/pcecd.h"
 #include "../cdrom/scsicd.h"
+#include "hes.h"
 #include "tsushin.h"
 #include "arcade_card/arcade_card.h"
 #include "../mempatcher.h"
@@ -69,6 +70,7 @@ uint64 PCE_TimestampBase;	// Only used with the debugger for the time being.
 
 extern MDFNGI EmulatedPCE;
 static bool IsSGX;
+static bool IsHES;
 
 // Accessed in debug.cpp
 static uint8 BaseRAM[32768]; // 8KB for PCE, 32KB for Super Grafx
@@ -192,7 +194,8 @@ static DECLFR(IORead)
 		return(ret);
 	       }
 
-  case 0x1C00: 
+  case 0x1C00: if(IsHES)
+		return(ReadIBP(A)); 
 	       return(SubHW_ReadIOPage(A));
 	       break; // Expansion
  }
@@ -374,14 +377,15 @@ static int Load(const char *name, MDFNFILE *fp)
  uint32 headerlen = 0;
  uint32 r_size;
 
+ IsHES = 0;
  IsSGX = 0;
 
- //if(!memcmp(fp->data, "HESM", 4))
-  //IsHES = 1;
+ if(!memcmp(fp->data, "HESM", 4))
+  IsHES = 1;
 
  LoadCommonPre();
 
- //if(!IsHES)
+ if(!IsHES)
  {
   if(fp->size & 0x200) // 512 byte header!
    headerlen = 512;
@@ -392,8 +396,19 @@ static int Load(const char *name, MDFNFILE *fp)
 
  uint32 crc = crc32(0, fp->data + headerlen, fp->size - headerlen);
 
- HuCLoad(fp->data + headerlen, fp->size - headerlen, crc, MDFN_GetSettingB("pce.disable_bram_hucard"));
 
+ if(IsHES)
+ {
+  if(!PCE_HESLoad(fp->data, fp->size))
+   return(0);
+
+  PCE_IsCD = 1;
+  PCECD_Init(NULL, PCECDIRQCB, PCE_MASTER_CLOCK, 1, &sbuf[0], &sbuf[1]);
+ }
+ else
+ {
+  HuCLoad(fp->data + headerlen, fp->size - headerlen, crc, MDFN_GetSettingB("pce.disable_bram_hucard"));
+ }
  if(!strcasecmp(fp->ext, "sgx"))
   IsSGX = TRUE;
 
@@ -444,7 +459,7 @@ static void LoadCommonPre(void)
  // FIXME:  Make these globals less global!
  PCE_ACEnabled = MDFN_GetSettingB("pce.arcadecard");
 
- HuCPU = new HuC6280(/* IsHES */false);
+ HuCPU = new HuC6280(IsHES);
 
  for(int x = 0; x < 0x100; x++)
  {
@@ -460,6 +475,10 @@ static int LoadCommon(void)
 { 
  IsSGX |= MDFN_GetSettingB("pce.forcesgx") ? 1 : 0;
 
+ if(IsHES)
+  IsSGX = 1;
+ // Don't modify IsSGX past this point.
+ 
  vce = new VCE(IsSGX, MDFN_GetSettingB("pce.nospritelimit"));
 
  if(IsSGX)
@@ -511,9 +530,15 @@ static int LoadCommon(void)
 
  PCEINPUT_Init();
 
+ //
+ //
+ //
  SubHW_Init();
  HuCPU->SetReadHandler(0xFE, SubHW_ReadFEPage);
  HuCPU->SetWriteHandler(0xFE, SubHW_WriteFEPage);
+ //
+ //
+ //
 
  PCE_Power();
 
@@ -524,7 +549,7 @@ static int LoadCommon(void)
  for(unsigned int i = 0; i < 0x100; i++)
   NonCheatPCERead[i] = HuCPU->GetReadHandler(i);
 
- //if(!IsHES)
+ if(!IsHES)
  {
   MDFNGameInfo->nominal_height = MDFN_GetSettingUI("pce.slend") - MDFN_GetSettingUI("pce.slstart") + 1;
   MDFNGameInfo->nominal_width = MDFN_GetSettingB("pce.h_overscan") ? 320 : 288;
@@ -642,6 +667,7 @@ static int LoadCD(std::vector<CDIF *> *CDInterfaces)
 
  MDFNFILE fp;
 
+ IsHES = 0;
  IsSGX = 0;
 
  LoadCommonPre();
@@ -704,7 +730,12 @@ static void CloseGame(void)
   PCECD_Close();
  }
 
- HuCClose();
+ if(IsHES)
+  HES_Close();
+ else
+ {
+  HuCClose();
+ }
 
  if(vce)
  {
@@ -741,7 +772,7 @@ static void Emulate(EmulateSpecStruct *espec)
  if(espec->SoundFormatChanged)
   SetSoundRate(espec->SoundRate);
 
- vce->StartFrame(espec->surface, &espec->DisplayRect, espec->LineWidths, /*IsHES ? 1 : */ espec->skip);
+ vce->StartFrame(espec->surface, &espec->DisplayRect, espec->LineWidths, IsHES ? 1 : espec->skip);
 
  // Begin loop here:
  //for(int i = 0; i < 2; i++)
@@ -750,6 +781,7 @@ static void Emulate(EmulateSpecStruct *espec)
  {
   INPUT_Frame();
 
+  //vce->RunFrame(espec->surface, &espec->DisplayRect, espec->LineWidths, IsHES ? 1 : espec->skip);
   rp_rv = vce->RunPartial();
 
   INPUT_FixTS(HuCPU->Timestamp());
@@ -801,6 +833,9 @@ static void Emulate(EmulateSpecStruct *espec)
 
  // End loop here.
  //printf("%d\n", vce->GetScanlineNo());
+
+ if(IsHES)
+  HES_Update(espec, INPUT_HESHack());	//Draw(espec->skip ? NULL : espec->surface, espec->skip ? NULL : &espec->DisplayRect, espec->SoundBuf, espec->SoundBufSize, INPUT_HESHack());
 }
 
 void PCE_MidSync(void)
@@ -861,7 +896,10 @@ void PCE_Power(void)
  vce->Reset(timestamp);
  psg->Power(timestamp);
 
- HuC_Power();
+ if(IsHES)
+  HES_Reset();
+ else
+  HuC_Power();
 
  PCEINPUT_Power(timestamp);
 
