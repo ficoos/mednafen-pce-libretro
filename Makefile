@@ -65,7 +65,7 @@ else
    TARGET := retro.dll
    CC = gcc
    SHARED := -shared -static-libgcc -static-libstdc++ -s -Wl,--version-script=link.T
-   LIS := -lz
+   LIBS := -lz
    ENDIANNESS_DEFINES += -D__WIN32__ -D__WIN32_LIBRETRO__ -Wno-missing-field-initializers -DMSB_FIRST
    IS_X86 = 1
 endif
