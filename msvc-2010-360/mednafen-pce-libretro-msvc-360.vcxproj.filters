@@ -83,9 +83,6 @@
     <ClCompile Include="..\libretro.cpp">
       <Filter>Source Files\libretro</Filter>
     </ClCompile>
-    <ClCompile Include="..\stubs.cpp">
-      <Filter>Source Files\libretro</Filter>
-    </ClCompile>
     <ClCompile Include="..\mednafen\tests.cpp">
       <Filter>Source Files\mednafen</Filter>
     </ClCompile>
@@ -122,34 +119,16 @@
     <ClCompile Include="..\mednafen\okiadpcm.cpp">
       <Filter>Source Files\mednafen</Filter>
     </ClCompile>
-    <ClCompile Include="..\mednafen\player.cpp">
-      <Filter>Source Files\mednafen</Filter>
-    </ClCompile>
     <ClCompile Include="..\mednafen\settings.cpp">
       <Filter>Source Files\mednafen</Filter>
     </ClCompile>
     <ClCompile Include="..\mednafen\state.cpp">
       <Filter>Source Files\mednafen</Filter>
     </ClCompile>
-    <ClCompile Include="..\mednafen\video\font-data-18x18.c">
-      <Filter>Source Files\mednafen\video</Filter>
-    </ClCompile>
-    <ClCompile Include="..\mednafen\video\font-data.cpp">
-      <Filter>Source Files\mednafen\video</Filter>
-    </ClCompile>
     <ClCompile Include="..\mednafen\video\resize.cpp">
       <Filter>Source Files\mednafen\video</Filter>
     </ClCompile>
     <ClCompile Include="..\mednafen\video\surface.cpp">
-      <Filter>Source Files\mednafen\video</Filter>
-    </ClCompile>
-    <ClCompile Include="..\mednafen\video\text.cpp">
-      <Filter>Source Files\mednafen\video</Filter>
-    </ClCompile>
-    <ClCompile Include="..\mednafen\video\video.cpp">
-      <Filter>Source Files\mednafen\video</Filter>
-    </ClCompile>
-    <ClCompile Include="..\mednafen\video\font-data-12x13.c">
       <Filter>Source Files\mednafen\video</Filter>
     </ClCompile>
     <ClCompile Include="..\mednafen\compress\unzip.c">
@@ -364,6 +343,9 @@
     </ClCompile>
     <ClCompile Include="..\mednafen\pce\input\mouse.cpp">
       <Filter>Source Files\mednafen\pce\input</Filter>
+    </ClCompile>
+    <ClCompile Include="..\mednafen_libretro.cpp">
+      <Filter>Source Files\libretro</Filter>
     </ClCompile>
   </ItemGroup>
 </Project>
