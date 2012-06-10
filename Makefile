@@ -73,7 +73,7 @@ endif
 
 ifeq ($(DEBUG), 1)
 CFLAGS += -O0 -g
-CXXFLAGS += -O0 -g
+CXXFLAGS += -O0 -g -fexceptions
 else
 CFLAGS += -O3
 CXXFLAGS += -O3
@@ -167,7 +167,7 @@ SOURCES_C := $(MEDNAFEN_DIR)/trio/trio.c \
 
 SOURCES_C += $(HW_CPU_SOURCES_C)
 
-LIBRETRO_SOURCES := libretro.cpp stubs.cpp
+LIBRETRO_SOURCES := libretro.cpp stubs.cpp thread.cpp
 
 SOURCES := $(LIBRETRO_SOURCES) $(HW_CPU_SOURCES) $(HW_MISC_SOURCES) $(HW_SOUND_SOURCES) $(HW_VIDEO_SOURCES) $(PCE_SOURCES) $(MEDNAFEN_SOURCES)
 OBJECTS := $(SOURCES:.cpp=.o) $(SOURCES_C:.c=.o)
@@ -175,7 +175,7 @@ OBJECTS := $(SOURCES:.cpp=.o) $(SOURCES_C:.c=.o)
 all: $(TARGET)
 
 FLAGS += -ffast-math  -funroll-loops
-FLAGS += -I. -Imednafen -Imednafen/include -Imednafen/intl -Imednafen/hw_cpu -Imednafen/hw_misc -Imednafen/hw_sound -Imednafen/hw_video
+FLAGS += -I. -Imednafen -Imednafen/include -Imednafen/intl -Imednafen/hw_cpu -Imednafen/hw_misc -Imednafen/hw_sound -Imednafen/hw_video -Imednafen/compress
 
 FLAGS += $(ENDIANNESS_DEFINES) -DHAVE_MKDIR -DSIZEOF_DOUBLE=8 $(WARNINGS) -DMEDNAFEN_VERSION=\"0.9.22\" -DMEDNAFEN_VERSION_NUMERIC=922 -DPSS_STYLE=1 -DMPC_FIXED_POINT -DWANT_PCE_EMU -DSTDC_HEADERS
 

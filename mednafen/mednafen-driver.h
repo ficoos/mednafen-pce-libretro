@@ -19,7 +19,6 @@ void MDFN_printf(const char *format, ...) throw() MDFN_FORMATSTR(printf, 1, 2);
 void MDFND_PrintError(const char *s);
 void MDFND_Message(const char *s);
 
-uint32 MDFND_GetTime(void);
 void MDFND_Sleep(uint32 ms);
 
 // Synchronize virtual time to actual time using members of espec:

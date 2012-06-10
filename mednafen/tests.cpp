@@ -298,25 +298,6 @@ MathTestTSOEntry MathTestTSOTests[] =
 
 static void TestSignedOverflow(void)
 {
- for(unsigned int i = 0; i < sizeof(MathTestTSOTests) / sizeof(MathTestTSOEntry); i++)
- {
-  int32 a = MathTestTSOTests[i].a;
-  int32 b = MathTestTSOTests[i].b;
-
-  assert((a + b) < a && (a + b) < b);
-
-  assert((a + 0x7FFFFFFE) < a);
-  assert((b + 0x7FFFFFFE) < b);
-
-  assert((a + 0x7FFFFFFF) < a);
-  assert((b + 0x7FFFFFFF) < b);
-
-  assert((int32)(a + 0x80000000) < a);
-  assert((int32)(b + 0x80000000) < b);
-
-  assert((int32)(a ^ 0x80000000) < a);
-  assert((int32)(b ^ 0x80000000) < b);
- }
 }
 
 
