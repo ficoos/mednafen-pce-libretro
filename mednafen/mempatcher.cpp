@@ -319,7 +319,7 @@ void MDFN_LoadGameCheats(FILE *override)
 static void WriteOurCheats(FILE *tmp_fp, bool needheader)
 {
      if(needheader)
-      trio_fprintf(tmp_fp, "[%s] %s\n", md5_context::asciistr(MDFNGameInfo->MD5, 0).c_str(), MDFNGameInfo->name ? (char *)MDFNGameInfo->name : "");
+      fprintf(tmp_fp, "[%s] %s\n", md5_context::asciistr(MDFNGameInfo->MD5, 0).c_str(), MDFNGameInfo->name ? (char *)MDFNGameInfo->name : "");
 
      std::vector<CHEATF>::iterator next;
 
@@ -328,22 +328,22 @@ static void WriteOurCheats(FILE *tmp_fp, bool needheader)
       if(next->type == 'C')
       {
        if(next->length == 1)
-        trio_fprintf(tmp_fp, "%c %c %d %c %d %08x %02llx %02llx %s\n", next->type, next->status ? 'A' : 'I', next->length, next->bigendian ? 'B' : 'L', next->icount, next->addr, next->val, next->compare, next->name);
+        fprintf(tmp_fp, "%c %c %d %c %d %08x %02llx %02llx %s\n", next->type, next->status ? 'A' : 'I', next->length, next->bigendian ? 'B' : 'L', next->icount, next->addr, next->val, next->compare, next->name);
        else if(next->length == 2)
-        trio_fprintf(tmp_fp, "%c %c %d %c %d %08x %04llx %04llx %s\n", next->type, next->status ? 'A' : 'I', next->length, next->bigendian ? 'B' : 'L', next->icount, next->addr, next->val, next->compare, next->name);
+        fprintf(tmp_fp, "%c %c %d %c %d %08x %04llx %04llx %s\n", next->type, next->status ? 'A' : 'I', next->length, next->bigendian ? 'B' : 'L', next->icount, next->addr, next->val, next->compare, next->name);
        else
-        trio_fprintf(tmp_fp, "%c %c %d %c %d %08x %016llx %016llx %s\n", next->type, next->status ? 'A' : 'I', next->length, next->bigendian ? 'B' : 'L', next->icount, next->addr, next->val, next->compare, next->name);
+        fprintf(tmp_fp, "%c %c %d %c %d %08x %016llx %016llx %s\n", next->type, next->status ? 'A' : 'I', next->length, next->bigendian ? 'B' : 'L', next->icount, next->addr, next->val, next->compare, next->name);
       }
       else
       {
        if(next->length == 1)
-        trio_fprintf(tmp_fp, "%c %c %d %c %d %08x %02llx %s\n", next->type, next->status ? 'A' : 'I', next->length, next->bigendian ? 'B' : 'L', next->icount, next->addr, next->val, next->name);
+        fprintf(tmp_fp, "%c %c %d %c %d %08x %02llx %s\n", next->type, next->status ? 'A' : 'I', next->length, next->bigendian ? 'B' : 'L', next->icount, next->addr, next->val, next->name);
        else if(next->length == 2)
-        trio_fprintf(tmp_fp, "%c %c %d %c %d %08x %04llx %s\n", next->type, next->status ? 'A' : 'I', next->length, next->bigendian ? 'B' : 'L', next->icount, next->addr, next->val, next->name);
+        fprintf(tmp_fp, "%c %c %d %c %d %08x %04llx %s\n", next->type, next->status ? 'A' : 'I', next->length, next->bigendian ? 'B' : 'L', next->icount, next->addr, next->val, next->name);
        else
-        trio_fprintf(tmp_fp, "%c %c %d %c %d %08x %016llx %s\n", next->type, next->status ? 'A' : 'I', next->length, next->bigendian ? 'B' : 'L', next->icount, next->addr, next->val, next->name);
+        fprintf(tmp_fp, "%c %c %d %c %d %08x %016llx %s\n", next->type, next->status ? 'A' : 'I', next->length, next->bigendian ? 'B' : 'L', next->icount, next->addr, next->val, next->name);
       }
-      trio_fprintf(tmp_fp, "%s\n", next->conditions ? next->conditions : "");
+      fprintf(tmp_fp, "%s\n", next->conditions ? next->conditions : "");
       free(next->name);
       if(next->conditions)
        free(next->conditions);
