@@ -458,7 +458,7 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <PrecompiledHeaderOutputFile>$(OutDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <PreprocessorDefinitions>_DEBUG;_XBOX;_LIB;%(PreprocessorDefinitions);PSS_STYLE=2;INLINE=_inline;__LIBRETRO__;SIZEOF_DOUBLE=8;MEDNAFEN_VERSION=0.9.22;MEDNAFEN_VERSION_NUMERIC=922;MPC_FIXED_POINT;WANT_PCE_EMU;STDC_HEADERS;MSB_FIRST;BYTE_ORDER=1</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_XBOX;_LIB;%(PreprocessorDefinitions);PSS_STYLE=2;INLINE=_inline;__LIBRETRO__;SIZEOF_DOUBLE=8;MEDNAFEN_VERSION=0.9.22;MEDNAFEN_VERSION_NUMERIC=922;MPC_FIXED_POINT;WANT_PCE_EMU;STDC_HEADERS;MSB_FIRST;BYTE_ORDER=1;HAVE_MKDIR</PreprocessorDefinitions>
       <CallAttributedProfiling>Callcap</CallAttributedProfiling>
       <AdditionalIncludeDirectories>$(SolutionDir)\..\mednafen;$(SolutionDir)\..\mednafen\cdrom;$(SolutionDir)\..\mednafen\compress;$(SolutionDir)\..\mednafen\include;$(SolutionDir)\..\mednafen\hw_cpu\c68k;$(SolutionDir)\..\mednafen\hw_cpu\huc6280;$(SolutionDir)\..\mednafen\hw_misc\arcade_card;$(SolutionDir)\..\mednafen\hw_sound\pce_psg;$(SolutionDir)\..\mednafen\hw_sound\ym2413;$(SolutionDir)\..\mednafen\hw_video\huc6270;$(SolutionDir)\..\mednafen\hw_video\huc6270\backup;$(SolutionDir)\..\mednafen\pce;$(SolutionDir)\..\mednafen\pce\input;$(SolutionDir)\..\mednafen\resampler;$(SolutionDir)\..\mednafen\sound;$(SolutionDir)\..\mednafen\string;$(SolutionDir)\..\mednafen\tremor;$(SolutionDir)\..\mednafen\video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -478,7 +478,7 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <PrecompiledHeaderOutputFile>$(OutDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
       <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
-      <PreprocessorDefinitions>_DEBUG;_XBOX;_LIB;%(PreprocessorDefinitions);PSS_STYLE=2;INLINE=_inline;__LIBRETRO__;SIZEOF_DOUBLE=8;MEDNAFEN_VERSION=0.9.22;MEDNAFEN_VERSION_NUMERIC=922;MPC_FIXED_POINT;WANT_PCE_EMU;STDC_HEADERS;MSB_FIRST;BYTE_ORDER=1</PreprocessorDefinitions>
+      <PreprocessorDefinitions>_DEBUG;_XBOX;_LIB;%(PreprocessorDefinitions);PSS_STYLE=2;INLINE=_inline;__LIBRETRO__;SIZEOF_DOUBLE=8;MEDNAFEN_VERSION=0.9.22;MEDNAFEN_VERSION_NUMERIC=922;MPC_FIXED_POINT;WANT_PCE_EMU;STDC_HEADERS;MSB_FIRST;BYTE_ORDER=1;HAVE_MKDIR</PreprocessorDefinitions>
       <CallAttributedProfiling>Callcap</CallAttributedProfiling>
       <AdditionalIncludeDirectories>$(SolutionDir)\..\mednafen;$(SolutionDir)\..\mednafen\cdrom;$(SolutionDir)\..\mednafen\compress;$(SolutionDir)\..\mednafen\include;$(SolutionDir)\..\mednafen\hw_cpu\c68k;$(SolutionDir)\..\mednafen\hw_cpu\huc6280;$(SolutionDir)\..\mednafen\hw_misc\arcade_card;$(SolutionDir)\..\mednafen\hw_sound\pce_psg;$(SolutionDir)\..\mednafen\hw_sound\ym2413;$(SolutionDir)\..\mednafen\hw_video\huc6270;$(SolutionDir)\..\mednafen\hw_video\huc6270\backup;$(SolutionDir)\..\mednafen\pce;$(SolutionDir)\..\mednafen\pce\input;$(SolutionDir)\..\mednafen\resampler;$(SolutionDir)\..\mednafen\sound;$(SolutionDir)\..\mednafen\string;$(SolutionDir)\..\mednafen\tremor;$(SolutionDir)\..\mednafen\video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -499,7 +499,7 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <PrecompiledHeaderOutputFile>$(OutDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <PreprocessorDefinitions>NDEBUG;_XBOX;PROFILE;_LIB;%(PreprocessorDefinitions);PSS_STYLE=2;INLINE=_inline;__LIBRETRO__;SIZEOF_DOUBLE=8;MEDNAFEN_VERSION=0.9.22;MEDNAFEN_VERSION_NUMERIC=922;MPC_FIXED_POINT;WANT_PCE_EMU;STDC_HEADERS;MSB_FIRST;BYTE_ORDER=1</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_XBOX;PROFILE;_LIB;%(PreprocessorDefinitions);PSS_STYLE=2;INLINE=_inline;__LIBRETRO__;SIZEOF_DOUBLE=8;MEDNAFEN_VERSION=0.9.22;MEDNAFEN_VERSION_NUMERIC=922;MPC_FIXED_POINT;WANT_PCE_EMU;STDC_HEADERS;MSB_FIRST;BYTE_ORDER=1;HAVE_MKDIR</PreprocessorDefinitions>
       <CallAttributedProfiling>Callcap</CallAttributedProfiling>
       <AdditionalIncludeDirectories>$(SolutionDir)\..\mednafen;$(SolutionDir)\..\mednafen\cdrom;$(SolutionDir)\..\mednafen\compress;$(SolutionDir)\..\mednafen\include;$(SolutionDir)\..\mednafen\hw_cpu\c68k;$(SolutionDir)\..\mednafen\hw_cpu\huc6280;$(SolutionDir)\..\mednafen\hw_misc\arcade_card;$(SolutionDir)\..\mednafen\hw_sound\pce_psg;$(SolutionDir)\..\mednafen\hw_sound\ym2413;$(SolutionDir)\..\mednafen\hw_video\huc6270;$(SolutionDir)\..\mednafen\hw_video\huc6270\backup;$(SolutionDir)\..\mednafen\pce;$(SolutionDir)\..\mednafen\pce\input;$(SolutionDir)\..\mednafen\resampler;$(SolutionDir)\..\mednafen\sound;$(SolutionDir)\..\mednafen\string;$(SolutionDir)\..\mednafen\tremor;$(SolutionDir)\..\mednafen\video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
@@ -524,7 +524,7 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <PrecompiledHeaderOutputFile>$(OutDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <PreprocessorDefinitions>NDEBUG;_XBOX;PROFILE;FASTCAP;_LIB;%(PreprocessorDefinitions);PSS_STYLE=2;INLINE=_inline;__LIBRETRO__;SIZEOF_DOUBLE=8;MEDNAFEN_VERSION=0.9.22;MEDNAFEN_VERSION_NUMERIC=922;MPC_FIXED_POINT;WANT_PCE_EMU;STDC_HEADERS;MSB_FIRST;BYTE_ORDER=1</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_XBOX;PROFILE;FASTCAP;_LIB;%(PreprocessorDefinitions);PSS_STYLE=2;INLINE=_inline;__LIBRETRO__;SIZEOF_DOUBLE=8;MEDNAFEN_VERSION=0.9.22;MEDNAFEN_VERSION_NUMERIC=922;MPC_FIXED_POINT;WANT_PCE_EMU;STDC_HEADERS;MSB_FIRST;BYTE_ORDER=1;HAVE_MKDIR</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)\..\mednafen;$(SolutionDir)\..\mednafen\cdrom;$(SolutionDir)\..\mednafen\compress;$(SolutionDir)\..\mednafen\include;$(SolutionDir)\..\mednafen\hw_cpu\c68k;$(SolutionDir)\..\mednafen\hw_cpu\huc6280;$(SolutionDir)\..\mednafen\hw_misc\arcade_card;$(SolutionDir)\..\mednafen\hw_sound\pce_psg;$(SolutionDir)\..\mednafen\hw_sound\ym2413;$(SolutionDir)\..\mednafen\hw_video\huc6270;$(SolutionDir)\..\mednafen\hw_video\huc6270\backup;$(SolutionDir)\..\mednafen\pce;$(SolutionDir)\..\mednafen\pce\input;$(SolutionDir)\..\mednafen\resampler;$(SolutionDir)\..\mednafen\sound;$(SolutionDir)\..\mednafen\string;$(SolutionDir)\..\mednafen\tremor;$(SolutionDir)\..\mednafen\video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -546,7 +546,7 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <PrecompiledHeaderOutputFile>$(OutDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <PreprocessorDefinitions>NDEBUG;_XBOX;_LIB;%(PreprocessorDefinitions);PSS_STYLE=2;INLINE=_inline;__LIBRETRO__;SIZEOF_DOUBLE=8;MEDNAFEN_VERSION=0.9.22;MEDNAFEN_VERSION_NUMERIC=922;MPC_FIXED_POINT;WANT_PCE_EMU;STDC_HEADERS;MSB_FIRST;BYTE_ORDER=1</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_XBOX;_LIB;%(PreprocessorDefinitions);PSS_STYLE=2;INLINE=_inline;__LIBRETRO__;SIZEOF_DOUBLE=8;MEDNAFEN_VERSION=0.9.22;MEDNAFEN_VERSION_NUMERIC=922;MPC_FIXED_POINT;WANT_PCE_EMU;STDC_HEADERS;MSB_FIRST;BYTE_ORDER=1;HAVE_MKDIR</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)\..\mednafen;$(SolutionDir)\..\mednafen\cdrom;$(SolutionDir)\..\mednafen\compress;$(SolutionDir)\..\mednafen\include;$(SolutionDir)\..\mednafen\hw_cpu\c68k;$(SolutionDir)\..\mednafen\hw_cpu\huc6280;$(SolutionDir)\..\mednafen\hw_misc\arcade_card;$(SolutionDir)\..\mednafen\hw_sound\pce_psg;$(SolutionDir)\..\mednafen\hw_sound\ym2413;$(SolutionDir)\..\mednafen\hw_video\huc6270;$(SolutionDir)\..\mednafen\hw_video\huc6270\backup;$(SolutionDir)\..\mednafen\pce;$(SolutionDir)\..\mednafen\pce\input;$(SolutionDir)\..\mednafen\resampler;$(SolutionDir)\..\mednafen\sound;$(SolutionDir)\..\mednafen\string;$(SolutionDir)\..\mednafen\tremor;$(SolutionDir)\..\mednafen\video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
@@ -568,7 +568,7 @@
       <BufferSecurityCheck>false</BufferSecurityCheck>
       <PrecompiledHeaderOutputFile>$(OutDir)$(ProjectName).pch</PrecompiledHeaderOutputFile>
       <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
-      <PreprocessorDefinitions>NDEBUG;_XBOX;LTCG;_LIB;%(PreprocessorDefinitions);PSS_STYLE=2;INLINE=_inline;__LIBRETRO__;SIZEOF_DOUBLE=8;MEDNAFEN_VERSION=0.9.22;MEDNAFEN_VERSION_NUMERIC=922;MPC_FIXED_POINT;WANT_PCE_EMU;STDC_HEADERS;MSB_FIRST;BYTE_ORDER=1</PreprocessorDefinitions>
+      <PreprocessorDefinitions>NDEBUG;_XBOX;LTCG;_LIB;%(PreprocessorDefinitions);PSS_STYLE=2;INLINE=_inline;__LIBRETRO__;SIZEOF_DOUBLE=8;MEDNAFEN_VERSION=0.9.22;MEDNAFEN_VERSION_NUMERIC=922;MPC_FIXED_POINT;WANT_PCE_EMU;STDC_HEADERS;MSB_FIRST;BYTE_ORDER=1;HAVE_MKDIR</PreprocessorDefinitions>
       <AdditionalIncludeDirectories>$(SolutionDir)\..\mednafen;$(SolutionDir)\..\mednafen\cdrom;$(SolutionDir)\..\mednafen\compress;$(SolutionDir)\..\mednafen\include;$(SolutionDir)\..\mednafen\hw_cpu\c68k;$(SolutionDir)\..\mednafen\hw_cpu\huc6280;$(SolutionDir)\..\mednafen\hw_misc\arcade_card;$(SolutionDir)\..\mednafen\hw_sound\pce_psg;$(SolutionDir)\..\mednafen\hw_sound\ym2413;$(SolutionDir)\..\mednafen\hw_video\huc6270;$(SolutionDir)\..\mednafen\hw_video\huc6270\backup;$(SolutionDir)\..\mednafen\pce;$(SolutionDir)\..\mednafen\pce\input;$(SolutionDir)\..\mednafen\resampler;$(SolutionDir)\..\mednafen\sound;$(SolutionDir)\..\mednafen\string;$(SolutionDir)\..\mednafen\tremor;$(SolutionDir)\..\mednafen\video;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
