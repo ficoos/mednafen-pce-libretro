@@ -22,7 +22,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 #include <errno.h>
-#include <trio/trio.h>
 
 #ifdef HAVE_MMAP
 #include <sys/mman.h>

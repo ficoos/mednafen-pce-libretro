@@ -20,7 +20,6 @@
 #include <string.h>
 #include <vector>
 #include <string>
-#include <trio/trio.h>
 #include <map>
 #include <list>
 #include "settings.h"

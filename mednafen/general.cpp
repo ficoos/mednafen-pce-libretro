@@ -26,7 +26,6 @@
 
 #include <string>
 #include <map>
-#include <trio/trio.h>
 
 #include "general.h"
 #include "state.h"

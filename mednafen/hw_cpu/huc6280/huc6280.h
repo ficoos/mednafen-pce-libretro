@@ -1,8 +1,6 @@
 #ifndef __MDFN_HUC6280_H
 #define __MDFN_HUC6280_H
 
-#include        <trio/trio.h>
-
 class HuC6280_Support
 {
 	public:

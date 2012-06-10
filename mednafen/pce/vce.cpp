@@ -31,7 +31,6 @@
 #include "huc6270/vdc.h"
 #include "subhw.h"
 #include "../cdrom/pcecd.h"
-#include <trio/trio.h>
 
 namespace MDFN_IEN_PCE
 {

@@ -22,7 +22,6 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
-#include <trio/trio.h>
 #include "driver.h"
 #include "general.h"
 #include "state.h"
