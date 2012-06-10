@@ -168,7 +168,7 @@ void retro_get_system_info(struct retro_system_info *info)
    info->library_version  = "0.9.22";
    info->need_fullpath    = true;
    info->valid_extensions = "pce|PCE|cue|CUE";
-   info->block_extract    = true;
+   info->block_extract    = false;
 }
 
 void retro_get_system_av_info(struct retro_system_av_info *info)
