@@ -17,9 +17,9 @@
 
 /* VDC emulation */
 
-#include "../../../mednafen.h"
-#include "../../../video.h"
-#include "../../../lepacker.h"
+#include "../../mednafen.h"
+#include "../../video.h"
+#include "../../lepacker.h"
 
 #include <math.h>
 #include "vdc.h"
