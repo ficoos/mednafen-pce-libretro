@@ -537,7 +537,7 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
 	}
 	
 #ifdef __CELLOS_LV2__
-	if(!stat(name, &stat_buf))
+	if(!stat(name, &stat_buf) && !(stat_buf.st_mode & CELL_FS_S_IFREG))
 #else
 	if(!stat(name, &stat_buf) && !S_ISREG(stat_buf.st_mode))
 #endif

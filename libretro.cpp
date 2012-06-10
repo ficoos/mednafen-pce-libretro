@@ -98,10 +98,11 @@ void retro_unload_game()
 
 // Hardcoded for PSX. No reason to parse lots of structures ...
 // See mednafen/psx/input/gamepad.cpp
-static void update_input()
+static void update_input (void)
 {
-   static uint16_t input_buf[2];
-   input_buf[0] = input_buf[1] = 0;
+   static uint8_t input_buf_p1;
+   static uint8_t input_buf_p2;
+   input_buf_p1 = input_buf_p2 = 0;
    static unsigned map[] = {
       RETRO_DEVICE_ID_JOYPAD_Y,
       RETRO_DEVICE_ID_JOYPAD_B,
@@ -118,16 +119,17 @@ static void update_input()
       RETRO_DEVICE_ID_JOYPAD_L2,
    };
 
-   for (unsigned j = 0; j < 2; j++)
+   for (unsigned i = 0; i < 13; i++)
    {
-      for (unsigned i = 0; i < 13; i++)
-         input_buf[j] |= map[i] != -1u &&
-            input_state_cb(j, RETRO_DEVICE_JOYPAD, 0, map[i]) ? (1 << i) : 0;
+      input_buf_p1 |= map[i] != -1u &&
+         input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, map[i]) ? (1 << i) : 0;
+      input_buf_p2 |= map[i] != -1u &&
+         input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, map[i]) ? (1 << i) : 0;
    }
 
    // Possible endian bug ...
-   game->SetInput(0, "gamepad", &input_buf[0]);
-   game->SetInput(1, "gamepad", &input_buf[1]);
+   game->SetInput(0, "gamepad", &input_buf_p1);
+   game->SetInput(1, "gamepad", &input_buf_p2);
 }
 
 void retro_run()
