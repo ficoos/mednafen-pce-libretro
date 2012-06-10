@@ -25,6 +25,7 @@
 
 void MDFN_DispMessage(const char *format, ...)
 {
+#ifndef __CELLOS_LV2__
  va_list ap;
  va_start(ap,format);
  char *msg = NULL;
@@ -33,6 +34,7 @@ void MDFN_DispMessage(const char *format, ...)
  va_end(ap);
 
  MDFND_DispMessage((UTF8*)msg);
+#endif
 }
 
 void MDFN_ResetMessages(void)

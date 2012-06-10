@@ -4,7 +4,6 @@
 #include "mednafen/general.h"
 #include "mednafen/mednafen-driver.h"
 
-#include <iostream>
 #include <pthread.h>
 #include <unistd.h>
 #include <sys/time.h>
@@ -28,12 +27,16 @@ void MDFND_Sleep(unsigned int time)
 
 void MDFND_DispMessage(unsigned char *str)
 {
+#if 0
    std::cerr << str;
+#endif
 }
 
 void MDFND_Message(const char *str)
 {
+#if 0
    std::cerr << str;
+#endif
 }
 
 void MDFND_MidSync(const EmulateSpecStruct *)
@@ -41,7 +44,9 @@ void MDFND_MidSync(const EmulateSpecStruct *)
 
 void MDFND_PrintError(const char* err)
 {
+#if 0
    std::cerr << err;
+#endif
 }
 
 MDFN_Thread *MDFND_CreateThread(int (*fn)(void *), void *data)
@@ -56,13 +61,17 @@ void MDFND_WaitThread(MDFN_Thread *thr, int *val)
    if (val)
    {
       *val = 0;
+#if 0
       std::cerr << "WaitThread relies on return value." << std::endl;
+#endif
    }
 }
 
 void MDFND_KillThread(MDFN_Thread *thr)
 {
+#if 0
    std::cerr << "Killing a thread is a BAD IDEA!" << std::endl;
+#endif
 }
 
 MDFN_Mutex *MDFND_CreateMutex()
