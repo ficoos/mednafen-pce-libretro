@@ -530,7 +530,7 @@ void HuCClose(void)
 
     mcg->ReadNV(i, &tmp_buf[0], 0, tmp_buf.size());
 
-    trio_snprintf(buf, sizeof(buf), "mg%d", i);
+    snprintf(buf, sizeof(buf), "mg%d", i);
     MDFN_DumpToFile(MDFN_MakeFName(MDFNMKF_SAV, 0, buf).c_str(), 6, &tmp_buf[0], tmp_buf.size());
    }
   }

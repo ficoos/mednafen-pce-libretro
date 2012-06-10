@@ -408,7 +408,7 @@ MDFNGI *MDFNI_LoadCD(const char *force_module, const char *devicename)
         for(std::list<MDFNGI *>::iterator it = MDFNSystemsPrio.begin(); it != MDFNSystemsPrio.end(); it++)  //_unsigned int x = 0; x < MDFNSystems.size(); x++)
         {
          char tmpstr[256];
-         trio_snprintf(tmpstr, 256, "%s.enable", (*it)->shortname);
+         snprintf(tmpstr, 256, "%s.enable", (*it)->shortname);
 
          if(force_module)
          {
@@ -597,7 +597,7 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
 	for(std::list<MDFNGI *>::iterator it = MDFNSystemsPrio.begin(); it != MDFNSystemsPrio.end(); it++)  //_unsigned int x = 0; x < MDFNSystems.size(); x++)
 	{
 	 char tmpstr[256];
-	 trio_snprintf(tmpstr, 256, "%s.enable", (*it)->shortname);
+	 snprintf(tmpstr, 256, "%s.enable", (*it)->shortname);
 
 	 if(force_module)
 	 {
@@ -714,7 +714,7 @@ static void BuildDynamicSetting(MDFNSetting *setting, const char *system_name, c
 
  memset(setting, 0, sizeof(MDFNSetting));
 
- trio_snprintf(setting_name, 256, "%s.%s", system_name, name);
+ snprintf(setting_name, 256, "%s.%s", system_name, name);
 
  setting->name = strdup(setting_name);
  setting->description = description;

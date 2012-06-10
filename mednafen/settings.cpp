@@ -653,7 +653,7 @@ bool MDFNI_SetSettingUI(const char *name, uint64 value)
 {
  char tmpstr[32];
 
- trio_snprintf(tmpstr, 32, "%llu", value);
+ snprintf(tmpstr, 32, "%llu", value);
  return(MDFNI_SetSetting(name, tmpstr, FALSE));
 }
 
