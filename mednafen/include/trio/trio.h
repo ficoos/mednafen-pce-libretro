@@ -135,7 +135,6 @@ int trio_vcscanf TRIO_PROTO((trio_instream_t stream, trio_pointer_t closure,
 int trio_cscanfv TRIO_PROTO((trio_instream_t stream, trio_pointer_t closure,
 			     TRIO_CONST char *format, void **args));
 
-int trio_sscanf TRIO_PROTO((TRIO_CONST char *buffer, TRIO_CONST char *format, ...));
 int trio_vsscanf TRIO_PROTO((TRIO_CONST char *buffer, TRIO_CONST char *format, va_list args));
 int trio_sscanfv TRIO_PROTO((TRIO_CONST char *buffer, TRIO_CONST char *format, void **args));
 
@@ -198,10 +197,6 @@ void trio_locale_set_grouping TRIO_PROTO((char *grouping));
 #ifndef HAVE_VFSCANF
 # undef vfscanf
 # define vfscanf trio_vfscanf
-#endif
-#ifndef HAVE_SSCANF
-# undef sscanf
-# define sscanf trio_sscanf
 #endif
 #ifndef HAVE_VSSCANF
 # undef vsscanf

@@ -7641,40 +7641,6 @@ TRIO_ARGS4((stream, closure, format, args),
 }
 #endif /* TRIO_FEATURE_CLOSURE */
 
-/*************************************************************************
- * sscanf
- */
-
-/**
-   Scan characters from string.
-
-   @param buffer Input string.
-   @param format Formatting string.
-   @param ... Arguments.
-   @return Number of scanned characters.
- */
-TRIO_PUBLIC int
-trio_sscanf
-TRIO_VARGS3((buffer, format, va_alist),
-	    TRIO_CONST char *buffer,
-	    TRIO_CONST char *format,
-	    TRIO_VA_DECL)
-{
-  int status;
-  va_list args;
-
-  assert(VALID(buffer));
-  assert(VALID(format));
-  
-  TRIO_VA_START(args, format);
-  status = TrioScan((trio_pointer_t)&buffer, 0,
-		    TrioInStreamString,
-		    NULL,
-		    format, args, NULL);
-  TRIO_VA_END(args);
-  return status;
-}
-
 /**
    Scan characters from string.
 
