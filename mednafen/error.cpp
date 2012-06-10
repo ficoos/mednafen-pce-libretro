@@ -27,14 +27,14 @@ MDFN_Error::MDFN_Error() throw()
 
 MDFN_Error::MDFN_Error(int errno_code_new, const char *format, ...) throw()
 {
-#if 0
- errno_code = errno_code_new;
-
+ char msg[256];
  va_list ap;
- va_start(ap, format);
- error_message = trio_vaprintf(format, ap);
+ va_start(ap,format);
+
+ vsnprintf(msg, sizeof(msg), format, ap);
+ fprintf(stderr, msg);
+
  va_end(ap);
-#endif
 }
 
 MDFN_Error::~MDFN_Error() throw()
