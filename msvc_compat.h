@@ -32,6 +32,7 @@ typedef int ssize_t;
 #endif
 
 #define snprintf _snprintf
+#define strtoll _strtoi64
 #define strtoull _strtoui64
 #undef strcasecmp
 #define strcasecmp _stricmp

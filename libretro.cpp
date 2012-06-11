@@ -19,7 +19,11 @@ static retro_input_state_t input_state_cb;
 static MDFN_Surface *surf;
 static char g_rom_dir[1024];
 
-static uint16_t mednafen_buf[WIDTH * HEIGHT] __attribute__((aligned(16)));
+#ifdef _MSC_VER
+static unsigned short mednafen_buf[WIDTH * HEIGHT];
+#else
+static unsigned short mednafen_buf[WIDTH * HEIGHT] __attribute__((aligned(16)));
+#endif
 
 static void extract_basename(char *buf, const char *path, size_t size)
 {

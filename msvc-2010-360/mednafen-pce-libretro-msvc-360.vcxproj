@@ -82,7 +82,6 @@
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release_LTCG|Xbox 360'">CompileAsC</CompileAs>
     </ClCompile>
     <ClCompile Include="..\mednafen\endian.cpp" />
-    <ClCompile Include="..\mednafen\error.cpp" />
     <ClCompile Include="..\mednafen\file.cpp" />
     <ClCompile Include="..\mednafen\FileWrapper.cpp" />
     <ClCompile Include="..\mednafen\general.cpp" />
