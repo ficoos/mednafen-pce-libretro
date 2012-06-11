@@ -124,9 +124,11 @@ static MDFNSetting RenamedSettings[] =
  { NULL }
 };
 
+#if 0
 static char *PortDeviceCache[16];
 static void *PortDataCache[16];
 static uint32 PortDataLenCache[16];
+#endif
 
 MDFNGI *MDFNGameInfo = NULL;
 
@@ -163,6 +165,7 @@ void MDFNI_CloseGame(void)
   CDInterfaces.clear();
  }
 
+#if 0
  for(unsigned int x = 0; x < sizeof(PortDeviceCache) / sizeof(char *); x++)
  {
   if(PortDeviceCache[x])
@@ -175,6 +178,7 @@ void MDFNI_CloseGame(void)
  memset(PortDataCache, 0, sizeof(PortDataCache));
  memset(PortDataLenCache, 0, sizeof(PortDataLenCache));
  memset(PortDeviceCache, 0, sizeof(PortDeviceCache));
+#endif
 }
 
 #ifdef WANT_NES_EMU
@@ -904,10 +908,11 @@ int MDFNI_Initialize(const char *basedir, const std::vector<MDFNSetting> &Driver
 	 return(0);
 	}
 
-
+#if 0
 	memset(PortDataCache, 0, sizeof(PortDataCache));
 	memset(PortDataLenCache, 0, sizeof(PortDataLenCache));
 	memset(PortDeviceCache, 0, sizeof(PortDeviceCache));
+#endif
 
 	lzo_init();
 
@@ -1129,6 +1134,7 @@ int MDFN_RawInputStateAction(StateMem *sm, int load, int data_only)
   StateRegs[x].name = stringies[x];
   StateRegs[x].flags = 0;
 
+#if 0
   if(PortDataCache[x])
   {
    StateRegs[x].v = PortDataCache[x];
@@ -1139,6 +1145,7 @@ int MDFN_RawInputStateAction(StateMem *sm, int load, int data_only)
    StateRegs[x].v = NULL;
    StateRegs[x].size = 0;
   }
+#endif
  }
 
  StateRegs[x].v = NULL;
@@ -1230,6 +1237,7 @@ void MDFNI_SetInput(int port, const char *type, void *ptr, uint32 ptr_len_thingy
  {
   assert(port < 16);
 
+#if 0
   PortDataCache[port] = ptr;
   PortDataLenCache[port] = ptr_len_thingy;
 
@@ -1240,6 +1248,7 @@ void MDFNI_SetInput(int port, const char *type, void *ptr, uint32 ptr_len_thingy
   }
 
   PortDeviceCache[port] = strdup(type);
+#endif
 
   MDFNGameInfo->SetInput(port, type, ptr);
  }
