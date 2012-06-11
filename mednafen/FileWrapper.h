@@ -17,6 +17,9 @@ class FileWrapper
  };
 
  FileWrapper(const char *path, const int mode, const char *purpose = NULL);
+ #if 0
+ FileWrapper();
+ #endif
  ~FileWrapper();
 
  uint64 read(void *data, uint64 count, bool error_on_eof = true);
@@ -41,6 +44,7 @@ class FileWrapper
  int64 size(void);
 
  void flush(void);
+ //void flushsync(void);	// TODO: see fflush and fsync
 
  void close(void);	// Flushes and closes the underlying OS/C lib file.  Calling any other method of this class after a call to
 			// this method is illegal(except for the implicit call to the destructor).
@@ -54,6 +58,7 @@ class FileWrapper
 
  FileWrapper & operator=(const FileWrapper &);    // Assignment operator
  FileWrapper(const FileWrapper &);		// Copy constructor
+ //FileWrapper(FileWrapper &);                // Copy constructor
 
  FILE *fp;
  std::string path_save;

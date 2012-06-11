@@ -1,4 +1,3 @@
-#include "mednafen/mednafen-types.h"
 #include "mednafen/mednafen.h"
 #include "mednafen/git.h"
 #include "mednafen/general.h"

@@ -1,27 +1,32 @@
 #ifndef _MEDNAFEN_H
 
-#include "mednafen-types.h"
+#include "types.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "gettext.h"
-
-#ifdef _MSC_VER
-#include "../msvc_compat.h"
-#endif
 
 #define _(String) gettext (String)
 
 #include "math_ops.h"
 #include "git.h"
 
+#ifdef __LIBRETRO__
+#include "mednafen-memory.h"
+#endif
+
 extern MDFNGI *MDFNGameInfo;
 
 #include "settings.h"
 
-void MDFN_PrintError(const char *format, ...);
-void MDFN_printf(const char *format, ...);
-void MDFN_DispMessage(const char *format, ...);
+void MDFN_PrintError(const char *format, ...) throw() MDFN_FORMATSTR(printf, 1, 2);
+void MDFN_printf(const char *format, ...) throw() MDFN_FORMATSTR(printf, 1, 2);
+void MDFN_DispMessage(const char *format, ...) throw() MDFN_FORMATSTR(printf, 1, 2);
+
+void MDFN_DebugPrintReal(const char *file, const int line, const char *format, ...) MDFN_FORMATSTR(printf, 3, 4);
+
+#define MDFN_DebugPrint(format, ...) MDFN_DebugPrintReal(__FILE__, __LINE__, format, ## __VA_ARGS__)
+
 
 class MDFNException
 {

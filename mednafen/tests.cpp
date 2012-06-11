@@ -298,6 +298,25 @@ MathTestTSOEntry MathTestTSOTests[] =
 
 static void TestSignedOverflow(void)
 {
+ for(unsigned int i = 0; i < sizeof(MathTestTSOTests) / sizeof(MathTestTSOEntry); i++)
+ {
+  int32 a = MathTestTSOTests[i].a;
+  int32 b = MathTestTSOTests[i].b;
+
+  assert((a + b) < a && (a + b) < b);
+
+  assert((a + 0x7FFFFFFE) < a);
+  assert((b + 0x7FFFFFFE) < b);
+
+  assert((a + 0x7FFFFFFF) < a);
+  assert((b + 0x7FFFFFFF) < b);
+
+  assert((int32)(a + 0x80000000) < a);
+  assert((int32)(b + 0x80000000) < b);
+
+  assert((int32)(a ^ 0x80000000) < a);
+  assert((int32)(b ^ 0x80000000) < b);
+ }
 }
 
 
@@ -377,6 +396,23 @@ bool MDFN_RunMathTests(void)
   assert(tmp < 0);
  }
 
+ #if 0
+ // TODO(except for 32-bit >> 32 test)
+ {
+  uint8 test_cow8 = (uint8)0xFF >> mdfn_shifty_test[1];
+  uint16 test_cow16 = (uint16)0xFFFF >> mdfn_shifty_test[2];
+  uint32 test_cow32 = (uint32)0xFFFFFFFF >> mdfn_shifty_test[3];
+  uint32 test_cow32_2 = (uint32)0xFFFFFFFF >> mdfn_shifty_test[0];
+
+ printf("%08x\n", test_cow32);
+
+  assert(test_cow8 == 0);
+  assert(test_cow16 == 0);
+  assert(test_cow32 == 0);
+  assert(test_cow32_2 == 0xFFFFFFFF);
+ }
+ #endif
+
  {
   int32 meow;
 
@@ -416,6 +452,15 @@ bool MDFN_RunMathTests(void)
   meow = (int32)(meow + ((uint32)meow >> 31)) >> 1;
   assert(meow == -2);
 
+  #if 0
+  meow = 1 << 30;
+  meow <<= 1;
+  assert(meow == -2147483648);
+
+  meow = 1 << 31;
+  meow <<= 1;
+  assert(meow == 0);
+  #endif
  }
 
 
@@ -578,6 +623,32 @@ bool MDFN_RunMathTests(void)
  assert(uilog2(0xFFFFFFFF) == 31);
 
  QuickEndianRBOTest();
+
+#if 0
+// Not really a math test.
+ const char *test_paths[] = { "/meow", "/meow/cow", "\\meow", "\\meow\\cow", "\\\\meow", "\\\\meow\\cow",
+			      "/meow.", "/me.ow/cow.", "\\meow.", "\\me.ow\\cow.", "\\\\meow.", "\\\\meow\\cow.",
+			      "/meow.txt", "/me.ow/cow.txt", "\\meow.txt", "\\me.ow\\cow.txt", "\\\\meow.txt", "\\\\meow\\cow.txt"
+
+			      "/meow", "/meow\\cow", "\\meow", "\\meow/cow", "\\\\meow", "\\\\meow/cow",
+			      "/meow.", "\\me.ow/cow.", "\\meow.", "/me.ow\\cow.", "\\\\meow.", "\\\\meow/cow.",
+			      "/meow.txt", "/me.ow\\cow.txt", "\\meow.txt", "\\me.ow/cow.txt", "\\\\meow.txt", "\\\\meow/cow.txt",
+			      "/bark///dog", "\\bark\\\\\\dog" };
+
+ for(unsigned i = 0; i < sizeof(test_paths) / sizeof(const char *); i++)
+ {
+  std::string file_path = std::string(test_paths[i]);
+  std::string dir_path;
+  std::string file_base;
+  std::string file_ext;
+
+  MDFN_GetFilePathComponents(file_path, &dir_path, &file_base, &file_ext);
+
+  printf("%s ------ dir=%s --- base=%s --- ext=%s\n", file_path.c_str(), dir_path.c_str(), file_base.c_str(), file_ext.c_str());
+
+ }
+#endif
+
 
  return(1);
 }

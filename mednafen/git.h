@@ -4,6 +4,7 @@
 #include <string>
 
 #include "video.h"
+#include "sound.h"
 
 typedef struct
 {
@@ -42,6 +43,14 @@ typedef enum
 
 #include "state.h"
 #include "settings-common.h"
+
+#ifdef WANT_DEBUGGER
+// #ifdef WANT_DEBUGGER
+// typedef struct DebuggerInfoStruct;
+// #else
+#include "debug.h"
+
+#endif
 
 typedef enum
 {
@@ -273,7 +282,11 @@ typedef struct
 
  ModPrio ModulePriority;
 
+ #ifdef WANT_DEBUGGER
+ DebuggerInfoStruct *Debugger;
+ #else
  void *Debugger;
+ #endif
  InputInfoStruct *InputInfo;
 
  // Returns 1 on successful load, 0 on fatal error(deprecated: -1 on unrecognized format)

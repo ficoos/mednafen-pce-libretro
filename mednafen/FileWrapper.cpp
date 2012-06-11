@@ -18,6 +18,7 @@
 #include "mednafen.h"
 #include "FileWrapper.h"
 
+#include <trio/trio.h>
 #include <stdarg.h>
 #include <sys/types.h>
 #include <sys/stat.h>
@@ -61,6 +62,39 @@
 
 // For special uses, IE in classes that take a path or a FileWrapper & in the constructor, and the FileWrapper non-pointer member
 // is in the initialization list for the path constructor but not the constructor with FileWrapper&
+#if 0
+FileWrapper::FileWrapper()
+{
+ fp = NULL;
+}
+#endif
+
+#if 0
+FileWrapper::FileWrapper(FileWrapper &original) : OpenedMode(original.OpenedMode)
+{
+ int fd;
+ int duped_fd;
+
+ path_save = original.path_save;
+
+ original.flush();
+
+ fd = fileno(original.fp);
+ if(-1 == (duped_fd = dup(fd)))
+ {
+  ErrnoHolder ene(errno);
+
+  throw(MDFN_Error(ene.Errno(), _("Error duping file descriptor: %s"), ene.StrError()));
+ }
+
+ if(!(fp = fdopen(duped_fd, (OpenedMode == MODE_READ) ? "rb" : "wb")))
+ {
+  ErrnoHolder ene(errno);
+
+  throw(MDFN_Error(ene.Errno(), _("Error during fdopen(): %s"), ene.StrError()));
+ }
+}
+#endif
 
 FileWrapper::FileWrapper(const char *path, const int mode, const char *purpose) : OpenedMode(mode)
 {
@@ -188,7 +222,7 @@ int FileWrapper::scanf(const char *format, ...)
 
  va_start(ap, format);
 
- ret = vfscanf(fp, format, ap);
+ ret = trio_vfscanf(fp, format, ap);
 
  va_end(ap);
 
@@ -200,7 +234,7 @@ int FileWrapper::scanf(const char *format, ...)
  }
 
  //if(ret < 0 || ret == EOF)
- // throw(MDFN_Error(0, _("%s error on format string \"%s\""), "vfscanf()", format));
+ // throw(MDFN_Error(0, _("%s error on format string \"%s\""), "trio_vfscanf()", format));
 
  return(ret);
 }
@@ -213,7 +247,7 @@ void FileWrapper::printf(const char *format, ...)
 
  va_start(ap, format);
 
- vfprintf(fp, format, ap);
+ trio_vfprintf(fp, format, ap);
 
  va_end(ap);
 

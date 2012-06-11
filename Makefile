@@ -123,7 +123,6 @@ MEDNAFEN_SOURCES := $(MEDNAFEN_DIR)/cdrom/cdromif.cpp \
 	$(MEDNAFEN_DIR)/settings.cpp \
 	$(MEDNAFEN_DIR)/general.cpp \
 	$(MEDNAFEN_DIR)/FileWrapper.cpp \
-	$(MEDNAFEN_DIR)/state.cpp \
 	$(MEDNAFEN_DIR)/endian.cpp \
 	$(MEDNAFEN_DIR)/cdrom/CDAccess.cpp \
 	$(MEDNAFEN_DIR)/cdrom/CDAccess_Image.cpp \
@@ -156,8 +155,7 @@ SOURCES_C := $(MPC_SRC) \
         $(ZLIB_SRC) \
 	$(MEDNAFEN_DIR)/compress/minilzo.c \
 	$(MEDNAFEN_DIR)/compress/quicklz.c \
-	$(MEDNAFEN_DIR)/compress/ioapi.c \
-	$(MEDNAFEN_DIR)/resampler/resample.c
+	$(MEDNAFEN_DIR)/compress/ioapi.c
 
 SOURCES_C += $(HW_CPU_SOURCES_C)
 
@@ -169,7 +167,7 @@ OBJECTS := $(SOURCES:.cpp=.o) $(SOURCES_C:.c=.o)
 all: $(TARGET)
 
 FLAGS += -ffast-math  -funroll-loops
-FLAGS += -I. -Imednafen -Imednafen/include -Imednafen/intl -Imednafen/hw_cpu -Imednafen/hw_misc -Imednafen/hw_sound -Imednafen/hw_video -Imednafen/compress
+FLAGS += -I. -Imednafen -Imednafen/include -Imednafen/intl -Imednafen/hw_cpu -Imednafen/hw_misc -Imednafen/hw_sound -Imednafen/hw_video -Imednafen/compress -Ilibretro-mednafen/includes
 
 FLAGS += $(ENDIANNESS_DEFINES) -DHAVE_MKDIR -DSIZEOF_DOUBLE=8 $(WARNINGS) -DMEDNAFEN_VERSION=\"0.9.22\" -DMEDNAFEN_VERSION_NUMERIC=922 -DPSS_STYLE=1 -DMPC_FIXED_POINT -DWANT_PCE_EMU -DSTDC_HEADERS -D__LIBRETRO__
 

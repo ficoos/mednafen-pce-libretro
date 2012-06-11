@@ -22,9 +22,12 @@
 #include <sys/stat.h>
 #include <unistd.h>
 
+#include <trio/trio.h>
 #include "driver.h"
 #include "general.h"
 #include "state.h"
+#include "movie.h"
+#include "netplay.h"
 #include "video.h"
 #include "video/resize.h"
 
@@ -185,7 +188,7 @@ static bool SubWrite(StateMem *st, SFORMAT *sf, int data_only, const char *name_
    char nameo[1 + 256];
    int slen;
 
-   slen = snprintf(nameo + 1, 256, "%s%s", name_prefix ? name_prefix : "", sf->name);
+   slen = trio_snprintf(nameo + 1, 256, "%s%s", name_prefix ? name_prefix : "", sf->name);
    nameo[0] = slen;
 
    if(slen >= 255)
@@ -687,6 +690,34 @@ int MDFNSS_Save(const char *fname, const char *suffix, const MDFN_Surface *surfa
 	return(1);
 }
 
+// Convenience function for movie.cpp
+int MDFNSS_SaveFP(gzFile fp, const MDFN_Surface *surface, const MDFN_Rect *DisplayRect, const MDFN_Rect *LineWidths)
+{
+ StateMem st;
+
+ memset(&st, 0, sizeof(StateMem));
+
+ if(!MDFNSS_SaveSM(&st, (DisplayRect && LineWidths), 0, surface, DisplayRect, LineWidths))
+ {
+  if(st.data)
+   free(st.data);
+  return(0);
+ }
+
+ if(gzwrite(fp, st.data, st.len) != (int32)st.len)
+ {
+  if(st.data)
+   free(st.data);
+  return(0);
+ }
+
+ if(st.data)
+  free(st.data);
+
+ return(1);
+}
+
+
 int MDFNSS_LoadSM(StateMem *st, int haspreview, int data_only)
 {
         uint8 header[32];
@@ -838,6 +869,7 @@ void MDFNSS_CheckStates(void)
         }
 
 	CurrentState = 0;
+	MDFND_SetStateStatus(NULL);
 }
 
 void MDFNSS_GetStateInfo(const char *filename, StateStatusStruct *status)
@@ -892,8 +924,10 @@ void MDFNI_SelectState(int w)
 
  if(w == -1) 
  {  
+  MDFND_SetStateStatus(NULL);
   return; 
  }
+ MDFNI_SelectMovie(-1);
 
  if(w == 666 + 1)
   CurrentState = (CurrentState + 1) % 10;
@@ -917,6 +951,7 @@ void MDFNI_SelectState(int w)
  status->recently_saved = RecentlySavedState;
 
  MDFNSS_GetStateInfo(MDFN_MakeFName(MDFNMKF_STATE,CurrentState,NULL).c_str(), status);
+ MDFND_SetStateStatus(status);
 }  
 
 void MDFNI_SaveState(const char *fname, const char *suffix, const MDFN_Surface *surface, const MDFN_Rect *DisplayRect, const MDFN_Rect *LineWidths)
@@ -924,6 +959,7 @@ void MDFNI_SaveState(const char *fname, const char *suffix, const MDFN_Surface *
  if(!MDFNGameInfo->StateAction) 
   return;
 
+ MDFND_SetStateStatus(NULL);
  MDFNSS_Save(fname, suffix, surface, DisplayRect, LineWidths);
 }
 
@@ -932,6 +968,7 @@ void MDFNI_LoadState(const char *fname, const char *suffix)
  if(!MDFNGameInfo->StateAction) 
   return;
 
+ MDFND_SetStateStatus(NULL);
 
  /* For network play and movies, be load the state locally, and then save the state to a temporary buffer,
     and send or record that.  This ensures that if an older state is loaded that is missing some
@@ -940,6 +977,11 @@ void MDFNI_LoadState(const char *fname, const char *suffix)
  */
  if(MDFNSS_Load(fname, suffix))
  {
+  if(MDFNnetplay)
+   MDFNNET_SendState();
+
+  if(MDFNMOV_IsRecording())
+   MDFNMOV_RecordState();
  }
 }
 
@@ -1022,6 +1064,9 @@ void MDFN_StateEvilEnd(void)
 
  if(bcs)
  {
+  if(MDFNMOV_IsRecording())
+   MDFN_StateEvilFlushMovieLove();
+
   for(x = 0;x < SRW_NUM; x++)
   {
 
@@ -1041,6 +1086,8 @@ void MDFN_StateEvilFlushMovieLove(void)
  {
   if(bcs[bahpos].MovieLove.data)
   {
+   if(bcs[x].data)
+    MDFNMOV_ForceRecord(&bcs[bahpos].MovieLove);
    free(bcs[bahpos].MovieLove.data);
    bcs[bahpos].MovieLove.data = NULL;
   }
@@ -1113,6 +1160,7 @@ int MDFN_StateEvil(int rewind)
 
    MDFNSS_LoadSM(&sm, 0, 1);
 
+   free(MDFNMOV_GrabRewindJoy().data);
    return(1);
   }
  }
@@ -1123,6 +1171,16 @@ int MDFN_StateEvil(int rewind)
 
   bcspos = (bcspos + 1) % SRW_NUM;
 
+  if(MDFNMOV_IsRecording())
+  {
+   if(bcs[bcspos].data && bcs[bcspos].MovieLove.data)
+   {
+    //printf("Force: %d\n", bcspos);
+    MDFNMOV_ForceRecord(&bcs[bcspos].MovieLove);
+    free(bcs[bcspos].MovieLove.data);
+    bcs[bcspos].MovieLove.data = NULL;
+   }
+  }
   if(bcs[bcspos].data)
   {
    free(bcs[bcspos].data);
@@ -1185,6 +1243,9 @@ int MDFN_StateEvil(int rewind)
     bcs[prev_bcspos].compressed_len = dst_len;
    }
   }
+
+  if(MDFNMOV_IsRecording())
+   bcs[bcspos].MovieLove = MDFNMOV_GrabRewindJoy();
  }
  return(0);
 }

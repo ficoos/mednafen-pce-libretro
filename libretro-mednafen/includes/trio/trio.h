@@ -32,3 +32,6 @@
  */
 
 #define trio_snprintf snprintf
+#define trio_fprintf fprintf
+#define trio_vfscanf vfscanf
+#define trio_vfprintf vfprintf

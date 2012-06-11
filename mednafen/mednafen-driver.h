@@ -11,7 +11,7 @@ extern std::vector<MDFNGI *>MDFNSystems;
 
 /* Indent stdout newlines +- "indent" amount */
 void MDFN_indent(int indent);
-void MDFN_printf(const char *format, ...);
+void MDFN_printf(const char *format, ...) throw() MDFN_FORMATSTR(printf, 1, 2);
 
 #define MDFNI_printf MDFN_printf
 
@@ -19,6 +19,7 @@ void MDFN_printf(const char *format, ...);
 void MDFND_PrintError(const char *s);
 void MDFND_Message(const char *s);
 
+uint32 MDFND_GetTime(void);
 void MDFND_Sleep(uint32 ms);
 
 // Synchronize virtual time to actual time using members of espec:
@@ -87,7 +88,7 @@ void MDFNI_CloseGame(void);
 /* Deallocates all allocated memory.  Call after MDFNI_Emulate() returns. */
 void MDFNI_Kill(void);
 
-void MDFN_DispMessage(const char *format, ...);
+void MDFN_DispMessage(const char *format, ...) throw() MDFN_FORMATSTR(printf, 1, 2);
 #define MDFNI_DispMessage MDFN_DispMessage
 
 uint32 MDFNI_CRC32(uint32 crc, uint8 *buf, uint32 len);
@@ -117,6 +118,41 @@ void MDFNI_DiskSelect(int which);
 void MDFNI_DiskSelect();
 void MDFNI_DiskInsert();
 void MDFNI_DiskEject();
+
+// New removable media interface(TODO!)
+//
+#if 0
+
+struct MediumInfoStruct
+{
+ const char *name;		// More descriptive name, "Al Gore's Grand Adventure, Disk 1 of 7" ???
+				// (remember, Do utf8->utf32->utf8 for truncation for display)
+ const char *set_member_name;	// "Disk 1 of 4, Side A", "Disk 3 of 4, Side B", "Disc 2 of 5" ???? (Disk M of N, where N is related to the number of entries 
+				// in the structure???)
+};
+
+struct DriveInfoStruct
+{
+ const char *name;
+ const char *description;
+ const MediumInfoStruct *possible_media;
+ //bool 
+ //const char *eject_state_name;	// Like "Lid Open", or "Tray Ejected"
+ //const char *insert_state_name;	// Like "
+};
+
+ // Entry point
+ DriveInfoStruct *Drives;
+
+void MDFNI_SetDriveMedium(unsigned drive_index, unsigned int medium_index, unsigned state_id);
+#endif
+
+
+bool MDFNI_StartAVRecord(const char *path, double SoundRate);
+void MDFNI_StopAVRecord(void);
+
+bool MDFNI_StartWAVRecord(const char *path, double SoundRate);
+void MDFNI_StopWAVRecord(void);
 
 void MDFNI_DumpModulesDef(const char *fn);
 

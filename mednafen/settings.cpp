@@ -20,6 +20,7 @@
 #include <string.h>
 #include <vector>
 #include <string>
+#include <trio/trio.h>
 #include <map>
 #include <list>
 #include "settings.h"
@@ -423,15 +424,15 @@ bool MDFN_SaveSettings(void)
  if(!(fp = fopen(fname.c_str(), "wb")))
   return(0);
 
- fprintf(fp, ";VERSION %s\n", MEDNAFEN_VERSION);
+ trio_fprintf(fp, ";VERSION %s\n", MEDNAFEN_VERSION);
 
- fprintf(fp, _(";Edit this file at your own risk!\n"));
- fprintf(fp, _(";File format: <key><single space><value><LF or CR+LF>\n\n"));
+ trio_fprintf(fp, _(";Edit this file at your own risk!\n"));
+ trio_fprintf(fp, _(";File format: <key><single space><value><LF or CR+LF>\n\n"));
 
  for(sit = CurrentSettings.begin(); sit != CurrentSettings.end(); sit++)
  {
   SortedList.push_back(&sit->second);
-  //fprintf(fp, ";%s\n%s %s\n\n", _(sit->second.desc->description), sit->second.name, sit->second.value);
+  //trio_fprintf(fp, ";%s\n%s %s\n\n", _(sit->second.desc->description), sit->second.name, sit->second.value);
   //free(sit->second.name);
   //free(sit->second.value);
  }
@@ -443,17 +444,17 @@ bool MDFN_SaveSettings(void)
   if((*lit)->desc->type == MDFNST_ALIAS)
    continue;
 
-  fprintf(fp, ";%s\n%s %s\n\n", _((*lit)->desc->description), (*lit)->name, (*lit)->value);
+  trio_fprintf(fp, ";%s\n%s %s\n\n", _((*lit)->desc->description), (*lit)->name, (*lit)->value);
   free((*lit)->name);
   free((*lit)->value);
  }
 
  if(UnknownSettings.size())
  {
-  fprintf(fp, "\n;\n;Unrecognized settings follow:\n;\n\n");
+  trio_fprintf(fp, "\n;\n;Unrecognized settings follow:\n;\n\n");
   for(unsigned int i = 0; i < UnknownSettings.size(); i++)
   {
-   fprintf(fp, "%s %s\n\n", UnknownSettings[i].name, UnknownSettings[i].value);
+   trio_fprintf(fp, "%s %s\n\n", UnknownSettings[i].name, UnknownSettings[i].value);
 
    free(UnknownSettings[i].name);
    free(UnknownSettings[i].value);
@@ -639,6 +640,22 @@ bool MDFNI_SetSetting(const char *name, const char *value, bool NetplayOverride)
  }
 }
 
+#if 0
+// TODO after a game is loaded, but should we?
+void MDFN_CallSettingsNotification(void)
+{
+ for(unsigned int x = 0; x < CurrentSettings.size(); x++)
+ {
+  if(CurrentSettings[x].ChangeNotification)
+  {
+   // TODO, always call driver notification function, regardless of whether a game is loaded.
+   if(MDFNGameInfo)
+    CurrentSettings[x].ChangeNotification(CurrentSettings[x].name);
+  }
+ }
+}
+#endif
+
 bool MDFNI_SetSettingB(const char *name, bool value)
 {
  char tmpstr[2];
@@ -652,7 +669,7 @@ bool MDFNI_SetSettingUI(const char *name, uint64 value)
 {
  char tmpstr[32];
 
- snprintf(tmpstr, 32, "%llu", value);
+ trio_snprintf(tmpstr, 32, "%llu", value);
  return(MDFNI_SetSetting(name, tmpstr, FALSE));
 }
 
