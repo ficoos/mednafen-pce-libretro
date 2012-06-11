@@ -130,7 +130,7 @@ static uint32 PortDataLenCache[16];
 
 MDFNGI *MDFNGameInfo = NULL;
 
-static Fir_Resampler<16> ff_resampler;
+//static Fir_Resampler<16> ff_resampler;
 static double LastSoundMultiplier;
 
 static bool FFDiscard = FALSE; // TODO:  Setting to discard sound samples instead of increasing pitch
@@ -980,6 +980,7 @@ static void ProcessAudio(EmulateSpecStruct *espec)
   int32 SoundBufSize = espec->SoundBufSize - espec->SoundBufSizeALMS;
   const int32 SoundBufMaxSize = espec->SoundBufMaxSize - espec->SoundBufSizeALMS;
 
+#if 0
   if(multiplier_save != LastSoundMultiplier)
   {
    ff_resampler.time_ratio(multiplier_save, 0.9965);
@@ -1027,6 +1028,7 @@ static void ProcessAudio(EmulateSpecStruct *espec)
     }
    }
   }
+#endif
 
   if(volume_save != 1)
   {
@@ -1101,7 +1103,7 @@ void MDFNI_Emulate(EmulateSpecStruct *espec)
   espec->SoundFormatChanged = true;
   last_sound_rate = espec->SoundRate;
 
-  ff_resampler.buffer_size((espec->SoundRate / 2) * 2);
+  //ff_resampler.buffer_size((espec->SoundRate / 2) * 2);
  }
 
  espec->NeedSoundReverse = MDFN_StateEvil(espec->NeedRewind);
