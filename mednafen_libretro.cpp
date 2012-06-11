@@ -817,6 +817,10 @@ static bool LoadIPS(MDFNFILE &GameFile, const char *path)
  return(1);
 }
 
+#ifdef __CELLOS_LV2__
+#define S_ISREG(f) (1)
+#endif
+
 MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
 {
         MDFNFILE GameFile;
@@ -1763,12 +1767,14 @@ int MDFNSS_SaveFP(gzFile fp, const MDFN_Surface *surface, const MDFN_Rect *Displ
   return(0);
  }
 
+#if 0
  if(gzwrite(fp, st.data, st.len) != (int32)st.len)
  {
   if(st.data)
    free(st.data);
   return(0);
  }
+#endif
 
  if(st.data)
   free(st.data);

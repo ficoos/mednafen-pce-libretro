@@ -705,6 +705,7 @@ char *MDFNFILE::fgets(char *s, int buffer_size)
 
 static INLINE bool MDFN_DumpToFileReal(const char *filename, int compress, const std::vector<PtrLengthPair> &pearpairs)
 {
+#if 0
  if(MDFN_GetSettingB("filesys.disablesavegz"))
   compress = 0;
 
@@ -747,6 +748,7 @@ static INLINE bool MDFN_DumpToFileReal(const char *filename, int compress, const
   }
  }
  else
+#endif
  {
   FILE *fp = fopen(filename, "wb");
   if(!fp)

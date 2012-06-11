@@ -11,10 +11,6 @@
 #include "math_ops.h"
 #include "git.h"
 
-#ifdef __LIBRETRO__
-#include "mednafen-memory.h"
-#endif
-
 extern MDFNGI *MDFNGameInfo;
 
 #include "settings.h"
@@ -55,7 +51,7 @@ int MDFN_RawInputStateAction(StateMem *sm, int load, int data_only);
 #include "mednafen-driver.h"
 
 #include "mednafen-endian.h"
-#include "memory.h"
+#include "mednafen-memory.h"
 
 #define _MEDNAFEN_H
 #endif
