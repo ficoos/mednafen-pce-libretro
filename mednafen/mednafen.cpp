@@ -131,9 +131,9 @@ static uint32 PortDataLenCache[16];
 MDFNGI *MDFNGameInfo = NULL;
 
 //static Fir_Resampler<16> ff_resampler;
-static double LastSoundMultiplier;
+//static double LastSoundMultiplier;
 
-static bool FFDiscard = FALSE; // TODO:  Setting to discard sound samples instead of increasing pitch
+//static bool FFDiscard = FALSE; // TODO:  Setting to discard sound samples instead of increasing pitch
 
 static MDFN_PixelFormat last_pixel_format;
 static double last_sound_rate;
@@ -310,7 +310,7 @@ MDFNGI *MDFNI_LoadCD(const char *force_module, const char *devicename)
 
  MDFNI_CloseGame();
 
- LastSoundMultiplier = 1;
+ //LastSoundMultiplier = 1;
 
  MDFN_printf("Loading %s...\n\n", devicename ? devicename : "PHYSICAL CD");
 
@@ -547,7 +547,7 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
 
 	MDFNI_CloseGame();
 
-	LastSoundMultiplier = 1;
+	//LastSoundMultiplier = 1;
 
 	MDFNGameInfo = NULL;
 
@@ -963,7 +963,8 @@ void MDFNI_Kill(void)
  MDFN_SaveSettings();
 }
 
-static double multiplier_save, volume_save;
+//static double multiplier_save;
+static double volume_save;
 static std::vector<int16> SoundBufPristine;
 
 static void ProcessAudio(EmulateSpecStruct *espec)
@@ -971,8 +972,10 @@ static void ProcessAudio(EmulateSpecStruct *espec)
  if(espec->SoundVolume != 1)
   volume_save = espec->SoundVolume;
 
+#if 0
  if(espec->soundmultiplier != 1)
   multiplier_save = espec->soundmultiplier;
+#endif
 
  if(espec->SoundBuf && espec->SoundBufSize)
  {
@@ -1083,7 +1086,7 @@ void MDFN_MidSync(EmulateSpecStruct *espec)
 
 void MDFNI_Emulate(EmulateSpecStruct *espec)
 {
- multiplier_save = 1;
+ //multiplier_save = 1;
  volume_save = 1;
 
  espec->SoundBufSize = 0;
