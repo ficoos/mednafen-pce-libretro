@@ -105,14 +105,11 @@
     <ClCompile Include="..\mednafen\hw_cpu\huc6280\huc6280.cpp" />
     <ClCompile Include="..\mednafen\hw_misc\arcade_card\arcade_card.cpp" />
     <ClCompile Include="..\mednafen\hw_sound\pce_psg\pce_psg.cpp" />
-    <ClCompile Include="..\mednafen\hw_sound\ym2413\emu2413.cpp" />
     <ClCompile Include="..\mednafen\hw_video\huc6270\backup\vdc.cpp" />
     <ClCompile Include="..\mednafen\hw_video\huc6270\vdc.cpp" />
     <ClCompile Include="..\mednafen\math_ops.cpp" />
     <ClCompile Include="..\mednafen\md5.cpp" />
     <ClCompile Include="..\mednafen\mednafen.cpp" />
-    <ClCompile Include="..\mednafen\memory.cpp" />
-    <ClCompile Include="..\mednafen\mempatcher.cpp" />
     <ClCompile Include="..\mednafen\mpcdec\crc32.c">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='CodeAnalysis|Xbox 360'">CompileAsC</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Xbox 360'">CompileAsC</CompileAs>

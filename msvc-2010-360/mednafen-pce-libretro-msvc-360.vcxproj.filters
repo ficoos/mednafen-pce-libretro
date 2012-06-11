@@ -51,9 +51,6 @@
     <Filter Include="Source Files\mednafen\hw_sound\pce_psg">
       <UniqueIdentifier>{7facd1f3-6e25-4f80-8c47-ee7e2ae391d6}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\mednafen\hw_sound\ym2413">
-      <UniqueIdentifier>{e5b9a838-1206-4eb1-8341-ece8f5cebfbd}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\mednafen\hw_misc">
       <UniqueIdentifier>{718a97dd-e64b-4c50-98ad-f0232c69eb96}</UniqueIdentifier>
     </Filter>
@@ -108,12 +105,6 @@
       <Filter>Source Files\mednafen</Filter>
     </ClCompile>
     <ClCompile Include="..\mednafen\mednafen.cpp">
-      <Filter>Source Files\mednafen</Filter>
-    </ClCompile>
-    <ClCompile Include="..\mednafen\memory.cpp">
-      <Filter>Source Files\mednafen</Filter>
-    </ClCompile>
-    <ClCompile Include="..\mednafen\mempatcher.cpp">
       <Filter>Source Files\mednafen</Filter>
     </ClCompile>
     <ClCompile Include="..\mednafen\okiadpcm.cpp">
@@ -292,9 +283,6 @@
     </ClCompile>
     <ClCompile Include="..\mednafen\hw_sound\pce_psg\pce_psg.cpp">
       <Filter>Source Files\mednafen\hw_sound\pce_psg</Filter>
-    </ClCompile>
-    <ClCompile Include="..\mednafen\hw_sound\ym2413\emu2413.cpp">
-      <Filter>Source Files\mednafen\hw_sound\ym2413</Filter>
     </ClCompile>
     <ClCompile Include="..\mednafen\hw_misc\arcade_card\arcade_card.cpp">
       <Filter>Source Files\mednafen\hw_misc</Filter>
