@@ -140,7 +140,6 @@ MEDNAFEN_SOURCES := $(MEDNAFEN_DIR)/cdrom/cdromif.cpp \
 	$(MEDNAFEN_DIR)/cdrom/recover-raw.cpp \
 	$(MEDNAFEN_DIR)/cdrom/l-ec.cpp \
 	$(MEDNAFEN_DIR)/cdrom/crc32.cpp \
-	$(MEDNAFEN_DIR)/mempatcher.cpp \
 	$(MEDNAFEN_DIR)/video/surface.cpp \
 	$(MEDNAFEN_DIR)/video/resize.cpp \
 	$(MEDNAFEN_DIR)/string/escape.cpp \

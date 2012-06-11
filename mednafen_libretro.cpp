@@ -35,6 +35,7 @@
  *
  * FILES TO EXCLUDE / WHAT THIS WRAPPER REPLACES:
  * mednafen/memory.cpp
+ * mednafen/mempatcher.cpp
  * mednafen/video/font-data.cpp
  * mednafen/video/font-data-12x13.c
  * mednafen/video/font-data-18x18.c
@@ -150,7 +151,7 @@ int MDFND_UnlockMutex(MDFN_Mutex *lock)
 
 /*============================================================
 	MEMORY
-        replaces: mednafen/memory.c
+        replaces: mednafen/memory.cpp
 ============================================================ */
 
 void *MDFN_calloc_real(uint32 nmemb, uint32 size, const char *purpose, const char *_file, const int _line)
@@ -172,6 +173,31 @@ void MDFN_free(void *ptr)
 {
  free(ptr);
 }
+
+/*============================================================
+	MEMORY PATCHER - STUB
+        replaces: mednafen/mempatcher.cpp
+============================================================ */
+#include "mednafen/mempatcher.h"
+
+std::vector<SUBCHEAT> SubCheats[8];
+
+static void SettingChanged(const char *name) {}
+
+MDFNSetting MDFNMP_Settings[] =
+{
+ { "cheats", MDFNSF_NOFLAGS, "Enable cheats.", NULL, MDFNST_BOOL, "1", NULL, NULL, NULL, SettingChanged },
+ { NULL}
+};
+
+bool MDFNMP_Init(uint32 ps, uint32 numpages) { return 1; }
+void MDFNMP_AddRAM(uint32 size, uint32 address, uint8 *RAM) {}
+void MDFNMP_Kill(void) {}
+void MDFNMP_InstallReadPatches(void) {}
+void MDFNMP_RemoveReadPatches(void) {}
+void MDFNMP_ApplyPeriodicCheats(void) {}
+void MDFN_FlushGameCheats(int nosave) {}
+void MDFN_LoadGameCheats(FILE *override) {}
 
 /*============================================================
 	STUBS
