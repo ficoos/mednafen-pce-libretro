@@ -61,7 +61,7 @@ typedef uint64_t uint64;
   #define MDFN_WARN_UNUSED_RESULT __attribute__ ((warn_unused_result))
 
 #elif defined(_MSC_VER)
-  #define NO_INLINE __declspec(noinline)
+  #define NO_INLINE
 
   #define MDFN_FASTCALL __fastcall
 

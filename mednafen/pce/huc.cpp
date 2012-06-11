@@ -18,7 +18,7 @@
 #include "pce.h"
 #include "huc.h"
 #include "../cdrom/pcecd.h"
-#include "arcade_card/arcade_card.h"
+#include "../hw_misc/arcade_card/arcade_card.h"
 #include "../md5.h"
 #include "../file.h"
 #include "../cdrom/cdromif.h"

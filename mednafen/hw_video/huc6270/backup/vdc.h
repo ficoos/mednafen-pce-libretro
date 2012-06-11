@@ -1,7 +1,7 @@
 #ifndef __PCE_VDC_H
 #define __PCE_VDC_H
 
-#include "mednafen/lepacker.h"
+#include "../../../lepacker.h"
 
 #define VDC_PIXEL_OUT_MASK	0x01FF
 

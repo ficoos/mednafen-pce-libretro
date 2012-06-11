@@ -33,7 +33,7 @@
 #endif
 
 #define C68K_FASTCALL
-#include <inttypes.h>
+#include <stdint.h>
 
 typedef int64_t s64;
 typedef uint64_t u64;

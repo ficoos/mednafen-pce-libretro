@@ -18,8 +18,8 @@
 #ifndef __PCE_VCE_H
 #define __PCE_VCE_H
 
-#include "huc6280/huc6280.h"
-#include "huc6270/vdc.h"
+#include "../hw_cpu/huc6280/huc6280.h"
+#include "../hw_video/huc6270/vdc.h"
 
 namespace MDFN_IEN_PCE
 {

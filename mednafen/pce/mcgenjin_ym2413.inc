@@ -1,4 +1,4 @@
-#include <mednafen/hw_sound/ym2413/emu2413.h>
+#include "../hw_sound/ym2413/emu2413.h"
 
 class MCGenjin_CS_Device_YM2413 : public MCGenjin_CS_Device
 {

@@ -28,7 +28,7 @@
 #include <math.h>
 #include "../video.h"
 #include "vce.h"
-#include "huc6270/vdc.h"
+#include "../hw_video/huc6270/vdc.h"
 #include "subhw.h"
 #include "../cdrom/pcecd.h"
 

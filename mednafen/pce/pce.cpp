@@ -17,7 +17,7 @@
 
 #include "pce.h"
 #include "vce.h"
-#include "pce_psg/pce_psg.h"
+#include "../hw_sound/pce_psg/pce_psg.h"
 #include "input.h"
 #include "huc.h"
 #include "subhw.h"
@@ -25,7 +25,7 @@
 #include "../cdrom/scsicd.h"
 #include "hes.h"
 #include "tsushin.h"
-#include "arcade_card/arcade_card.h"
+#include "../hw_misc/arcade_card/arcade_card.h"
 #include "../mempatcher.h"
 #include "../cdrom/cdromif.h"
 #include "../md5.h"

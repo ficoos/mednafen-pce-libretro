@@ -1,6 +1,10 @@
 #ifndef __MDFN_HUC6280_H
 #define __MDFN_HUC6280_H
 
+#ifdef _MSC_VER
+#include "../../../msvc_compat.h"
+#endif
+
 class HuC6280_Support
 {
 	public:
