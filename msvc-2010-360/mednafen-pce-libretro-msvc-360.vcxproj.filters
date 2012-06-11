@@ -80,9 +80,6 @@
     <ClCompile Include="..\libretro.cpp">
       <Filter>Source Files\libretro</Filter>
     </ClCompile>
-    <ClCompile Include="..\mednafen\tests.cpp">
-      <Filter>Source Files\mednafen</Filter>
-    </ClCompile>
     <ClCompile Include="..\mednafen\endian.cpp">
       <Filter>Source Files\mednafen</Filter>
     </ClCompile>

@@ -292,6 +292,13 @@ void MDFN_FlushGameCheats(int nosave) {}
 void MDFN_LoadGameCheats(FILE *override) {}
 
 /*============================================================
+	TESTS
+        replaces: mednafen/tests.cpp
+============================================================ */
+
+bool MDFN_RunMathTests(void) { return 1; }
+
+/*============================================================
 	STUBS
 ============================================================ */
 
@@ -309,3 +316,4 @@ int MDFND_SendData(const void*, uint32) { return 0; }
 int MDFND_RecvData(void *, uint32) { return 0; }
 void MDFND_NetplayText(const uint8*, bool) {}
 void MDFND_NetworkClose() {}
+
