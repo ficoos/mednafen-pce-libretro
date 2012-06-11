@@ -220,13 +220,29 @@ MCGenjin::MCGenjin(Blip_Buffer *bb, const uint8 *rr, uint32 rr_size)
 	throw MDFN_Error(0, _("Unsupported MCGENJIN device on CS%d: 0x%02x"), i, cs_di[i]);
 	break;
 
-   case 0x00:
+   case 0:
 	MDFN_printf(_("CS%d: Unused\n"), i);
 	cs[i] = new MCGenjin_CS_Device();
 	break;
 
-   case 0x10 ... 0x18:
-   case 0x20 ... 0x28:
+   case 16:
+   case 17:
+   case 18:
+   case 19:
+   case 20:
+   case 21:
+   case 22:
+   case 23:
+   case 24:
+   case 32:
+   case 33:
+   case 34:
+   case 35:
+   case 36:
+   case 37:
+   case 38:
+   case 39:
+   case 40:
 	MDFN_printf(_("CS%d: %uKiB %sRAM\n"), i, 8 << (cs_di[i] & 0xF), (cs_di[i] & 0x20) ? "Nonvolatile " : "");
 	cs[i] = new MCGenjin_CS_Device_RAM(8192 << (cs_di[i] & 0xF), (bool)(cs_di[i] & 0x20));
 	break;

@@ -222,10 +222,12 @@ static uint16 M68K_ReadMemory16(uint32 A)
  {
   default: return(0xFFFF);
 
-  case 0x0 ... 0x3:
+ case 0:
+ case 1:
+ case 2:
+ case 3:
         return READ16_MSB(BigRAM, A & 0x7FFFF);
-
-  case 0x4:
+ case 4:
 	return M68K_ReadIO(A);
  }
 }
