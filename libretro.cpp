@@ -132,8 +132,8 @@ static void update_input (void)
    }
 
    // Possible endian bug ...
-   game->SetInput(0, "gamepad", &input_buf_p1);
-   game->SetInput(1, "gamepad", &input_buf_p2);
+   MDFNI_SetInput(0, "gamepad", &input_buf_p1, 0);
+   MDFNI_SetInput(1, "gamepad", &input_buf_p2, 0);
 }
 
 void retro_run()

@@ -299,14 +299,362 @@ void MDFN_LoadGameCheats(FILE *override) {}
 bool MDFN_RunMathTests(void) { return 1; }
 
 /*============================================================
+	MEDNAFEN
+        replaces: mednafen/mednafen.cpp
+============================================================ */
+
+#ifdef HAVE_MEDNAFEN_IMPL
+
+#ifdef WANT_NES_EMU
+extern MDFNGI EmulatedNES;
+#endif
+
+#ifdef WANT_SNES_EMU
+extern MDFNGI EmulatedSNES;
+#endif
+
+#ifdef WANT_GBA_EMU
+extern MDFNGI EmulatedGBA;
+#endif
+
+#ifdef WANT_GB_EMU
+extern MDFNGI EmulatedGB;
+#endif
+
+#ifdef WANT_LYNX_EMU
+extern MDFNGI EmulatedLynx;
+#endif
+
+#ifdef WANT_MD_EMU
+extern MDFNGI EmulatedMD;
+#endif
+
+#ifdef WANT_NGP_EMU
+extern MDFNGI EmulatedNGP;
+#endif
+
+#ifdef WANT_PCE_EMU
+extern MDFNGI EmulatedPCE;
+#endif
+
+#ifdef WANT_PCE_FAST_EMU
+extern MDFNGI EmulatedPCE_Fast;
+#endif
+
+#ifdef WANT_PCFX_EMU
+extern MDFNGI EmulatedPCFX;
+#endif
+
+#ifdef WANT_PSX_EMU
+extern MDFNGI EmulatedPSX;
+#endif
+
+#ifdef WANT_VB_EMU
+extern MDFNGI EmulatedVB;
+#endif
+
+#ifdef WANT_WSWAN_EMU
+extern MDFNGI EmulatedWSwan;
+#endif
+
+extern MDFNGI EmulatedCDPlay;
+
+std::vector<MDFNGI *> MDFNSystems;
+static std::list<MDFNGI *> MDFNSystemsPrio;
+static std::vector<CDIF *> CDInterfaces;	// FIXME: Cleanup on error out.
+
+static double volume_save;
+MDFNGI *MDFNGameInfo = NULL;
+
+bool MDFNI_StartWAVRecord(const char *path, double SoundRate) { return false; }
+bool MDFNI_StartAVRecord(const char *path, double SoundRate)  { return false; }
+void MDFNI_StopAVRecord(void) {}
+void MDFNI_StopWAVRecord(void) {}
+
+void MDFNI_CloseGame(void)
+{
+ if(MDFNGameInfo)
+ {
+  if(MDFNGameInfo->GameType != GMT_PLAYER)
+   MDFN_FlushGameCheats(0);
+
+  MDFNGameInfo->CloseGame();
+  if(MDFNGameInfo->name)
+  {
+   free(MDFNGameInfo->name);
+   MDFNGameInfo->name=0;
+  }
+  MDFNMP_Kill();
+
+  MDFNGameInfo = NULL;
+  MDFN_StateEvilEnd();
+
+  for(unsigned i = 0; i < CDInterfaces.size(); i++)
+   delete CDInterfaces[i];
+  CDInterfaces.clear();
+ }
+}
+
+int MDFNI_NetplayStart(uint32 local_players, uint32 netmerge, const std::string &nickname, const std::string &game_key, const std::string &connect_password)
+{
+ return 0;
+}
+
+void MDFNI_Kill(void)
+{
+ MDFN_SaveSettings();
+}
+
+bool MDFNI_InitializeModules(const std::vector<MDFNGI *> &ExternalSystems)
+{
+ static MDFNGI *InternalSystems[] =
+ {
+  #ifdef WANT_NES_EMU
+  &EmulatedNES,
+  #endif
+
+  #ifdef WANT_SNES_EMU
+  &EmulatedSNES,
+  #endif
+
+  #ifdef WANT_GB_EMU
+  &EmulatedGB,
+  #endif
+
+  #ifdef WANT_GBA_EMU
+  &EmulatedGBA,
+  #endif
+
+  #ifdef WANT_PCE_EMU
+  &EmulatedPCE,
+  #endif
+
+  #ifdef WANT_PCE_FAST_EMU
+  &EmulatedPCE_Fast,
+  #endif
+
+  #ifdef WANT_LYNX_EMU
+  &EmulatedLynx,
+  #endif
+
+  #ifdef WANT_MD_EMU
+  &EmulatedMD,
+  #endif
+
+  #ifdef WANT_PCFX_EMU
+  &EmulatedPCFX,
+  #endif
+
+  #ifdef WANT_NGP_EMU
+  &EmulatedNGP,
+  #endif
+
+  #ifdef WANT_PSX_EMU
+  &EmulatedPSX,
+  #endif
+
+  #ifdef WANT_VB_EMU
+  &EmulatedVB,
+  #endif
+
+  #ifdef WANT_WSWAN_EMU
+  &EmulatedWSwan,
+  #endif
+
+  &EmulatedCDPlay
+ };
+ std::string i_modules_string, e_modules_string;
+
+ for(unsigned int i = 0; i < sizeof(InternalSystems) / sizeof(MDFNGI *); i++)
+ {
+  AddSystem(InternalSystems[i]);
+  if(i)
+   i_modules_string += " ";
+  i_modules_string += std::string(InternalSystems[i]->shortname);
+ }
+
+ for(unsigned int i = 0; i < ExternalSystems.size(); i++)
+ {
+  AddSystem(ExternalSystems[i]);
+  if(i)
+   i_modules_string += " ";
+  e_modules_string += std::string(ExternalSystems[i]->shortname);
+ }
+
+ MDFNI_printf(_("Internal emulation modules: %s\n"), i_modules_string.c_str());
+ MDFNI_printf(_("External emulation modules: %s\n"), e_modules_string.c_str());
+
+
+ for(unsigned int i = 0; i < MDFNSystems.size(); i++)
+  MDFNSystemsPrio.push_back(MDFNSystems[i]);
+
+ CDUtility::CDUtility_Init();
+
+ return(1);
+}
+
+int MDFNI_Initialize(const char *basedir, const std::vector<MDFNSetting> &DriverSettings)
+{
+ if(!MDFN_RunMathTests())
+  return(0);
+
+ lzo_init();
+
+ MDFNI_SetBaseDirectory(basedir);
+
+ MDFN_InitFontData();
+
+ // First merge all settable settings, then load the settings from the SETTINGS FILE OF DOOOOM
+ MDFN_MergeSettings(MednafenSettings);
+ MDFN_MergeSettings(MDFNMP_Settings);
+
+ if(DriverSettings.size())
+  MDFN_MergeSettings(DriverSettings);
+
+ for(unsigned int x = 0; x < MDFNSystems.size(); x++)
+ {
+  if(MDFNSystems[x]->Settings)
+   MDFN_MergeSettings(MDFNSystems[x]->Settings);
+ }
+
+ MDFN_MergeSettings(RenamedSettings);
+
+ if(!MFDN_LoadSettings(basedir))
+  return(0);
+
+ return(1);
+}
+
+static void ProcessAudio(EmulateSpecStruct *espec)
+{
+ if(espec->SoundVolume != 1)
+  volume_save = espec->SoundVolume;
+
+ if(espec->SoundBuf && espec->SoundBufSize)
+ {
+  int16 *const SoundBuf = espec->SoundBuf + espec->SoundBufSizeALMS * MDFNGameInfo->soundchan;
+  int32 SoundBufSize = espec->SoundBufSize - espec->SoundBufSizeALMS;
+  const int32 SoundBufMaxSize = espec->SoundBufMaxSize - espec->SoundBufSizeALMS;
+
+  if(volume_save != 1)
+  {
+   if(volume_save < 1)
+   {
+    int volume = (int)(16384 * volume_save);
+
+    for(int i = 0; i < SoundBufSize * MDFNGameInfo->soundchan; i++)
+     SoundBuf[i] = (SoundBuf[i] * volume) >> 14;
+   }
+   else
+   {
+    int volume = (int)(256 * volume_save);
+
+    for(int i = 0; i < SoundBufSize * MDFNGameInfo->soundchan; i++)
+    {
+     int temp = ((SoundBuf[i] * volume) >> 8) + 32768;
+
+     temp = clamp_to_u16(temp);
+
+     SoundBuf[i] = temp - 32768;
+    }
+   }
+  }
+
+  // TODO: Optimize this.
+  if(MDFNGameInfo->soundchan == 2 && MDFN_GetSettingB(std::string(std::string(MDFNGameInfo->shortname) + ".forcemono").c_str()))
+  {
+   for(int i = 0; i < SoundBufSize * MDFNGameInfo->soundchan; i += 2)
+   {
+    // We should use division instead of arithmetic right shift for correctness(rounding towards 0 instead of negative infinitininintinity), but I like speed.
+    int32 mixed = (SoundBuf[i + 0] + SoundBuf[i + 1]) >> 1;
+
+    SoundBuf[i + 0] =
+    SoundBuf[i + 1] = mixed;
+   }
+  }
+
+  espec->SoundBufSize = espec->SoundBufSizeALMS + SoundBufSize;
+ } // end to:  if(espec->SoundBuf && espec->SoundBufSize)
+}
+
+void MDFN_MidSync(EmulateSpecStruct *espec)
+{
+ ProcessAudio(espec);
+
+ MDFND_MidSync(espec);
+
+ espec->SoundBufSizeALMS = espec->SoundBufSize;
+ espec->MasterCyclesALMS = espec->MasterCycles;
+}
+
+void MDFNI_Emulate(EmulateSpecStruct *espec)
+{
+ volume_save = 1;
+
+ assert((bool)(espec->SoundBuf != NULL) == (bool)espec->SoundRate && (bool)espec->SoundRate == (bool)espec->SoundBufMaxSize);
+
+ espec->SoundBufSize = 0;
+
+ espec->VideoFormatChanged = false;
+ espec->SoundFormatChanged = false;
+
+ if(memcmp(&last_pixel_format, &espec->surface->format, sizeof(MDFN_PixelFormat)))
+ {
+  espec->VideoFormatChanged = TRUE;
+
+  last_pixel_format = espec->surface->format;
+ }
+
+ if(espec->SoundRate != last_sound_rate)
+ {
+  espec->SoundFormatChanged = true;
+  last_sound_rate = espec->SoundRate;
+
+  ff_resampler.buffer_size((espec->SoundRate / 2) * 2);
+ }
+
+ espec->NeedSoundReverse = MDFN_StateEvil(espec->NeedRewind);
+
+ MDFNGameInfo->Emulate(espec);
+
+ PrevInterlaced = false;
+
+ ProcessAudio(espec);
+}
+
+void MDFN_indent(int indent) { }
+
+void MDFNI_Power(void)       { assert(MDFNGameInfo); MDFN_QSimpleCommand(MDFN_MSC_POWER); }
+void MDFNI_Reset(void)       { assert(MDFNGameInfo); MDFN_QSimpleCommand(MDFN_MSC_RESET); }
+void MDFNI_ToggleDIPView(void) {}
+
+void MDFNI_SetInput(int port, const char *type, void *ptr, uint32 ptr_len_thingy)
+{
+ if(MDFNGameInfo)
+ {
+  assert(port < 16);
+
+  MDFNGameInfo->SetInput(port, type, ptr);
+ }
+}
+
+#endif
+
+/*============================================================
+	PLAYER
+        replaces: mednafen/player.cpp
+============================================================ */
+
+int Player_Init(int tsongs, const std::string &album, const std::string &artist, const std::string &copyright, const std::vector<std::string> &snames) { return 1; }
+int Player_Init(int tsongs, const std::string &album, const std::string &artist, const std::string &copyright, char **snames) { return 1; }
+void Player_Draw(MDFN_Surface *surface, MDFN_Rect *dr, int CurrentSong, int16_t *samples, int32_t sampcount) {}
+
+/*============================================================
 	STUBS
 ============================================================ */
 
 // stubs
 void MDFN_ResetMessages(void) {}
-int Player_Init(int tsongs, const std::string &album, const std::string &artist, const std::string &copyright, const std::vector<std::string> &snames) { return 1; }
-int Player_Init(int tsongs, const std::string &album, const std::string &artist, const std::string &copyright, char **snames) { return 1; }
-void Player_Draw(MDFN_Surface *surface, MDFN_Rect *dr, int CurrentSong, int16_t *samples, int32_t sampcount) {}
 void MDFN_InitFontData(void) {}
 void MDFND_DispMessage(unsigned char *str) { /* TODO */ }
 
