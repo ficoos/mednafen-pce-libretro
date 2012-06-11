@@ -1,5 +1,6 @@
 /*  RetroArch - A frontend for libretro.
  *  Copyright (C) 2010-2012 - Hans-Kristian Arntzen
+ *  Copyright (C) 2011-2012 - Daniel De Matteis
  * 
  *  RetroArch is free software: you can redistribute it and/or modify it under the terms
  *  of the GNU General Public License as published by the Free Software Found-
@@ -32,7 +33,8 @@
 
 /* Mednafen libretro wrapper - gluecode between Mednafen and libretro
  *
- * FILES TO EXCLUDE:
+ * FILES TO EXCLUDE / WHAT THIS WRAPPER REPLACES:
+ * mednafen/memory.cpp
  * mednafen/video/font-data.cpp
  * mednafen/video/font-data-12x13.c
  * mednafen/video/font-data-18x18.c
@@ -54,9 +56,13 @@
 #include <string>
 #include <vector>
 
-/* misc */
+/* misc threading/timer includes */
 #ifndef _WIN32
 #include <pthread.h>
+#endif
+
+#ifdef __CELLOS_LV2__
+#include <sys/timer.h>
 #endif
 
 #include <unistd.h>
@@ -92,7 +98,9 @@ void MDFND_PrintError(const char* err)         { fprintf(stderr, err); }
 
 void MDFND_Sleep(unsigned int time)
 {
-#ifndef __CELLOS_LV2__
+#ifdef __CELLOS_LV2__
+   sys_timer_usleep(time * 1000);
+#else
    usleep(time * 1000);
 #endif
 }
@@ -138,6 +146,31 @@ int MDFND_UnlockMutex(MDFN_Mutex *lock)
 {
    slock_unlock((slock_t*)lock);
    return 0;
+}
+
+/*============================================================
+	MEMORY
+        replaces: mednafen/memory.c
+============================================================ */
+
+void *MDFN_calloc_real(uint32 nmemb, uint32 size, const char *purpose, const char *_file, const int _line)
+{
+ return calloc(nmemb, size);
+}
+
+void *MDFN_malloc_real(uint32 size, const char *purpose, const char *_file, const int _line)
+{
+ return malloc(size);
+}
+
+void *MDFN_realloc_real(void *ptr, uint32 size, const char *purpose, const char *_file, const int _line)
+{
+ return realloc(ptr, size);
+}
+
+void MDFN_free(void *ptr)
+{
+ free(ptr);
 }
 
 /*============================================================
