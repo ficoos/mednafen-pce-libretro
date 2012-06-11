@@ -259,3 +259,7 @@ void retro_cheat_reset(void)
 void retro_cheat_set(unsigned, bool, const char *)
 {}
 
+void retro_shutdown(void)
+{
+   environ_cb(RETRO_ENVIRONMENT_SHUTDOWN, NULL);
+}

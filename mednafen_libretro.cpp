@@ -34,6 +34,7 @@
 /* Mednafen libretro wrapper - gluecode between Mednafen and libretro
  *
  * FILES TO EXCLUDE / WHAT THIS WRAPPER REPLACES:
+ * mednafen/error.cpp
  * mednafen/memory.cpp
  * mednafen/mempatcher.cpp
  * mednafen/video/font-data.cpp
@@ -147,6 +148,97 @@ int MDFND_UnlockMutex(MDFN_Mutex *lock)
 {
    slock_unlock((slock_t*)lock);
    return 0;
+}
+
+/*============================================================
+	ERROR
+        replaces: mednafen/error.cpp
+============================================================ */
+
+#ifdef __LIBRETRO__
+extern void retro_shutdown(void);
+
+MDFN_Error::MDFN_Error() throw() { retro_shutdown(); }
+#else
+MDFN_Error::MDFN_Error() throw() { abort(); }
+#endif
+
+int MDFN_Error::GetErrno(void) throw() { return(errno_code); }
+
+MDFN_Error::MDFN_Error(int errno_code_new, const char *format, ...) throw()
+{
+ (void)errno_code_new;
+ base_printf(format);
+}
+
+MDFN_Error::~MDFN_Error() throw()
+{
+ if(error_message)
+ {
+  free(error_message);
+  error_message = NULL;
+ }
+}
+
+MDFN_Error::MDFN_Error(const MDFN_Error &ze_error) throw()
+{
+ if(ze_error.error_message)
+  error_message = strdup(ze_error.error_message);
+ else
+  error_message = NULL;
+
+ errno_code = ze_error.errno_code;
+}
+
+MDFN_Error& MDFN_Error::operator=(const MDFN_Error &ze_error) throw()
+{
+ char *new_error_message = ze_error.error_message ? strdup(ze_error.error_message) : NULL;
+ int new_errno_code = ze_error.errno_code;
+
+ if(error_message)
+  free(error_message);
+
+ error_message = new_error_message;
+ errno_code = new_errno_code;
+
+ return(*this);
+}
+
+const char * MDFN_Error::what(void) const throw()
+{
+ if(!error_message)
+  return("Error allocating memory for the error message!");
+
+ return(error_message);
+}
+
+static const char *srr_wrap(int ret, const char *local_strerror)
+{
+ if(ret == -1)
+  return("ERROR IN strerror_r()!!!");
+
+ return(local_strerror);
+}
+
+static const char *srr_wrap(const char *ret, const char *local_strerror)
+{
+ if(ret == NULL)
+  return("ERROR IN strerror_r()!!!");
+
+ return(ret);
+}
+
+void ErrnoHolder::SetErrno(int the_errno)
+{
+ local_errno = the_errno;
+
+ if(the_errno == 0)
+  local_strerror[0] = 0;
+ else
+ {
+   strncpy(local_strerror, strerror(the_errno), 255);
+   local_strerror[255] = 0;
+ }
 }
 
 /*============================================================
