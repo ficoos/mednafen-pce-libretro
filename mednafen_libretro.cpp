@@ -600,6 +600,84 @@ static void ReadM3U(std::vector<std::string> &file_list, std::string path, unsig
  }
 }
 
+bool MDFNI_LoadSystem(MDFNFILE &GameFile, const char *force_module, const char *path)
+{
+	for(std::list<MDFNGI *>::iterator it = MDFNSystemsPrio.begin(); it != MDFNSystemsPrio.end(); it++)  //_unsigned int x = 0; x < MDFNSystems.size(); x++)
+	{
+	 char tmpstr[256];
+	 trio_snprintf(tmpstr, 256, "%s.enable", (*it)->shortname);
+
+	 if(force_module)
+	 {
+          if(!strcmp(force_module, (*it)->shortname))
+          {
+	   if(!(*it)->Load)
+	   {
+            GameFile.Close();
+
+	    if((*it)->LoadCD)
+             MDFN_PrintError(_("Specified system only supports CD(physical, or image files, such as *.cue and *.toc) loading."));
+	    else
+             MDFN_PrintError(_("Specified system does not support normal file loading."));
+            MDFN_indent(-1);
+            MDFNGameInfo = NULL;
+            goto FAIL;
+	   }
+           MDFNGameInfo = *it;
+           break;
+          }
+	 }
+	 else
+	 {
+	  // Is module enabled?
+	  if(!MDFN_GetSettingB(tmpstr))
+	   continue; 
+
+	  if(!(*it)->Load || !(*it)->TestMagic)
+	   continue;
+
+	  if((*it)->TestMagic(path, &GameFile))
+	  {
+	   MDFNGameInfo = *it;
+	   break;
+	  }
+	 }
+	}
+
+  return 1;
+FAIL:
+  return 0;
+}
+
+#ifdef __CELLOS_LV2__
+#define S_ISREG(f) (1)
+#endif
+
+bool MDFNI_LoadROM(const char *path, const char *base_path)
+{
+   struct stat stat_buf;
+   std::vector<MDFNSetting> settings;
+   MDFNI_Initialize(base_path, settings);
+
+   if(strlen(path) > 4 && (!strcasecmp(path + strlen(path) - 4, ".cue") || !strcasecmp(path + strlen(path) - 4, ".toc") || !strcasecmp(path + strlen(path) - 4, ".m3u")))
+   {
+      MDFNGameInfo = MDFNI_LoadCD("pce", path);
+   }
+#if 0
+   else if(!stat(path, &stat_buf) && !S_ISREG(stat_buf.st_mode))
+   {
+      MDFNGameInfo = MDFNI_LoadCD("pce", path);
+   }
+#endif
+   else
+   {
+      MDFNGameInfo = MDFNI_LoadGame("pce", path);
+   }
+
+   fprintf(stderr, "MDFNGameInfo: %d\n", (MDFNGameInfo != NULL));
+   return (MDFNGameInfo != NULL) ? 1 : 0;
+}
+
 MDFNGI *MDFNI_LoadCD(const char *force_module, const char *devicename)
 {
  uint8 LayoutMD5[16];
@@ -817,25 +895,11 @@ static bool LoadIPS(MDFNFILE &GameFile, const char *path)
  return(1);
 }
 
-#ifdef __CELLOS_LV2__
-#define S_ISREG(f) (1)
-#endif
 
 MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
 {
         MDFNFILE GameFile;
-	struct stat stat_buf;
 	std::vector<FileExtensionSpecStruct> valid_iae;
-
-	if(strlen(name) > 4 && (!strcasecmp(name + strlen(name) - 4, ".cue") || !strcasecmp(name + strlen(name) - 4, ".toc") || !strcasecmp(name + strlen(name) - 4, ".m3u")))
-	{
-	 return(MDFNI_LoadCD(force_module, name));
-	}
-	
-	if(!stat(name, &stat_buf) && !S_ISREG(stat_buf.st_mode))
-	{
-	 return(MDFNI_LoadCD(force_module, name));
-	}
 
 	MDFNI_CloseGame();
 
@@ -870,60 +934,24 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
 
 	if(!GameFile.Open(name, &valid_iae[0], _("game")))
         {
+         fprintf(stderr, "Failure 1\n");
 	 MDFNGameInfo = NULL;
 	 return 0;
 	}
 
+#if 0
 	if(!LoadIPS(GameFile, MDFN_MakeFName(MDFNMKF_IPS, 0, 0).c_str()))
 	{
+         fprintf(stderr, "Failure 2 IPS\n");
 	 MDFNGameInfo = NULL;
          GameFile.Close();
          return(0);
 	}
+#endif
 
 	MDFNGameInfo = NULL;
 
-	for(std::list<MDFNGI *>::iterator it = MDFNSystemsPrio.begin(); it != MDFNSystemsPrio.end(); it++)  //_unsigned int x = 0; x < MDFNSystems.size(); x++)
-	{
-	 char tmpstr[256];
-	 trio_snprintf(tmpstr, 256, "%s.enable", (*it)->shortname);
-
-	 if(force_module)
-	 {
-          if(!strcmp(force_module, (*it)->shortname))
-          {
-	   if(!(*it)->Load)
-	   {
-            GameFile.Close();
-
-	    if((*it)->LoadCD)
-             MDFN_PrintError(_("Specified system only supports CD(physical, or image files, such as *.cue and *.toc) loading."));
-	    else
-             MDFN_PrintError(_("Specified system does not support normal file loading."));
-            MDFN_indent(-1);
-            MDFNGameInfo = NULL;
-            return 0;
-	   }
-           MDFNGameInfo = *it;
-           break;
-          }
-	 }
-	 else
-	 {
-	  // Is module enabled?
-	  if(!MDFN_GetSettingB(tmpstr))
-	   continue; 
-
-	  if(!(*it)->Load || !(*it)->TestMagic)
-	   continue;
-
-	  if((*it)->TestMagic(name, &GameFile))
-	  {
-	   MDFNGameInfo = *it;
-	   break;
-	  }
-	 }
-	}
+        bool ret = MDFNI_LoadSystem(GameFile, force_module, name);
 
         if(!MDFNGameInfo)
         {
@@ -948,8 +976,10 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
         MDFNGameInfo->name = NULL;
         MDFNGameInfo->rotated = 0;
 
+	fprintf(stderr, "GameFile->data IS NULL? : %d\n", GameFile.data == NULL);
         if(MDFNGameInfo->Load(name, &GameFile) <= 0)
 	{
+         fprintf(stderr, "Failure 4\n");
          GameFile.Close();
          MDFN_indent(-2);
          MDFNGameInfo = NULL;
@@ -992,6 +1022,9 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
         memset(&last_pixel_format, 0, sizeof(MDFN_PixelFormat));
 
         return(MDFNGameInfo);
+
+FAIL:
+        return NULL;
 }
 int MDFNI_Initialize(const char *basedir, const std::vector<MDFNSetting> &DriverSettings)
 {

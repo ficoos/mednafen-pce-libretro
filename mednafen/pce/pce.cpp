@@ -380,8 +380,10 @@ static int Load(const char *name, MDFNFILE *fp)
  IsHES = 0;
  IsSGX = 0;
 
+#if 0
  if(!memcmp(fp->data, "HESM", 4))
   IsHES = 1;
+#endif
 
  LoadCommonPre();
 
@@ -407,6 +409,8 @@ static int Load(const char *name, MDFNFILE *fp)
  }
  else
  {
+  fprintf(stderr, "crc IS: %d\n", crc);
+  fprintf(stderr, "fp->data IS NULL? : %d\n", fp->data == NULL);
   HuCLoad(fp->data + headerlen, fp->size - headerlen, crc, MDFN_GetSettingB("pce.disable_bram_hucard"));
  }
  if(!strcasecmp(fp->ext, "sgx"))
