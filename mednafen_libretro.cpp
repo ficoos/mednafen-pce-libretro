@@ -873,6 +873,7 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
 	 MDFNGameInfo = NULL;
 	 return 0;
 	}
+        fprintf(stderr, "GameFile.Open: Data #1: %p, f_data #2: %p, Size #3: %u\n", GameFile.data, GameFile.f_data, (unsigned)GameFile.size);
 
 	if(!LoadIPS(GameFile, MDFN_MakeFName(MDFNMKF_IPS, 0, 0).c_str()))
 	{
@@ -948,6 +949,7 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
         MDFNGameInfo->name = NULL;
         MDFNGameInfo->rotated = 0;
 
+        fprintf(stderr, "MDFNGameInfo->Load: Data #1: %p, f_data #2: %p, Size #3: %u\n", GameFile.data, GameFile.f_data, (unsigned)GameFile.size);
         if(MDFNGameInfo->Load(name, &GameFile) <= 0)
 	{
          GameFile.Close();

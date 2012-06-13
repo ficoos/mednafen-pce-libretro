@@ -328,7 +328,7 @@ static void LoadCommonPre(void);
 
 static bool TestMagic(const char *name, MDFNFILE *fp)
 {
- if(memcmp(fp->data, "HESM", 4) && strcasecmp(fp->ext, "pce") && strcasecmp(fp->ext, "sgx"))
+ if(memcmp(fp->f_data, "HESM", 4) && strcasecmp(fp->ext, "pce") && strcasecmp(fp->ext, "sgx"))
   return(FALSE);
 
  return(TRUE);
@@ -374,32 +374,33 @@ static void CDSettingChanged(const char *name)
 
 static int Load(const char *name, MDFNFILE *fp)
 {
+ fprintf(stderr, "PCE Load: Data #1: %p, f_data #2: %p, Size #3: %u\n", fp->data, fp->f_data, (unsigned)fp->size);
  uint32 headerlen = 0;
  uint32 r_size;
 
  IsHES = 0;
  IsSGX = 0;
 
- if(!memcmp(fp->data, "HESM", 4))
+ if(!memcmp(fp->f_data, "HESM", 4))
   IsHES = 1;
 
  LoadCommonPre();
 
  if(!IsHES)
  {
-  if(fp->size & 0x200) // 512 byte header!
+  if(fp->f_size & 0x200) // 512 byte header!
    headerlen = 512;
  }
 
- r_size = fp->size - headerlen;
+ r_size = fp->f_size - headerlen;
  if(r_size > 4096 * 1024) r_size = 4096 * 1024;
 
- uint32 crc = crc32(0, fp->data + headerlen, fp->size - headerlen);
+ uint32 crc = crc32(0, fp->f_data + headerlen, fp->f_size - headerlen);
 
 
  if(IsHES)
  {
-  if(!PCE_HESLoad(fp->data, fp->size))
+  if(!PCE_HESLoad(fp->f_data, fp->f_size))
    return(0);
 
   PCE_IsCD = 1;
@@ -407,12 +408,12 @@ static int Load(const char *name, MDFNFILE *fp)
  }
  else
  {
-  HuCLoad(fp->data + headerlen, fp->size - headerlen, crc, MDFN_GetSettingB("pce.disable_bram_hucard"));
+  HuCLoad(fp->f_data + headerlen, fp->f_size - headerlen, crc, MDFN_GetSettingB("pce.disable_bram_hucard"));
  }
  if(!strcasecmp(fp->ext, "sgx"))
   IsSGX = TRUE;
 
- if(fp->size >= 8192 && !memcmp(fp->data + headerlen, "DARIUS Version 1.11b", strlen("DARIUS VERSION 1.11b")))
+ if(fp->f_size >= 8192 && !memcmp(fp->f_data + headerlen, "DARIUS Version 1.11b", strlen("DARIUS VERSION 1.11b")))
  {
   MDFN_printf("SuperGfx:  Darius Plus\n");
   IsSGX = 1;
