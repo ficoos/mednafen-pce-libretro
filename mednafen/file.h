@@ -17,9 +17,6 @@ class MDFNFILE
 	~MDFNFILE();
 
 	bool Open(const char *path, const FileExtensionSpecStruct *known_ext, const char *purpose = NULL, const bool suppress_notfound_pe = FALSE);
-#ifdef __LIBRETRO__
-	bool Open(const char *path, const FileExtensionSpecStruct *known_ext, void* data, int size, const char *purpose = NULL, const bool suppress_notfound_pe = FALSE);
-#endif
 	INLINE bool Open(const std::string &path, const FileExtensionSpecStruct *known_ext, const char *purpose = NULL, const bool suppress_notfound_pe = FALSE)
 	{
 	 return(Open(path.c_str(), known_ext, purpose, suppress_notfound_pe));

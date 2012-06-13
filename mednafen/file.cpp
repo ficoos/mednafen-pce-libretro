@@ -403,29 +403,6 @@ MDFNFILE::~MDFNFILE()
  Close();
 }
 
-#ifdef __LIBRETRO__
-bool MDFNFILE::Open(const char *path, const FileExtensionSpecStruct *known_ext, void* data, int size, const char *purpose, const bool suppress_notfound_pe)
-{
- f_size = size;
-
- f_data = (uint8*)MDFN_malloc(size, _("file read buffer"));
- 
- if(!f_data || !data)
- {
- 	throw "MDFNFILE::Open: Failed to allocate room for file";
- }
- 
- memcpy(f_data, data, size);
-	
- const char *ld = strrchr(path, '.');
- f_ext = strdup(ld ? ld + 1 : "");
- fprintf(stderr, "size is: %d\n", f_size);
- fprintf(stderr, "f_data IS NOT NULL: %d\n", f_data != NULL);
- fprintf(stderr, "f_ext: %s\n", f_ext);
- 
- return 1;
-}
-#endif
 
 bool MDFNFILE::Open(const char *path, const FileExtensionSpecStruct *known_ext, const char *purpose, const bool suppress_notfound_pe)
 {
@@ -606,10 +583,6 @@ bool MDFNFILE::Open(const char *path, const FileExtensionSpecStruct *known_ext, 
  // FIXME:  Handle extension fixing for cases where loaded filename is like "moo.moo/lalala"
 
  error_code = 0;
-
- fprintf(stderr, "size is: %d\n", f_size);
- fprintf(stderr, "f_data IS NOT NULL: %d\n", f_data != NULL);
- fprintf(stderr, "f_ext: %s\n", f_ext);
 
  return(TRUE);
 }
