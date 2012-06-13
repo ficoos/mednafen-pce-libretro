@@ -3,11 +3,11 @@
 #include "mednafen/general.h"
 #include <iostream>
 #include "libretro.h"
-#include "mednafen_libretro.h"
 
 #define WIDTH 680
 #define HEIGHT 480
 
+static MDFNGI *game;
 static retro_video_refresh_t video_cb;
 static retro_audio_sample_t audio_cb;
 static retro_audio_sample_batch_t audio_batch_cb;
@@ -85,12 +85,13 @@ bool retro_load_game_special(unsigned, const struct retro_game_info *, size_t)
 
 bool retro_load_game(const struct retro_game_info *info)
 {
-   bool ret;
    extract_directory(g_rom_dir, info->path, sizeof(g_rom_dir));
 
-   ret = MDFNI_LoadROM(info->path, g_rom_dir);
+   std::vector<MDFNSetting> settings;
+   MDFNI_Initialize(g_rom_dir, settings);
 
-   return ret;
+   game = MDFNI_LoadGame("pce", info->path);
+   return game;
 }
 
 void retro_unload_game()
@@ -170,7 +171,7 @@ void retro_get_system_info(struct retro_system_info *info)
    info->library_version  = "0.9.22";
    info->need_fullpath    = true;
    info->valid_extensions = "pce|PCE|cue|CUE";
-   info->block_extract    = true;
+   info->block_extract    = false;
 }
 
 void retro_get_system_av_info(struct retro_system_av_info *info)
@@ -179,8 +180,8 @@ void retro_get_system_av_info(struct retro_system_av_info *info)
    // Just assume NTSC for now. TODO: Verify FPS.
    info->timing.fps            = 59.97;
    info->timing.sample_rate    = 44100;
-   info->geometry.base_width   = BASE_WIDTH;
-   info->geometry.base_height  = BASE_HEIGHT;
+   info->geometry.base_width   = game->nominal_width;
+   info->geometry.base_height  = game->nominal_height;
    info->geometry.max_width    = WIDTH;
    info->geometry.max_height   = HEIGHT;
    info->geometry.aspect_ratio = 4.0 / 3.0;
