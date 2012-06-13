@@ -821,7 +821,7 @@ static bool LoadIPS(MDFNFILE &GameFile, const char *path)
 #define S_ISREG(f) (1)
 #endif
 
-MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
+MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name, void *data, uint32_t size)
 {
         MDFNFILE GameFile;
 	struct stat stat_buf;
@@ -832,11 +832,6 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
 	 return(MDFNI_LoadCD(force_module, name));
 	}
 	
-	if(!stat(name, &stat_buf) && !S_ISREG(stat_buf.st_mode))
-	{
-	 return(MDFNI_LoadCD(force_module, name));
-	}
-
 	MDFNI_CloseGame();
 
 	MDFNGameInfo = NULL;
@@ -868,11 +863,22 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
 	 valid_iae.push_back(tmpext);
 	}
 
-	if(!GameFile.Open(name, &valid_iae[0], _("game")))
+        if(data == 0)
         {
-	 MDFNGameInfo = NULL;
-	 return 0;
-	}
+	 if(!GameFile.Open(name, &valid_iae[0], _("game")))
+         {
+	  MDFNGameInfo = NULL;
+	  return 0;
+	 }
+        }
+        else
+        {
+         if(!GameFile.Open(name, &valid_iae[0], data, size))
+         {
+          MDFNGameInfo = NULL;
+          return 0;
+         }
+        }
 
 	if(!LoadIPS(GameFile, MDFN_MakeFName(MDFNMKF_IPS, 0, 0).c_str()))
 	{

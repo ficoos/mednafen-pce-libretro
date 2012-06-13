@@ -1,7 +1,7 @@
 #include "mednafen/mednafen.h"
 #include "mednafen/git.h"
 #include "mednafen/general.h"
-#include <iostream>
+#include <sys/stat.h>
 #include "libretro.h"
 
 #define WIDTH 680
@@ -17,6 +17,7 @@ static retro_input_state_t input_state_cb;
 
 static MDFN_Surface *surf;
 static char g_rom_dir[1024];
+
 
 #ifdef _MSC_VER
 static unsigned short mednafen_buf[WIDTH * HEIGHT];
@@ -83,20 +84,72 @@ bool retro_load_game_special(unsigned, const struct retro_game_info *, size_t)
    return false;
 }
 
+extern MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name, void *data, uint32_t size);
+
+#define CHUNKSIZE   (0x10000)
+
+static void * rom_buffer;
+
 bool retro_load_game(const struct retro_game_info *info)
 {
+   bool ret = true;
+   int size_to_allocate = 0;
    extract_directory(g_rom_dir, info->path, sizeof(g_rom_dir));
 
    std::vector<MDFNSetting> settings;
    MDFNI_Initialize(g_rom_dir, settings);
 
-   game = MDFNI_LoadGame("pce", info->path);
-   return game;
+   const char *name = info->path;
+   if(strlen(name) > 4 && (!strcasecmp(name + strlen(name) - 4, ".cue") || !strcasecmp(name + strlen(name) - 4, ".toc") || !strcasecmp(name + strlen(name) - 4, ".m3u")))
+   {
+	 game = MDFNI_LoadCD("pce", info->path);
+   }
+   else
+   {
+      FILE * fd;
+      fd = fopen(info->path, "rb");
+      if(fd)
+      {
+         int left;
+
+         /* get file size */
+         fseek(fd, 0, SEEK_END);
+         size_to_allocate = ftell(fd);
+         fseek(fd, 0, SEEK_SET);
+
+	 /* allocate ROM buffer */
+         rom_buffer = malloc(size_to_allocate+1);
+         if(!rom_buffer)
+         {
+            fprintf(stderr, "memory error\n");
+            fclose(fd);
+            return false;
+         }
+        
+         /* Read ROM contents into buffer */
+         fread(rom_buffer, size_to_allocate, 1, fd);
+
+	 /* Close file */
+	 fclose(fd);
+
+         game = MDFNI_LoadGame("pce", info->path, rom_buffer, size_to_allocate);
+      }
+      else
+      {
+         ret = false;
+	 /* Close file */
+	 fclose(fd);
+      }
+   }
+
+   return ret;
 }
 
 void retro_unload_game()
 {
    MDFNI_CloseGame();
+   if(rom_buffer)
+      free(rom_buffer);
 }
 
 // See mednafen/[core]/input/gamepad.cpp
