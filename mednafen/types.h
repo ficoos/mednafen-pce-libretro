@@ -83,6 +83,9 @@ struct mtuarray
   #define MDFN_WARN_UNUSED_RESULT __attribute__ ((warn_unused_result))
 
 #elif defined(_MSC_VER)
+
+  #warning "Compiling with MSVC, untested"
+  #define INLINE inline __forceinline
   #define NO_INLINE __declspec(noinline)
 
   #define MDFN_FASTCALL __fastcall

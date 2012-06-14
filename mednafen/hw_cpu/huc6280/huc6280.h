@@ -106,7 +106,7 @@ class HuC6280
 	void StealCycles(const int count);
         void StealMasterCycles(const int count);
 
-	void SetEvent(const int32 cycles)
+	void SetEvent(const int32 cycles) NO_INLINE
 	{
 	 next_user_event = cycles;
 	 CalcNextEvent();

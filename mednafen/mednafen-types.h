@@ -48,6 +48,7 @@ typedef uint64_t uint64;
 #ifdef __GNUC__
 
   #define INLINE inline __attribute__((always_inline))
+  #define NO_INLINE __attribute__((noinline))
 
   #if defined(__386__) || defined(__i386__) || defined(__i386) || defined(_M_IX86) || defined(_M_I386)
     #define MDFN_FASTCALL __attribute__((fastcall))
@@ -60,6 +61,8 @@ typedef uint64_t uint64;
   #define MDFN_WARN_UNUSED_RESULT __attribute__ ((warn_unused_result))
 
 #elif defined(_MSC_VER)
+  #define NO_INLINE
+
   #define MDFN_FASTCALL __fastcall
 
   #define MDFN_ALIGN(n) __declspec(align(n))

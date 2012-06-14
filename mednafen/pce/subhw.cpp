@@ -326,45 +326,45 @@ void SubHW_WriteIOPage(uint32 A, uint8 V)
   return;
  }
 
- uint32 A_tmp = A & 0x1FFF;
-
- if(A_tmp <= 0x1C00 && A_tmp >= 0x1FEF)
+ switch(A & 0x1FFF)
  {
+  case 0x1C00 ... 0x1FEF:
 	ExHuRAM[A & 0x1FFF] = V;
- }
- else if(A_tmp <= 0x1FF0 && A_tmp >= 0x1FF3)
- {
+	break;
+
+  case 0x1FF0 ... 0x1FF3:
 	UpdateM68K(HuCPU->Timestamp());
 	CommPort[A & 0x3] = V;
- }
- else if(A_tmp == 0x1FF4)
- {
+	break;
+
+  case 0x1FF4:
 	BigRAMWOTemp &= 0xFF00;
 	BigRAMWOTemp |= V;
- }
- else if(A_tmp == 0x1FF5)
- {
+	break;
+
+  case 0x1FF5:
 	BigRAMWOTemp &= 0x00FF;
 	BigRAMWOTemp |= V << 8;
 	BigRAMWO = BigRAMWOTemp << 4;
- }
- else if(A_tmp == 0x1FF6)
- {
+	break;
+
+  case 0x1FF6:
 	if(HuBigMaster)
 	{
 	 //printf("BIG: %08x %02x\n", BigRAMWO, V);
 	 BigRAM[BigRAMWO] = V;
 	 BigRAMWO = (BigRAMWO + 1) & ((1 << 20) - 1);
 	}
- }
- else if(A_tmp == 0x1FF7)
- {
+	break;
+
+  case 0x1FF7:
 	UpdateM68K(HuCPU->Timestamp());
 	HuBigMaster = V & 0x01;
 	M68KResetPending |= (bool)(V & 0x02);
 	C68k_Set_IRQ(&M68K, (bool)(V & 0x04));
 	//M68KIntPending |= (bool)(V & 0x04);
 	OverlayEnabled = (bool)(V & 0x80);
+	break;
  }
 }
 
@@ -373,17 +373,17 @@ uint8 SubHW_ReadIOPage(uint32 A)
  if(!HuVisible)
   return(0xFF);
 
-uint32 A_tmp = A & 0x1FFF;
+ switch(A & 0x1FFF)
+ {
+  case 0x1C00 ... 0x1FEF:
+        return ExHuRAM[A & 0x1FFF];
+        break;
 
-if(A_tmp >= 0x1C00 && A_tmp <= 0x1FEF)
-{
-   return ExHuRAM[A & 0x1FFF];
-}
-else if(A_tmp >= 0x1FF0 && A_tmp <= 0x1FF3)
-{
+  case 0x1FF0 ... 0x1FF3:
 	UpdateM68K(HuCPU->Timestamp());
         return CommPort[A & 0x3];
-}
+        break;
+ }
 
  return(0xFF);
 }
