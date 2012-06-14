@@ -81,6 +81,7 @@
 
 #if defined(__CELLOS_LV2__)
 #include <sys/timer.h>
+#include <unistd.h>
 #elif defined(_WIN32) && !defined(_XBOX)
 #elif defined(_XBOX) 
 #include <xtl.h>

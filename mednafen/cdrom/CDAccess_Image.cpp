@@ -33,6 +33,10 @@
 #define _CDROMFILE_INTERNAL
 #include "../mednafen.h"
 
+#ifdef __CELLOS_LV2__
+#include <unistd.h>
+#endif
+
 #include <sys/types.h>
 #include <sys/stat.h>
 
