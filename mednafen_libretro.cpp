@@ -79,12 +79,13 @@
 #include <pthread.h>
 #endif
 
-#ifdef __CELLOS_LV2__
+#if defined(__CELLOS_LV2__)
 #include <sys/timer.h>
-#endif
-
-#ifdef _XBOX
+#elif defined(_WIN32) && !defined(_XBOX)
+#elif defined(_XBOX) 
 #include <xtl.h>
+#else
+#include <unistd.h>
 #endif
 
 // libretro includes
