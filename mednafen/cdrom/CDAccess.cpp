@@ -19,7 +19,6 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
 
 
 #include "CDAccess.h"
@@ -40,7 +39,6 @@ CDAccess::~CDAccess()
 CDAccess *cdaccess_open(const char *path)
 {
  CDAccess *ret;
- struct stat stat_buf;
 
  ret = new CDAccess_Image(path);
 
