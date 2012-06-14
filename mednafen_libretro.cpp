@@ -83,7 +83,9 @@
 #include <sys/timer.h>
 #endif
 
-#include <unistd.h>
+#ifdef _XBOX
+#include <xtl.h>
+#endif
 
 // libretro includes
 #include "libretro-mednafen/includes/trio/trio.h"
@@ -120,8 +122,10 @@ void MDFN_DebugPrintReal(const char *file, const int line, const char *format, .
 
 void MDFND_Sleep(unsigned int time)
 {
-#ifdef __CELLOS_LV2__
+#if defined(__CELLOS_LV2__)
    sys_timer_usleep(time * 1000);
+#elif defined(_WIN32)
+   Sleep(time);
 #else
    usleep(time * 1000);
 #endif
@@ -823,16 +827,10 @@ static bool LoadIPS(MDFNFILE &GameFile, const char *path)
 
 MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
 {
-        MDFNFILE GameFile;
-	struct stat stat_buf;
+    MDFNFILE GameFile;
 	std::vector<FileExtensionSpecStruct> valid_iae;
 
 	if(strlen(name) > 4 && (!strcasecmp(name + strlen(name) - 4, ".cue") || !strcasecmp(name + strlen(name) - 4, ".toc") || !strcasecmp(name + strlen(name) - 4, ".m3u")))
-	{
-	 return(MDFNI_LoadCD(force_module, name));
-	}
-	
-	if(!stat(name, &stat_buf) && !S_ISREG(stat_buf.st_mode))
 	{
 	 return(MDFNI_LoadCD(force_module, name));
 	}
