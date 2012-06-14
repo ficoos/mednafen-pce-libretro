@@ -493,7 +493,7 @@ int SubHW_StateAction(StateMem *sm, int load, int data_only)
  if(HuVisible)
  {
   unsigned int c68k_state_len = C68k_Get_State_Max_Len();
-  uint8 c68k_state[c68k_state_len];
+  uint8 c68k_state[512];
 
   C68k_Save_State(&M68K, c68k_state);
 

@@ -22,7 +22,6 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <unistd.h>
 
 #include <string>
 #include <map>
@@ -501,7 +500,7 @@ void GetFileBase(const char *f)
      }
      else
      {
-      char tmpfn[tp1 - f + 1];
+      char tmpfn[256];
 
       memcpy(tmpfn,f,tp1-f);
       tmpfn[tp1-f]=0;
@@ -512,7 +511,7 @@ void GetFileBase(const char *f)
 
      if(((tp3=strrchr(f,'.'))!=NULL) && (tp3>tp1))
      {
-      char tmpbase[tp3 - tp1 + 1];
+      char tmpbase[256];
 
       memcpy(tmpbase,tp1,tp3-tp1);
       tmpbase[tp3-tp1]=0;
