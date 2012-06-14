@@ -63,9 +63,6 @@
     <Filter Include="Source Files\mednafen\hw_cpu\c68k">
       <UniqueIdentifier>{4b2c1646-923f-4ed1-a7e9-0ebd43f05907}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\mednafen\resampler">
-      <UniqueIdentifier>{1b32ac54-d1d3-4f2d-9793-76978ec626eb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\mednafen\pce">
       <UniqueIdentifier>{bfc376b9-eaba-482e-b888-b211c48c7b59}</UniqueIdentifier>
     </Filter>
@@ -96,9 +93,6 @@
       <Filter>Source Files\mednafen</Filter>
     </ClCompile>
     <ClCompile Include="..\mednafen\md5.cpp">
-      <Filter>Source Files\mednafen</Filter>
-    </ClCompile>
-    <ClCompile Include="..\mednafen\mednafen.cpp">
       <Filter>Source Files\mednafen</Filter>
     </ClCompile>
     <ClCompile Include="..\mednafen\okiadpcm.cpp">
@@ -289,9 +283,6 @@
     </ClCompile>
     <ClCompile Include="..\mednafen\hw_cpu\huc6280\huc6280.cpp">
       <Filter>Source Files\mednafen\hw_cpu\huc6280</Filter>
-    </ClCompile>
-    <ClCompile Include="..\mednafen\resampler\resample.c">
-      <Filter>Source Files\mednafen\resampler</Filter>
     </ClCompile>
     <ClCompile Include="..\mednafen\pce\vce.cpp">
       <Filter>Source Files\mednafen\pce</Filter>

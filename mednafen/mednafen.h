@@ -6,6 +6,10 @@
 #include <string.h>
 #include "gettext.h"
 
+#ifdef _MSC_VER
+#include <msvc_compat.h>
+#endif
+
 #define _(String) gettext (String)
 
 #include "math_ops.h"
