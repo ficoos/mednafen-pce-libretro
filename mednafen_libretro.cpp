@@ -83,6 +83,7 @@
 #include <sys/timer.h>
 #include <unistd.h>
 #elif defined(_WIN32) && !defined(_XBOX)
+#include <windows.h>
 #elif defined(_XBOX) 
 #include <xtl.h>
 #else
