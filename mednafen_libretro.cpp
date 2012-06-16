@@ -99,16 +99,16 @@ bool MDFNnetplay = false;
 	STRING I/O
 ============================================================ */
 
-static void base_printf(const char * format, ...)
-{
- char msg[256];
- va_list ap;
- va_start(ap,format);
-
- vsnprintf(msg, sizeof(msg), format, ap);
- fprintf(stderr, msg);
-
- va_end(ap);
+#define base_printf(format) \
+{ \
+ char msg[256]; \
+ va_list ap; \
+ va_start(ap,format); \
+ \
+ vsnprintf(msg, sizeof(msg), format, ap); \
+ fprintf(stderr, msg); \
+ \
+ va_end(ap); \
 }
 
 void MDFN_printf(const char *format, ...) throw()      { base_printf(format);  }
