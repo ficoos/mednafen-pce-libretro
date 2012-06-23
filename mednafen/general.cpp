@@ -20,6 +20,10 @@
 #include <string.h>
 #include <stdarg.h>
 
+#ifndef _WIN32
+#include <unistd.h>
+#endif
+
 #include <sys/types.h>
 #include <sys/stat.h>
 
