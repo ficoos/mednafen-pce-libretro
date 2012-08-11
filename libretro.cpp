@@ -135,8 +135,6 @@ static void update_input (void)
    MDFNI_SetInput(1, "gamepad", &input_buf_p2, 0);
 }
 
-static MDFN_Rect rects;
-
 void retro_run()
 {
    input_poll_cb();
@@ -144,21 +142,20 @@ void retro_run()
    update_input();
 
    static int16_t sound_buf[0x10000];
-
-   rects = (MDFN_Rect){32, 32, 256, 240};
+   static MDFN_Rect rects[HEIGHT];
 
    EmulateSpecStruct spec = {0}; 
    spec.surface = surf;
    spec.SoundRate = 44100;
    spec.SoundBuf = sound_buf;
-   spec.LineWidths = &rects;
+   spec.LineWidths = rects;
    spec.SoundBufMaxSize = sizeof(sound_buf) / 2;
    spec.SoundVolume = 1.0;
    spec.soundmultiplier = 1.0;
 
    MDFNI_Emulate(&spec);
 
-   unsigned width = 256;
+   unsigned width = 320;
    unsigned height = 240;
 
    const uint16_t *pix = surf->pixels16;
