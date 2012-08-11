@@ -40,6 +40,11 @@ static inline int pthread_cond_wait(pthread_cond_t *cond, pthread_mutex_t *mutex
    LWP_CondWait(*(cond), *(mutex));
 }
 
+static inline int pthread_cond_timedwait(pthread_cond_t *cond, pthread_mutex_t *mutex, const struct timespec *abstime)
+{
+   LWP_CondWait(*(cond), *(mutex));
+}
+
 static inline int pthread_cond_init(pthread_cond_t *cond, const pthread_condattr_t *attr)
 {
    LWP_CondInit(cond);
