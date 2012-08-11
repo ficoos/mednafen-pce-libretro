@@ -61,7 +61,6 @@ else ifeq ($(platform), wii)
    ENDIANNESS_DEFINES += -DGEKKO -mrvl -mcpu=750 -meabi -mhard-float -DMSB_FIRST -DBYTE_ORDER=BIG_ENDIAN
 
    HAVE_RZLIB := 1
-   EXTRA_FILES :=  threads/thread_wrapper_gx.o
    EXTRA_INCLUDES := -I$(DEVKITPRO)/libogc/include
 
 else
@@ -162,7 +161,7 @@ SOURCES_C := $(MPC_SRC) \
 
 SOURCES_C += $(HW_CPU_SOURCES_C)
 
-LIBRETRO_SOURCES := libretro.cpp thread.cpp mednafen_libretro.cpp $(EXTRA_FILES)
+LIBRETRO_SOURCES := libretro.cpp thread.cpp mednafen_libretro.cpp
 
 SOURCES := $(LIBRETRO_SOURCES) $(HW_CPU_SOURCES) $(HW_MISC_SOURCES) $(HW_SOUND_SOURCES) $(HW_VIDEO_SOURCES) $(PCE_SOURCES) $(MEDNAFEN_SOURCES)
 OBJECTS := $(SOURCES:.cpp=.o) $(SOURCES_C:.c=.o)
