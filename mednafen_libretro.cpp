@@ -75,9 +75,7 @@
 #include <map>
 
 /* misc threading/timer includes */
-#ifndef _WIN32
-#include <pthread.h>
-#endif
+#include "thread.h"
 
 #if defined(__CELLOS_LV2__)
 #include <sys/timer.h>

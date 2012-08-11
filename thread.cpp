@@ -11,20 +11,11 @@
  *
  *  You should have received a copy of the GNU General Public License along with RetroArch.
  *  If not, see <http://www.gnu.org/licenses/>.
+ *  h
  */
 
 #include "thread.h"
 #include <stdlib.h>
-
-#if defined(_WIN32) && !defined(_XBOX)
-#define WIN32_LEAN_AND_MEAN
-#include <windows.h>
-#elif defined(_XBOX)
-#include <xtl.h>
-#else
-#include <pthread.h>
-#include <time.h>
-#endif
 
 struct thread_data
 {

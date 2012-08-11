@@ -16,6 +16,18 @@
 #ifndef THREAD_H__
 #define THREAD_H__
 
+#if defined(_WIN32) && !defined(_XBOX)
+#define WIN32_LEAN_AND_MEAN
+#include <windows.h>
+#elif defined(_XBOX)
+#include <xtl.h>
+#elif defined(GEKKO)
+#include "threads/thread_wrapper_gx.h"
+#else
+#include <pthread.h>
+#include <time.h>
+#endif
+
 // Implements the bare minimum needed for RetroArch. :)
 
 typedef struct sthread sthread_t;

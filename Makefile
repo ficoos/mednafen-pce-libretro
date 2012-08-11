@@ -61,6 +61,9 @@ else ifeq ($(platform), wii)
    ENDIANNESS_DEFINES += -DGEKKO -mrvl -mcpu=750 -meabi -mhard-float -DMSB_FIRST -DBYTE_ORDER=BIG_ENDIAN
 
    HAVE_RZLIB := 1
+   EXTRA_FILES :=  threads/thread_wrapper_gx.o
+   EXTRA_INCLUDES := -I$(DEVKITPRO)/libogc/include
+
 else
    TARGET := retro.dll
    CC = gcc
@@ -159,7 +162,7 @@ SOURCES_C := $(MPC_SRC) \
 
 SOURCES_C += $(HW_CPU_SOURCES_C)
 
-LIBRETRO_SOURCES := libretro.cpp thread.cpp mednafen_libretro.cpp
+LIBRETRO_SOURCES := libretro.cpp thread.cpp mednafen_libretro.cpp $(EXTRA_FILES)
 
 SOURCES := $(LIBRETRO_SOURCES) $(HW_CPU_SOURCES) $(HW_MISC_SOURCES) $(HW_SOUND_SOURCES) $(HW_VIDEO_SOURCES) $(PCE_SOURCES) $(MEDNAFEN_SOURCES)
 OBJECTS := $(SOURCES:.cpp=.o) $(SOURCES_C:.c=.o)
@@ -167,7 +170,7 @@ OBJECTS := $(SOURCES:.cpp=.o) $(SOURCES_C:.c=.o)
 all: $(TARGET)
 
 FLAGS += -ffast-math  -funroll-loops
-FLAGS += -I. -Imednafen -Imednafen/include -Imednafen/intl -Imednafen/hw_cpu -Imednafen/hw_misc -Imednafen/hw_sound -Imednafen/hw_video -Imednafen/compress -Ilibretro-mednafen/includes
+FLAGS += -I. -Imednafen -Imednafen/include -Imednafen/intl -Imednafen/hw_cpu -Imednafen/hw_misc -Imednafen/hw_sound -Imednafen/hw_video -Imednafen/compress -Ilibretro-mednafen/includes $(EXTRA_INCLUDES)
 
 FLAGS += $(ENDIANNESS_DEFINES) -DHAVE_MKDIR -DSIZEOF_DOUBLE=8 $(WARNINGS) -DMEDNAFEN_VERSION=\"0.9.22\" -DMEDNAFEN_VERSION_NUMERIC=922 -DPSS_STYLE=1 -DMPC_FIXED_POINT -DWANT_PCE_EMU -DSTDC_HEADERS -D__LIBRETRO__
 
