@@ -168,7 +168,7 @@ void retro_get_system_info(struct retro_system_info *info)
 {
    memset(info, 0, sizeof(*info));
    info->library_name     = "Mednafen PCE";
-   info->library_version  = "v0.9.22";
+   info->library_version  = "v0.9.24";
    info->need_fullpath    = true;
    info->valid_extensions = "pce|PCE|cue|CUE";
    info->block_extract    = false;

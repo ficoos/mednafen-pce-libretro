@@ -218,7 +218,7 @@ static bool skipframe;
 
 void VCE::StartFrame(MDFN_Surface *surface, MDFN_Rect *DisplayRect, MDFN_Rect *LineWidths, int skip)
 {
- uint32 *pXBuf = surface->pixels;
+ uint16 *pXBuf = surface->pixels16;
 
  FrameDone = false;
 

@@ -145,7 +145,7 @@
    }
    else
    {
-    uint32 *prev_sop = scanline_out_ptr;
+    uint16 *prev_sop = scanline_out_ptr;
 
     if(sgfx)
     {
@@ -228,7 +228,7 @@
 
      if(SubTValid && prev_sop)
      {
-      uint32 *slp = prev_sop + x_offsets[0][dot_clock];
+      uint16 *slp = prev_sop + x_offsets[0][dot_clock];
       uint32 scale_factor = 256 * 65536 / w_cows[0][dot_clock];
       for(int x = 0; x < w_cows[0][dot_clock]; x++)
       {
