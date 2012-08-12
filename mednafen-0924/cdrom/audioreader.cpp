@@ -34,7 +34,7 @@
 #include <trio/trio.h>
 
 #include "../general.h"
-#include "../endian.h"
+#include "../mednafen-endian.h"
 
 AudioReader::AudioReader()
 {

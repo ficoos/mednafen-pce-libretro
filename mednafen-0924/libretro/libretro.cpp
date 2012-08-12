@@ -2,6 +2,12 @@
 #include "../git.h"
 #include "../general.h"
 #include "libretro.h"
+#include <stdarg.h>
+#ifndef _WIN32
+#include <unistd.h>
+#endif
+
+#include "thread.h"
 
 #define WIDTH 680
 #define HEIGHT 480
@@ -22,6 +28,84 @@ static unsigned short mednafen_buf[WIDTH * HEIGHT];
 #else
 static unsigned short mednafen_buf[WIDTH * HEIGHT] __attribute__((aligned(16)));
 #endif
+
+#define base_printf(format) \
+{ \
+ char msg[256]; \
+ va_list ap; \
+ va_start(ap,format); \
+ \
+ vsnprintf(msg, sizeof(msg), format, ap); \
+ fprintf(stderr, msg); \
+ \
+ va_end(ap); \
+}
+
+void MDFND_PrintError(const char* err)         { fprintf(stderr, err); }
+void MDFND_Message(const char *str)            { fprintf(stderr, str); }
+void MDFND_DispMessage(unsigned char *str) { fprintf(stderr, "%s\n", str); }
+
+void MDFND_MidSync(const EmulateSpecStruct*) {}
+
+void MDFND_SetStateStatus(StateStatusStruct *status) {}
+
+/*============================================================
+	THREADING
+============================================================ */
+
+void MDFND_Sleep(unsigned int time)
+{
+#if defined(__CELLOS_LV2__)
+   sys_timer_usleep(time * 1000);
+#elif defined(_WIN32)
+   Sleep(time);
+#else
+   usleep(time * 1000);
+#endif
+}
+
+MDFN_Thread *MDFND_CreateThread(int (*fn)(void *), void *data)
+{
+   return (MDFN_Thread*)sthread_create((void (*)(void*))fn, data);
+}
+
+void MDFND_WaitThread(MDFN_Thread *thr, int *val)
+{
+   sthread_join((sthread_t*)thr);
+
+   if (val)
+   {
+      *val = 0;
+      //std::cerr << "WaitThread relies on return value." << std::endl;
+   }
+}
+
+void MDFND_KillThread(MDFN_Thread *thr)
+{
+   //std::cerr << "Killing a thread is a BAD IDEA!" << std::endl;
+}
+
+MDFN_Mutex *MDFND_CreateMutex()
+{
+   return (MDFN_Mutex*)slock_new();
+}
+
+void MDFND_DestroyMutex(MDFN_Mutex *lock)
+{
+   slock_free((slock_t*)lock);
+}
+
+int MDFND_LockMutex(MDFN_Mutex *lock)
+{
+   slock_lock((slock_t*)lock);
+   return 0;
+}
+
+int MDFND_UnlockMutex(MDFN_Mutex *lock)
+{
+   slock_unlock((slock_t*)lock);
+   return 0;
+}
 
 static void extract_basename(char *buf, const char *path, size_t size)
 {

@@ -31,16 +31,6 @@ class MemoryStream : public Stream
  MemoryStream(const MemoryStream &zs);
  MemoryStream & operator=(const MemoryStream &zs);
 
-#if 0
- enum GrowMode
- {
-  GROWMODE_POW2 = 0,
-  GROWMODE_
- };
-
- void set_grow_mode(
-#endif
-
  virtual ~MemoryStream();
 
  virtual uint64 attributes(void);

@@ -27,8 +27,6 @@
 #include "driver.h"
 #include "general.h"
 #include "state.h"
-#include "movie.h"
-#include "netplay.h"
 #include "video.h"
 #include "video/resize.h"
 
@@ -698,34 +696,6 @@ int MDFNSS_Save(const char *fname, const char *suffix, const MDFN_Surface *surfa
 	return(1);
 }
 
-// Convenience function for movie.cpp
-int MDFNSS_SaveFP(gzFile fp, const MDFN_Surface *surface, const MDFN_Rect *DisplayRect, const MDFN_Rect *LineWidths)
-{
- StateMem st;
-
- memset(&st, 0, sizeof(StateMem));
-
- if(!MDFNSS_SaveSM(&st, (DisplayRect && LineWidths), 0, surface, DisplayRect, LineWidths))
- {
-  if(st.data)
-   free(st.data);
-  return(0);
- }
-
- if(gzwrite(fp, st.data, st.len) != (int32)st.len)
- {
-  if(st.data)
-   free(st.data);
-  return(0);
- }
-
- if(st.data)
-  free(st.data);
-
- return(1);
-}
-
-
 int MDFNSS_LoadSM(StateMem *st, int haspreview, int data_only)
 {
         uint8 header[32];
@@ -930,7 +900,6 @@ void MDFNI_SelectState(int w)
   MDFND_SetStateStatus(NULL);
   return; 
  }
- MDFNI_SelectMovie(-1);
 
  if(w == 666 + 1)
   CurrentState = (CurrentState + 1) % 10;
@@ -962,14 +931,6 @@ void MDFNI_SaveState(const char *fname, const char *suffix, const MDFN_Surface *
  if(!MDFNGameInfo->StateAction) 
   return;
 
- if(MDFNnetplay && (MDFNGameInfo->SaveStateAltersState == true))
- {
-  char sb[256];
-  trio_snprintf(sb, sizeof(sb), _("Module %s is not compatible with manual state saving during netplay."), MDFNGameInfo->shortname);
-  MDFND_NetplayText((const uint8*)sb, false);
-  return;
- }
-
  MDFND_SetStateStatus(NULL);
  MDFNSS_Save(fname, suffix, surface, DisplayRect, LineWidths);
 }
@@ -988,13 +949,6 @@ void MDFNI_LoadState(const char *fname, const char *suffix)
  */
  if(MDFNSS_Load(fname, suffix))
  {
-  if(MDFNnetplay)
-  {
-   NetplaySendState();
-  }
-
-  if(MDFNMOV_IsRecording())
-   MDFNMOV_RecordState();
  }
 }
 
@@ -1020,8 +974,6 @@ struct StateMemPacket
 	uint8 *data;
 	uint32 compressed_len;
 	uint32 uncompressed_len;
-
-	StateMem MovieLove;
 };
 
 static int SRW_NUM = 600;
@@ -1059,7 +1011,6 @@ void MDFN_StateEvilBegin(void)
   bcs[x].data = NULL;
   bcs[x].compressed_len = 0;
   bcs[x].uncompressed_len = 0;
-  memset(&bcs[x].MovieLove, 0, sizeof(StateMem));
  }
 }
 
@@ -1077,9 +1028,6 @@ void MDFN_StateEvilEnd(void)
 
  if(bcs)
  {
-  if(MDFNMOV_IsRecording())
-   MDFN_StateEvilFlushMovieLove();
-
   for(x = 0;x < SRW_NUM; x++)
   {
 
@@ -1097,13 +1045,6 @@ void MDFN_StateEvilFlushMovieLove(void)
  int bahpos = (bcspos + 1) % SRW_NUM;
  for(int x = 0; x < SRW_NUM; x++)
  {
-  if(bcs[bahpos].MovieLove.data)
-  {
-   if(bcs[x].data)
-    MDFNMOV_ForceRecord(&bcs[bahpos].MovieLove);
-   free(bcs[bahpos].MovieLove.data);
-   bcs[bahpos].MovieLove.data = NULL;
-  }
   bahpos = (bahpos + 1) % SRW_NUM;
  }
 }
@@ -1151,11 +1092,6 @@ int MDFN_StateEvil(int rewind)
 
   if(NeedDataFlush)
   {
-   if(bcs[next_bcspos].MovieLove.data)
-   {
-    free(bcs[next_bcspos].MovieLove.data);
-    bcs[next_bcspos].MovieLove.data = NULL;
-   }
    free(bcs[next_bcspos].data);
    bcs[next_bcspos].data = NULL;
    bcs[next_bcspos].compressed_len = 0;
@@ -1173,7 +1109,6 @@ int MDFN_StateEvil(int rewind)
 
    MDFNSS_LoadSM(&sm, 0, 1);
 
-   free(MDFNMOV_GrabRewindJoy().data);
    return(1);
   }
  }
@@ -1184,25 +1119,10 @@ int MDFN_StateEvil(int rewind)
 
   bcspos = (bcspos + 1) % SRW_NUM;
 
-  if(MDFNMOV_IsRecording())
-  {
-   if(bcs[bcspos].data && bcs[bcspos].MovieLove.data)
-   {
-    //printf("Force: %d\n", bcspos);
-    MDFNMOV_ForceRecord(&bcs[bcspos].MovieLove);
-    free(bcs[bcspos].MovieLove.data);
-    bcs[bcspos].MovieLove.data = NULL;
-   }
-  }
   if(bcs[bcspos].data)
   {
    free(bcs[bcspos].data);
    bcs[bcspos].data = NULL;
-  }
-  if(bcs[bcspos].MovieLove.data)
-  {
-   free(bcs[bcspos].MovieLove.data);
-   bcs[bcspos].MovieLove.data = NULL;
   }
 
   memset(&sm, 0, sizeof(sm));
@@ -1256,9 +1176,6 @@ int MDFN_StateEvil(int rewind)
     bcs[prev_bcspos].compressed_len = dst_len;
    }
   }
-
-  if(MDFNMOV_IsRecording())
-   bcs[bcspos].MovieLove = MDFNMOV_GrabRewindJoy();
  }
  return(0);
 }

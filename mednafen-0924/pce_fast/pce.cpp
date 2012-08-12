@@ -673,4 +673,3 @@ MDFNGI EmulatedPCE_Fast =
 
  2,     // Number of output sound channels
 };
-
