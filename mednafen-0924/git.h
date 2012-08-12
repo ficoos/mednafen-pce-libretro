@@ -240,15 +240,6 @@ typedef struct
 	// performance possible.  HOWEVER, emulation modules must make sure the value is in a range(with minimum and maximum) that their code can handle
 	// before they try to handle it.
 	double soundmultiplier;
-
-	// True if we want to rewind one frame.  Set by the driver code.
-	bool NeedRewind;
-
-	// Sound reversal during state rewinding is normally done in mednafen.cpp, but
-        // individual system emulation code can also do it if this is set, and clear it after it's done.
-        // (Also, the driver code shouldn't touch this variable)
-	bool NeedSoundReverse;
-
 } EmulateSpecStruct;
 
 typedef enum

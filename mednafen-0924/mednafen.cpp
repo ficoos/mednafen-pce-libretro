@@ -917,8 +917,6 @@ int MDFNI_Initialize(const char *basedir, const std::vector<MDFNSetting> &Driver
 
 	MDFNI_SetBaseDirectory(basedir);
 
-	MDFN_InitFontData();
-
 	// Generate dynamic settings
 	for(unsigned int i = 0; i < MDFNSystems.size(); i++)
 	{
@@ -987,32 +985,6 @@ static void ProcessAudio(EmulateSpecStruct *espec)
   int16 *const SoundBuf = espec->SoundBuf + espec->SoundBufSizeALMS * MDFNGameInfo->soundchan;
   int32 SoundBufSize = espec->SoundBufSize - espec->SoundBufSizeALMS;
   const int32 SoundBufMaxSize = espec->SoundBufMaxSize - espec->SoundBufSizeALMS;
-
-
-  if(espec->NeedSoundReverse)
-  {
-   int16 *yaybuf = SoundBuf;
-   int32 slen = SoundBufSize;
-
-   if(MDFNGameInfo->soundchan == 1)
-   {
-    for(int x = 0; x < (slen / 2); x++)    
-    {
-     int16 cha = yaybuf[slen - x - 1];
-     yaybuf[slen - x - 1] = yaybuf[x];
-     yaybuf[x] = cha;
-    }
-   }
-   else if(MDFNGameInfo->soundchan == 2)
-   {
-    for(int x = 0; x < (slen * 2) / 2; x++)
-    {
-     int16 cha = yaybuf[slen * 2 - (x&~1) - ((x&1) ^ 1) - 1];
-     yaybuf[slen * 2 - (x&~1) - ((x&1) ^ 1) - 1] = yaybuf[x];
-     yaybuf[x] = cha;
-    }
-   }
-  }
 
   if(multiplier_save != LastSoundMultiplier)
   {
@@ -1150,35 +1122,10 @@ void MDFNI_Emulate(EmulateSpecStruct *espec)
   ff_resampler.buffer_size((espec->SoundRate / 2) * 2);
  }
 
- if(espec->NeedRewind)
- {
-  if(MDFNGameInfo->GameType == GMT_PLAYER)
-  {
-   espec->NeedRewind = 0;
-   MDFN_DispMessage(_("Music player rewinding is unsupported."));
-  }
- }
-
  // Don't even save states with state rewinding if netplay is enabled, it will degrade netplay performance, and can cause
  // desynchs with some emulation(IE SNES based on bsnes).
 
- espec->NeedSoundReverse = MDFN_StateEvil(espec->NeedRewind);
-
  MDFNGameInfo->Emulate(espec);
-
- //
- // Sanity checks
- //
- if(!espec->skip)
- {
-  if(espec->DisplayRect.h == 0)
-  {
-   fprintf(stderr, "espec->DisplayRect.h == 0\n");
-  }
- }
- //
- //
- //
 
  ProcessAudio(espec);
 }
