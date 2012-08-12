@@ -1,8 +1,6 @@
 #ifndef _STATE_H
 #define _STATE_H
 
-#include <zlib.h>
-
 #include "video.h"
 #include "state-common.h"
 

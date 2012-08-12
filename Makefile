@@ -1,4 +1,4 @@
-DEBUG=0
+DEBUG=1
 #set later according to platform
 IS_X86 = 0
 
