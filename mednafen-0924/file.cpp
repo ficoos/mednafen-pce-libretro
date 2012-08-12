@@ -31,10 +31,6 @@
 #include <fcntl.h>
 #endif
 
-
-#include <zlib.h>
-#include "compress/unzip.h"
-
 #include "file.h"
 #include "general.h"
 
@@ -50,28 +46,6 @@ enum
  MDFN_FILETYPE_GZIP = 1,
  MDFN_FILETYPE_ZIP = 2,
 };
-
-static const char *unzErrorString(int error_code)
-{
- if(error_code == UNZ_OK)
-  return("ZIP OK");
- else if(error_code == UNZ_END_OF_LIST_OF_FILE)
-  return("ZIP End of file list");
- else if(error_code == UNZ_EOF)
-  return("ZIP EOF");
- else if(error_code == UNZ_PARAMERROR)
-  return("ZIP Parameter error");
- else if(error_code == UNZ_BADZIPFILE)
-  return("ZIP file bad");
- else if(error_code == UNZ_INTERNALERROR)
-  return("ZIP Internal error");
- else if(error_code == UNZ_CRCERROR)
-  return("ZIP CRC error");
- else if(error_code == UNZ_ERRNO)
-  return(strerror(errno));
- else
-  return("ZIP Unknown");
-}
 
 bool MDFNFILE::ApplyIPS(FILE *ips)
 {
@@ -239,7 +213,6 @@ bool MDFNFILE::MakeMemWrapAndClose(void *tz, int type)
  #endif
  location = 0;
 
- if(type == MDFN_FILETYPE_PLAIN)
  {
   ::fseek((FILE *)tz, 0, SEEK_END);
   f_size = ::ftell((FILE *)tz);
@@ -282,96 +255,11 @@ bool MDFNFILE::MakeMemWrapAndClose(void *tz, int type)
   }
   #endif
  }
- else if(type == MDFN_FILETYPE_GZIP)
- {
-  uint32_t cur_size = 0;
-  uint32_t cur_alloced = 65536;
-  int howmany;
-
-  if(!(f_data = (uint8*)MDFN_malloc(cur_alloced, _("file read buffer"))))
-  {
-   goto doret;
-  }
-
-  while((howmany = gzread((gzFile)tz, f_data + cur_size, cur_alloced - cur_size)) > 0)
-  {
-   cur_size += howmany;
-   cur_alloced <<= 1;
-
-   if(cur_size > MaxROMImageSize)
-   {
-    MDFN_PrintError(_("ROM image is too large; maximum size allowed is %llu bytes."), (unsigned long long)MaxROMImageSize);
-    goto doret;
-   }
-
-   if(!(f_data = (uint8 *)MDFN_realloc(f_data, cur_alloced, _("file read buffer")))) 
-   {
-    goto doret;
-   }
-  }
-
-  if(!(f_data = (uint8 *)MDFN_realloc(f_data, cur_size, _("file read buffer")))) 
-  {
-   goto doret;
-  }
-
-  f_size = cur_size;
-
-  {
-   int gzerrnum = 0;
-   const char *gzerrstring;
-   if((gzerrstring = gzerror((gzFile)tz, &gzerrnum)) && gzerrnum != Z_OK && gzerrnum != Z_STREAM_END)
-   {
-    if(gzerrnum != Z_ERRNO)
-    {
-     MDFN_PrintError(_("Error reading file: zlib error: %s"), gzerrstring);
-    }
-    else
-    {
-     ErrnoHolder ene(errno);
-     MDFN_PrintError(_("Error reading file: %s"), ene.StrError());
-    }
-    goto doret;
-   }
-  }
- }
- else if(type == MDFN_FILETYPE_ZIP)
- {
-  unz_file_info ufo;
-  unzGetCurrentFileInfo((unzFile)tz, &ufo, 0, 0, 0, 0, 0, 0);
-
-  f_size = ufo.uncompressed_size;
-
-  if(size > MaxROMImageSize)
-  {
-   MDFN_PrintError(_("ROM image is too large; maximum size allowed is %llu bytes."), (unsigned long long)MaxROMImageSize);
-   goto doret;
-  }
-
-  if(!(f_data=(uint8 *)MDFN_malloc(ufo.uncompressed_size, _("file read buffer"))))
-  {
-   goto doret;
-  }
-
-  unzReadCurrentFile((unzFile)tz, f_data, ufo.uncompressed_size);
- }
 
  ret = TRUE;
 
  doret:
- if(type == MDFN_FILETYPE_PLAIN)
- {
   fclose((FILE *)tz);
- }
- else if(type == MDFN_FILETYPE_GZIP)
- {
-  gzclose((gzFile)tz);
- }
- else if(type == MDFN_FILETYPE_ZIP)
- {
-  unzCloseCurrentFile((unzFile)tz);
-  unzClose((unzFile)tz);
- }
 
  return(ret);
 }
@@ -406,96 +294,9 @@ MDFNFILE::~MDFNFILE()
 
 bool MDFNFILE::Open(const char *path, const FileExtensionSpecStruct *known_ext, const char *purpose, const bool suppress_notfound_pe)
 {
- unzFile tz;
-
  local_errno = 0;
  error_code = MDFNFILE_EC_OTHER;	// Set to 0 at the end if the function succeeds.
 
- //f_data = (uint8 *)0xDEADBEEF;
-
- // Try opening it as a zip file first
- if((tz = unzOpen(path)))
- {
-  char tempu[1024];
-  int errcode;
-
-  if((errcode = unzGoToFirstFile(tz)) != UNZ_OK)
-  {
-   MDFN_PrintError(_("Could not seek to first file in ZIP archive: %s"), unzErrorString(errcode));
-   unzClose(tz);
-
-   return(NULL);
-  }
-
-  if(known_ext)
-  {
-   bool FileFound = FALSE;
-   while(!FileFound)
-   {
-    size_t tempu_strlen;
-    const FileExtensionSpecStruct *ext_search = known_ext;
-
-    if((errcode = unzGetCurrentFileInfo(tz, 0, tempu, 1024, 0, 0, 0, 0)) != UNZ_OK)
-    {
-     MDFN_PrintError(_("Could not get file information in ZIP archive: %s"), unzErrorString(errcode));
-     unzClose(tz);
-
-     return(NULL);
-    }
-
-    tempu[1023] = 0;
-    tempu_strlen = strlen(tempu);
-
-    while(ext_search->extension && !FileFound)
-    {
-     size_t ttmeow = strlen(ext_search->extension);
-     if(tempu_strlen >= ttmeow)
-     {
-      if(!strcasecmp(tempu + tempu_strlen - ttmeow, ext_search->extension))
-       FileFound = TRUE;
-     }
-     ext_search++;
-    }
-
-    if(FileFound)
-     break;
-
-    if((errcode = unzGoToNextFile(tz)) != UNZ_OK)
-    { 
-     if(errcode != UNZ_END_OF_LIST_OF_FILE)
-     {
-      MDFN_PrintError(_("Error seeking to next file in ZIP archive: %s"), unzErrorString(errcode));
-      unzClose(tz);
-      return(NULL);
-     }
-
-     if((errcode = unzGoToFirstFile(tz)) != UNZ_OK)
-     {
-      MDFN_PrintError(_("Could not seek to first file in ZIP archive: %s"), unzErrorString(errcode));
-      unzClose(tz);
-      return(NULL);
-     }
-     break;     
-    }
-
-   } // end to while(!FileFound)
-  } // end to if(ext)
-
-  if((errcode = unzOpenCurrentFile(tz)) != UNZ_OK)
-  {
-   MDFN_PrintError(_("Could not open file in ZIP archive: %s"), unzErrorString(errcode));
-   unzClose(tz);
-   return(NULL);
-  }
-
-  if(!MakeMemWrapAndClose(tz, MDFN_FILETYPE_ZIP))
-   return(0);
-
-  char *ld = strrchr(tempu, '.');
-
-  f_ext = strdup(ld ? ld + 1 : "");
- }
- else // If it's not a zip file, handle it as...another type of file!
  {
   FILE *fp;
 
@@ -532,52 +333,6 @@ bool MDFNFILE::Open(const char *path, const FileExtensionSpecStruct *known_ext, 
    const char *ld = strrchr(path, '.');
    f_ext = strdup(ld ? ld + 1 : "");
   }
-  else                  /* Probably gzip */
-  {
-   gzFile gzp;
-
-   fclose(fp);
-
-   // Clear errno so we can see if the error occurred within zlib or the C lib
-   errno = 0;
-   if(!(gzp = gzopen(path, "rb")))
-   {
-    if(errno != 0)
-    {
-     ErrnoHolder ene(errno);
-     local_errno = ene.Errno();
-
-     if(ene.Errno() == ENOENT)
-     {
-      local_errno = ene.Errno();
-      error_code = MDFNFILE_EC_NOTFOUND;
-     }
-
-     if(ene.Errno() != ENOENT || !suppress_notfound_pe)
-      MDFN_PrintError(_("Error opening \"%s\": %s"), path, ene.StrError());
-    }
-    else
-     MDFN_PrintError(_("Error opening \"%s\": %s"), path, _("zlib error"));
-
-    return(0);
-   }
-
-   if(!MakeMemWrapAndClose(gzp, MDFN_FILETYPE_GZIP))
-    return(0);
-
-   char *tmp_path = strdup(path);
-   char *ld = strrchr(tmp_path, '.');
-
-   if(ld && ld > tmp_path)
-   {
-    char *last_ld = ld;
-    *ld = 0;
-    ld = strrchr(tmp_path, '.');
-    if(!ld) { *last_ld = '.'; ld = last_ld; }
-   }
-   f_ext = strdup(ld ? ld + 1 : "");
-   free(tmp_path);
-  } // End gzip handling
  } // End normal and gzip file handling else to zip
 
  // FIXME:  Handle extension fixing for cases where loaded filename is like "moo.moo/lalala"
@@ -708,45 +463,6 @@ static INLINE bool MDFN_DumpToFileReal(const char *filename, int compress, const
  if(MDFN_GetSettingB("filesys.disablesavegz"))
   compress = 0;
 
- if(compress)
- {
-  char mode[64];
-  gzFile gp;
-
-  trio_snprintf(mode, 64, "wb%d", compress);
-
-  gp = gzopen(filename, mode);
-
-  if(!gp)
-  {
-   ErrnoHolder ene(errno);
-
-   MDFN_PrintError(_("Error opening \"%s\": %s"), filename, ene.StrError());
-   return(0);
-  }
-
-  for(unsigned int i = 0; i < pearpairs.size(); i++)
-  {
-   const void *data = pearpairs[i].GetData();
-   const int64 length = pearpairs[i].GetLength();
-
-   if(gzwrite(gp, data, length) != length)
-   {
-    int errnum;
-
-    MDFN_PrintError(_("Error writing to \"%s\": %s"), filename, gzerror(gp, &errnum));
-    gzclose(gp);
-    return(0);
-   }
-  }
-
-  if(gzclose(gp) != Z_OK) // FIXME: Huhm, how should we handle this?
-  {
-   MDFN_PrintError(_("Error closing \"%s\""), filename);
-   return(0);
-  }
- }
- else
  {
   FILE *fp = fopen(filename, "wb");
   if(!fp)
