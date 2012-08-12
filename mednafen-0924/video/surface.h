@@ -108,20 +108,24 @@ class MDFN_Surface //typedef struct
  // Creates a 32-bit value for the surface corresponding to the R/G/B/A color passed.
  INLINE uint32 MakeColor(uint8 r, uint8 g, uint8 b, uint8 a = 0) const
  {
-  return(format.MakeColor(r, g, b, a));
+    return (((r >> 3) << 10) | ((g >> 3) << 5) | ((b >> 3) << 0));
  }
 
  // Gets the R/G/B/A values for the passed 32-bit surface pixel value
  INLINE void DecodeColor(uint32 value, int &r, int &g, int &b, int &a) const
  {
-  format.DecodeColor(value, r, g, b, a);
+    r = ((value & 0x1f) << 10) & 0x7fff;
+    g = (((value & 0x3e0) << 5) <<5) & 0x7fff;
+    b = (((value & 0x7c00) >> 10)) & 0x7fff;
  }
 
  INLINE void DecodeColor(uint32 value, int &r, int &g, int &b) const
  {
   int dummy_a;
 
-  DecodeColor(value, r, g, b, dummy_a);
+  r = ((value & 0x1f) << 10) & 0x7fff;
+  g = (((value & 0x3e0) << 5) <<5) & 0x7fff;
+  b = (((value & 0x7c00) >> 10)) & 0x7fff;
  }
  private:
  void Init(void *const p_pixels, const uint32 p_width, const uint32 p_height, const uint32 p_pitchinpix, const MDFN_PixelFormat &nf);

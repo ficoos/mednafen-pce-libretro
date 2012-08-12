@@ -121,8 +121,6 @@ MDFNGI *MDFNGameInfo = NULL;
 static Fir_Resampler<16> ff_resampler;
 static double LastSoundMultiplier;
 
-static bool FFDiscard = FALSE; // TODO:  Setting to discard sound samples instead of increasing pitch
-
 static MDFN_PixelFormat last_pixel_format;
 static double last_sound_rate;
 
@@ -994,13 +992,6 @@ static void ProcessAudio(EmulateSpecStruct *espec)
 
   if(multiplier_save != 1)
   {
-   if(FFDiscard)
-   {
-    if(SoundBufSize >= multiplier_save)
-     SoundBufSize /= multiplier_save;
-   }
-   else
-   {
     if(MDFNGameInfo->soundchan == 2)
     {
      assert(ff_resampler.max_write() >= SoundBufSize * 2);
@@ -1035,7 +1026,6 @@ static void ProcessAudio(EmulateSpecStruct *espec)
      printf("ff_resampler.avail() > espec->SoundBufMaxSize * MDFNGameInfo->soundchan - %d\n", avail);
      ff_resampler.clear();
     }
-   }
   }
 
   if(volume_save != 1)

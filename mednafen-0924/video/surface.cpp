@@ -104,14 +104,8 @@ void MDFN_Surface::Init(void *const p_pixels, const uint32 p_width, const uint32
  pitchinpix = p_pitchinpix;
 }
 
-// When we're converting, only convert the w*h area(AKA leave the last part of the line, pitch32 - w, alone),
-// for places where we store auxillary information there(graphics viewer in the debugger), and it'll be faster
-// to boot.
 void MDFN_Surface::SetFormat(const MDFN_PixelFormat &nf, bool convert)
 {
- assert(format.bpp == 16 || format.bpp == 32);
- assert(nf.bpp == 16 || nf.bpp == 32);
-
  if(nf.bpp == 16)
  {
 
@@ -131,50 +125,12 @@ void MDFN_Surface::SetFormat(const MDFN_PixelFormat &nf, bool convert)
   {
    pixels16 = (uint16 *)rpix;
 
-   if(convert)
-   {
-    puts("32bpp to 16bpp convert");
-    for(int y = 0; y < h; y++)
-    {
-     uint32 *srow = &pixels[y * pitchinpix];
-     uint16 *drow = &pixels16[y * pitchinpix];
-
-     for(int x = 0; x < w; x++)
-     {
-      uint32 c = srow[x];
-      int r, g, b, a;
-
-      DecodeColor(c, r, g, b, a);
-      drow[x] = nf.MakeColor(r, g, b, a);
-     }
-    }
-   }
-
    oldpix = pixels;
    pixels = NULL;
   }
   else			// 16bpp to 32bpp
   {
    pixels = (uint32 *)rpix;
-
-   if(convert)
-   {
-    puts("16bpp to 32bpp convert");
-    for(int y = 0; y < h; y++)
-    {
-     uint16 *srow = &pixels16[y * pitchinpix];
-     uint32 *drow = &pixels[y * pitchinpix];
-
-     for(int x = 0; x < w; x++)
-     {
-      uint32 c = srow[x];
-      int r, g, b, a;
-
-      DecodeColor(c, r, g, b, a);
-      drow[x] = nf.MakeColor(r, g, b, a);
-     }
-    }
-   }
 
    oldpix = pixels16;
    pixels16 = NULL;
@@ -183,60 +139,8 @@ void MDFN_Surface::SetFormat(const MDFN_PixelFormat &nf, bool convert)
    free(oldpix);
 
   pixels_is_external = false;
-
-  // We already handled surface conversion above.
-  convert = false;
  }
 
- if(convert)
- {
-  if(format.bpp == 16)
-  {
-   // We should assert that surface->pixels is non-NULL even if we don't need to convert the surface, to catch more insidious bugs.
-   assert(pixels16);
-
-   if(memcmp(&format, &nf, sizeof(MDFN_PixelFormat)))
-   {
-    //puts("Converting");
-    for(int y = 0; y < h; y++)
-    {
-     uint16 *row = &pixels16[y * pitchinpix];
-
-     for(int x = 0; x < w; x++)
-     {
-      uint32 c = row[x];
-      int r, g, b, a;
-
-      DecodeColor(c, r, g, b, a);
-      row[x] = nf.MakeColor(r, g, b, a);
-     }
-    }
-   }
-  }
-  else
-  {
-   // We should assert that surface->pixels is non-NULL even if we don't need to convert the surface, to catch more insidious bugs.
-   assert(pixels);
-
-   if(memcmp(&format, &nf, sizeof(MDFN_PixelFormat)))
-   {
-    //puts("Converting");
-    for(int y = 0; y < h; y++)
-    {
-     uint32 *row = &pixels[y * pitchinpix];
-
-     for(int x = 0; x < w; x++)
-     {
-      uint32 c = row[x];
-      int r, g, b, a;
-
-      DecodeColor(c, r, g, b, a);
-      row[x] = nf.MakeColor(r, g, b, a);
-     }
-    }
-   }
-  }
- }
  format = nf;
 }
 
@@ -244,20 +148,8 @@ void MDFN_Surface::Fill(uint8 r, uint8 g, uint8 b, uint8 a)
 {
  uint32 color = MakeColor(r, g, b, a);
 
- if(format.bpp == 16)
- {
-  assert(pixels16);
-
   for(int32 i = 0; i < pitchinpix * h; i++)
    pixels16[i] = color;
- }
- else
- {
-  assert(pixels);
-
-  for(int32 i = 0; i < pitchinpix * h; i++)
-   pixels[i] = color;
- }
 }
 
 MDFN_Surface::~MDFN_Surface()
