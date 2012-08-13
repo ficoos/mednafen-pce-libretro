@@ -2,7 +2,6 @@
 #define __MDFN_VIDEO_H
 
 #include "video/surface.h"
-#include "video/primitives.h"
 
 #include <algorithm>
 
