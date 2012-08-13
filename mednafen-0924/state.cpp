@@ -28,7 +28,6 @@
 #include "general.h"
 #include "state.h"
 #include "video.h"
-#include "video/resize.h"
 
 static int SaveStateStatus[10];
 
@@ -505,7 +504,6 @@ int MDFNSS_StateAction(StateMem *st, int load, int data_only, std::vector <SSDes
      } 
      else
      {
-      // puts("SEEK");
       if(smem_seek(st, tmp_size, SEEK_CUR) < 0)
       {
        puts("Chunk seek failure");
@@ -546,44 +544,31 @@ int MDFNSS_StateAction(StateMem *st, int load, int data_only, SFORMAT *sf, const
  return(MDFNSS_StateAction(st, load, data_only, love));
 }
 
-int MDFNSS_SaveSM(StateMem *st, int wantpreview_and_ts, int data_only, const MDFN_Surface *surface, const MDFN_Rect *DisplayRect, const MDFN_Rect *LineWidths)
+static int MDFNSS_SaveSM(StateMem *st)
 {
 	static const char *header_magic = "MDFNSVST";
         uint8 header[32];
 	int neowidth = 0, neoheight = 0;
 
 	memset(header, 0, sizeof(header));
+	memcpy(header, header_magic, 8);
 
-	if(!data_only)
-	{
-	 memcpy(header, header_magic, 8);
+	MDFN_en32lsb(header + 16, MEDNAFEN_VERSION_NUMERIC);
+	MDFN_en32lsb(header + 24, neowidth);
+	MDFN_en32lsb(header + 28, neoheight);
+	smem_write(st, header, 32);
 
-	 MDFN_en32lsb(header + 16, MEDNAFEN_VERSION_NUMERIC);
-	 MDFN_en32lsb(header + 24, neowidth);
-	 MDFN_en32lsb(header + 28, neoheight);
-	 smem_write(st, header, 32);
-	}
-
-        // State rewinding code path hack, FIXME
-        if(data_only)
-        {
-         if(!MDFN_RawInputStateAction(st, 0, data_only))
-          return(0);
-        }
-
-	if(!MDFNGameInfo->StateAction(st, 0, data_only))
+	if(!MDFNGameInfo->StateAction(st, 0, 0))
 	 return(0);
 
-	if(!data_only)
-	{
-	 uint32 sizy = smem_tell(st);
-	 smem_seek(st, 16 + 4, SEEK_SET);
-	 smem_write32le(st, sizy);
-	}
+	uint32 sizy = smem_tell(st);
+	smem_seek(st, 16 + 4, SEEK_SET);
+	smem_write32le(st, sizy);
+
 	return(1);
 }
 
-int MDFNSS_Save(const char *fname, const char *suffix, const MDFN_Surface *surface, const MDFN_Rect *DisplayRect, const MDFN_Rect *LineWidths)
+static int MDFNSS_Save(const char *fname, const char *suffix)
 {
 	StateMem st;
 
@@ -596,7 +581,7 @@ int MDFNSS_Save(const char *fname, const char *suffix, const MDFN_Surface *surfa
 	 return(0);
 	}
 
-	if(!MDFNSS_SaveSM(&st, (DisplayRect && LineWidths), 0, surface, DisplayRect, LineWidths))
+	if(!MDFNSS_SaveSM(&st))
 	{
 	 if(st.data)
 	  free(st.data);
@@ -627,36 +612,22 @@ int MDFNSS_Save(const char *fname, const char *suffix, const MDFN_Surface *surfa
 	return(1);
 }
 
-int MDFNSS_LoadSM(StateMem *st, int haspreview, int data_only)
+static int MDFNSS_LoadSM(StateMem *st)
 {
-        uint8 header[32];
-	uint32 stateversion;
+ uint8 header[32];
+ uint32 stateversion;
 
-	if(data_only)
-	{
-	 stateversion = MEDNAFEN_VERSION_NUMERIC;
-	}
-	else
-	{
-         smem_read(st, header, 32);
+ smem_read(st, header, 32);
 
-         if(memcmp(header, "MEDNAFENSVESTATE", 16) && memcmp(header, "MDFNSVST", 8))
-          return(0);
+ if(memcmp(header, "MEDNAFENSVESTATE", 16) && memcmp(header, "MDFNSVST", 8))
+  return(0);
 
-	 stateversion = MDFN_de32lsb(header + 16);
-	}
+ stateversion = MDFN_de32lsb(header + 16);
 
-	// State rewinding code path hack, FIXME
-	if(data_only)
-	{
-	 if(!MDFN_RawInputStateAction(st, stateversion, data_only))
-	  return(0);
-	}
-
-	return(MDFNGameInfo->StateAction(st, stateversion, data_only));
+ return(MDFNGameInfo->StateAction(st, stateversion, 0));
 }
 
-int MDFNSS_LoadFP(gzFile fp)
+static int MDFNSS_LoadFP(gzFile fp)
 {
  uint8 header[32];
  StateMem st;
@@ -681,7 +652,7 @@ int MDFNSS_LoadFP(gzFile fp)
   free(st.data);
   return(0);
  }
- if(!MDFNSS_LoadSM(&st, 1, 0))
+ if(!MDFNSS_LoadSM(&st))
  {
   free(st.data);
   return(0);
@@ -690,7 +661,7 @@ int MDFNSS_LoadFP(gzFile fp)
  return(1);
 }
 
-int MDFNSS_Load(const char *fname, const char *suffix)
+static int MDFNSS_Load(const char *fname, const char *suffix)
 {
 	gzFile st;
 
@@ -821,13 +792,13 @@ void MDFNI_SelectState(int w)
  MDFND_SetStateStatus(status);
 }  
 
-void MDFNI_SaveState(const char *fname, const char *suffix, const MDFN_Surface *surface, const MDFN_Rect *DisplayRect, const MDFN_Rect *LineWidths)
+void MDFNI_SaveState(const char *fname, const char *suffix)
 {
  if(!MDFNGameInfo->StateAction) 
   return;
 
  MDFND_SetStateStatus(NULL);
- MDFNSS_Save(fname, suffix, surface, DisplayRect, LineWidths);
+ MDFNSS_Save(fname, suffix);
 }
 
 void MDFNI_LoadState(const char *fname, const char *suffix)
@@ -837,12 +808,5 @@ void MDFNI_LoadState(const char *fname, const char *suffix)
 
  MDFND_SetStateStatus(NULL);
 
- /* For network play and movies, be load the state locally, and then save the state to a temporary buffer,
-    and send or record that.  This ensures that if an older state is loaded that is missing some
-    information expected in newer save states, desynchronization won't occur(at least not
-    from this ;)).
- */
- if(MDFNSS_Load(fname, suffix))
- {
- }
+ MDFNSS_Load(fname, suffix);
 }
