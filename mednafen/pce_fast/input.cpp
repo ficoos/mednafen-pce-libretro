@@ -376,8 +376,7 @@ static void SyncSettings(void)
 {
  MDFNGameInfo->mouse_sensitivity = MDFN_GetSettingF("pce_fast.mouse_sensitivity");
  InputDeviceInfo[1].IDII = MDFN_GetSettingB("pce_fast.disable_softreset") ? PCE_GamepadIDII_DSR : PCE_GamepadIDII;
- //MultiTapEnabled = MDFN_GetSettingB("pce_fast.input.multitap");
- MultiTapEnabled = false;
+ MultiTapEnabled = MDFN_GetSettingB("pce_fast.input.multitap");
 }
 
 };
