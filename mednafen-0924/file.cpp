@@ -460,7 +460,6 @@ char *MDFNFILE::fgets(char *s, int buffer_size)
 
 static INLINE bool MDFN_DumpToFileReal(const char *filename, int compress, const std::vector<PtrLengthPair> &pearpairs)
 {
- if(MDFN_GetSettingB("filesys.disablesavegz"))
   compress = 0;
 
  {

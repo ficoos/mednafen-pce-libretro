@@ -3,7 +3,15 @@
 #include "../general.h"
 #include "libretro.h"
 #include <stdarg.h>
-#ifndef _WIN32
+
+#if defined(__CELLOS_LV2__)
+#include <sys/timer.h>
+#include <unistd.h>
+#elif defined(_WIN32) && !defined(_XBOX)
+#include <windows.h>
+#elif defined(_XBOX) 
+#include <xtl.h>
+#else
 #include <unistd.h>
 #endif
 

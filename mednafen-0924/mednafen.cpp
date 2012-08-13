@@ -51,9 +51,6 @@ static const char *fname_extra = gettext_noop("See fname_format.txt for more inf
 
 static MDFNSetting MednafenSettings[] =
 {
-  { "srwframes", MDFNSF_NOFLAGS, gettext_noop("Number of frames to keep states for when state rewinding is enabled."), 
-	gettext_noop("WARNING: Setting this to a large value may cause excessive RAM usage in some circumstances, such as with games that stream large volumes of data off of CDs."), MDFNST_UINT, "600", "10", "99999" },
-
   { "filesys.untrusted_fip_check", MDFNSF_NOFLAGS, gettext_noop("Enable untrusted file-inclusion path security check."),
 	gettext_noop("When this setting is set to \"1\", the default, paths to files referenced from files like CUE sheets and PSF rips are checked for certain characters that can be used in directory traversal, and if found, loading is aborted.  Set it to \"0\" if you want to allow constructs like absolute paths in CUE sheets, but only if you understand the security implications of doing so(see \"Security Issues\" section in the documentation)."), MDFNST_BOOL, "1" },
 
@@ -69,9 +66,6 @@ static MDFNSetting MednafenSettings[] =
   { "filesys.fname_state", MDFNSF_NOFLAGS, gettext_noop("Format string for state filename."), fname_extra, MDFNST_STRING, "%f.%M%X" /*"%F.%M%p.%x"*/ },
   { "filesys.fname_sav", MDFNSF_NOFLAGS, gettext_noop("Format string for save games filename."), gettext_noop("WARNING: %x should always be included, otherwise you run the risk of overwriting save data for games that create multiple save data files.\n\nSee fname_format.txt for more information.  Edit at your own risk."), MDFNST_STRING, "%F.%M%x" },
   { "filesys.fname_snap", MDFNSF_NOFLAGS, gettext_noop("Format string for screen snapshot filenames."), gettext_noop("WARNING: %x or %p should always be included, otherwise there will be a conflict between the numeric counter text file and the image data file.\n\nSee fname_format.txt for more information.  Edit at your own risk."), MDFNST_STRING, "%f-%p.%x" },
-
-  { "filesys.disablesavegz", MDFNSF_NOFLAGS, gettext_noop("Disable gzip compression when saving save states and backup memory."), NULL, MDFNST_BOOL, "0" },
-
   { NULL }
 };
 
@@ -513,11 +507,6 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
 	 return(MDFNI_LoadCD(force_module, name));
 	}
 	
-	if(!stat(name, &stat_buf) && !S_ISREG(stat_buf.st_mode))
-	{
-	 return(MDFNI_LoadCD(force_module, name));
-	}
-
 	MDFNI_CloseGame();
 
 	LastSoundMultiplier = 1;
@@ -868,6 +857,8 @@ bool MDFNI_InitializeModules(const std::vector<MDFNGI *> &ExternalSystems)
  return(1);
 }
 
+static bool first_init = true;
+
 int MDFNI_Initialize(const char *basedir, const std::vector<MDFNSetting> &DriverSettings)
 {
 	// FIXME static
@@ -906,20 +897,24 @@ int MDFNI_Initialize(const char *basedir, const std::vector<MDFNSetting> &Driver
 	}
 
 	// First merge all settable settings, then load the settings from the SETTINGS FILE OF DOOOOM
-	MDFN_MergeSettings(MednafenSettings);
-        MDFN_MergeSettings(dynamic_settings);
-	MDFN_MergeSettings(MDFNMP_Settings);
-
-	if(DriverSettings.size())
- 	 MDFN_MergeSettings(DriverSettings);
-
-	for(unsigned int x = 0; x < MDFNSystems.size(); x++)
+	if(first_init)
 	{
-	 if(MDFNSystems[x]->Settings)
-	  MDFN_MergeSettings(MDFNSystems[x]->Settings);
-	}
+		MDFN_MergeSettings(MednafenSettings);
+		MDFN_MergeSettings(dynamic_settings);
+		MDFN_MergeSettings(MDFNMP_Settings);
 
-	MDFN_MergeSettings(RenamedSettings);
+		if(DriverSettings.size())
+			MDFN_MergeSettings(DriverSettings);
+
+		for(unsigned int x = 0; x < MDFNSystems.size(); x++)
+		{
+			if(MDFNSystems[x]->Settings)
+				MDFN_MergeSettings(MDFNSystems[x]->Settings);
+		}
+
+		MDFN_MergeSettings(RenamedSettings);
+		first_init = false;
+	}
 
         if(!MFDN_LoadSettings(basedir))
 	 return(0);

@@ -36,6 +36,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
+#ifdef __CELLOS_LV2__
+#include <unistd.h>
+#endif
+
 #include <string.h>
 #include <errno.h>
 #include <time.h>
