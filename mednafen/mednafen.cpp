@@ -93,10 +93,6 @@ static MDFNSetting RenamedSettings[] =
  { NULL }
 };
 
-static char *PortDeviceCache[16];
-static void *PortDataCache[16];
-static uint32 PortDataLenCache[16];
-
 MDFNGI *MDFNGameInfo = NULL;
 
 static Fir_Resampler<16> ff_resampler;
@@ -132,19 +128,6 @@ void MDFNI_CloseGame(void)
  #ifdef WANT_DEBUGGER
  MDFNDBG_Kill();
  #endif
-
- for(unsigned int x = 0; x < sizeof(PortDeviceCache) / sizeof(char *); x++)
- {
-  if(PortDeviceCache[x])
-  {
-   free(PortDeviceCache[x]);
-   PortDeviceCache[x] = NULL;
-  }
- }
-
- memset(PortDataCache, 0, sizeof(PortDataCache));
- memset(PortDataLenCache, 0, sizeof(PortDataLenCache));
- memset(PortDeviceCache, 0, sizeof(PortDeviceCache));
 }
 
 #ifdef WANT_NES_EMU
@@ -869,10 +852,6 @@ int MDFNI_Initialize(const char *basedir, const std::vector<MDFNSetting> &Driver
 	 return(0);
 	}
 
-	memset(PortDataCache, 0, sizeof(PortDataCache));
-	memset(PortDataLenCache, 0, sizeof(PortDataLenCache));
-	memset(PortDeviceCache, 0, sizeof(PortDeviceCache));
-
 	MDFNI_SetBaseDirectory(basedir);
 
 	// Generate dynamic settings
@@ -1097,16 +1076,8 @@ int MDFN_RawInputStateAction(StateMem *sm, int load, int data_only)
   StateRegs[x].name = stringies[x];
   StateRegs[x].flags = 0;
 
-  if(PortDataCache[x])
-  {
-   StateRegs[x].v = PortDataCache[x];
-   StateRegs[x].size = PortDataLenCache[x];
-  }
-  else
-  {
-   StateRegs[x].v = NULL;
-   StateRegs[x].size = 0;
-  }
+  StateRegs[x].v = NULL;
+  StateRegs[x].size = 0;
  }
 
  StateRegs[x].v = NULL;
@@ -1294,17 +1265,6 @@ void MDFNI_SetInput(int port, const char *type, void *ptr, uint32 ptr_len_thingy
  if(MDFNGameInfo)
  {
   assert(port < 16);
-
-  PortDataCache[port] = ptr;
-  PortDataLenCache[port] = ptr_len_thingy;
-
-  if(PortDeviceCache[port])
-  {
-   free(PortDeviceCache[port]);
-   PortDeviceCache[port] = NULL;
-  }
-
-  PortDeviceCache[port] = strdup(type);
 
   MDFNGameInfo->SetInput(port, type, ptr);
  }
