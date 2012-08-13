@@ -23,7 +23,6 @@
 #include "huc.h"
 #include "../cdrom/pcecd.h"
 #include "../cdrom/scsicd.h"
-#include "hes.h"
 #include "tsushin.h"
 #include "arcade_card/arcade_card.h"
 #include "../mempatcher.h"
@@ -40,7 +39,6 @@ static Blip_Buffer sbuf[2];
 bool PCE_ACEnabled;
 
 static bool IsSGX;
-static bool IsHES;
 int pce_overclocked;
 
 // Statically allocated for speed...or something.
@@ -199,15 +197,10 @@ static int Load(const char *name, MDFNFILE *fp)
  uint32 headerlen = 0;
  uint32 r_size;
 
- IsHES = 0;
  IsSGX = 0;
-
- if(!memcmp(fp->f_data, "HESM", 4))
-  IsHES = 1;
 
  LoadCommonPre();
 
- if(!IsHES)
  {
   if(fp->f_size & 0x200) // 512 byte header!
    headerlen = 512;
@@ -224,14 +217,7 @@ static int Load(const char *name, MDFNFILE *fp)
 
  uint32 crc = crc32(0, fp->f_data + headerlen, fp->f_size - headerlen);
 
-
- if(IsHES)
- {
-  if(!PCE_HESLoad(fp->f_data, fp->f_size))
-   return(0);
- }
- else
-  HuCLoad(fp->f_data + headerlen, fp->f_size - headerlen, crc);
+ HuCLoad(fp->f_data + headerlen, fp->f_size - headerlen, crc);
 
  if(!strcasecmp(fp->f_ext, "sgx"))
   IsSGX = TRUE;
@@ -298,8 +284,6 @@ static int LoadCommon(void)
 { 
  IsSGX |= MDFN_GetSettingB("pce_fast.forcesgx") ? 1 : 0;
 
- if(IsHES)
-  IsSGX = 1;
  // Don't modify IsSGX past this point.
  
  VDC_Init(IsSGX);
@@ -363,7 +347,6 @@ static int LoadCommon(void)
  if(!MDFN_GetSettingB("pce_fast.correct_aspect"))
   MDFNGameInfo->fb_width = 682;
 
- if(!IsHES)
  {
   MDFNGameInfo->nominal_width = MDFN_GetSettingB("pce_fast.correct_aspect") ? 320 : 341;
   MDFNGameInfo->nominal_height = MDFN_GetSettingUI("pce_fast.slend") - MDFN_GetSettingUI("pce_fast.slstart") + 1;
@@ -439,7 +422,6 @@ static int LoadCD(std::vector<CDIF *> *CDInterfaces)
 {
  std::string bios_path = MDFN_MakeFName(MDFNMKF_FIRMWARE, 0, MDFN_GetSettingS("pce_fast.cdbios").c_str() );
 
- IsHES = 0;
  IsSGX = 0;
 
  LoadCommonPre();
@@ -456,12 +438,7 @@ static int LoadCD(std::vector<CDIF *> *CDInterfaces)
 
 static void CloseGame(void)
 {
- if(IsHES)
-  HES_Close();
- else
- {
   HuCClose();
- }
  VDC_Close();
  if(psg)
  {
@@ -488,7 +465,7 @@ static void Emulate(EmulateSpecStruct *espec)
    sbuf[y].bass_freq(20);
   }
  }
- VDC_RunFrame(espec->surface, &espec->DisplayRect, espec->LineWidths, IsHES ? 1 : espec->skip);
+ VDC_RunFrame(espec->surface, &espec->DisplayRect, espec->LineWidths, /* IsHES ? 1 : */espec->skip);
 
 
  if(PCE_IsCD)
@@ -517,9 +494,6 @@ static void Emulate(EmulateSpecStruct *espec)
 
  if(PCE_IsCD)
   PCECD_ResetTS();
-
- if(IsHES && !espec->skip)
-  HES_Draw(espec->surface, &espec->DisplayRect, espec->SoundBuf, espec->SoundBufSize);
 }
 
 static int StateAction(StateMem *sm, int load, int data_only)
@@ -560,9 +534,6 @@ void PCE_Power(void)
    BaseRAM[i] = 0xFF;
 
  PCEIODataBuffer = 0xFF;
-
- if(IsHES)
-  HES_Reset();
 
  HuC6280_Power();
  VDC_Power();

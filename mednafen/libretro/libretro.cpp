@@ -17,8 +17,13 @@
 
 #include "thread.h"
 
+#if defined(WANT_PCE_EMU)
 #define WIDTH 680
 #define HEIGHT 480
+#elif defined(WANT_PCE_FAST_EMU)
+#define WIDTH 512
+#define HEIGHT 242
+#endif
 
 static MDFNGI *game;
 static retro_video_refresh_t video_cb;
@@ -181,7 +186,11 @@ bool retro_load_game(const struct retro_game_info *info)
    std::vector<MDFNSetting> settings;
    MDFNI_Initialize(g_rom_dir, settings);
 
+#ifdef WANT_PCE_FAST_EMU
+   game = MDFNI_LoadGame("pce_fast", info->path);
+#else
    game = MDFNI_LoadGame("pce", info->path);
+#endif
    return game;
 }
 
@@ -246,8 +255,13 @@ void retro_run()
 
    MDFNI_Emulate(&spec);
 
+#ifdef WANT_PCE_FAST_EMU
+   unsigned width = rects->w;
+   unsigned height = rects->h;
+#else
    unsigned width = 320;
    unsigned height = 240;
+#endif
 
    const uint16_t *pix = surf->pixels16;
    video_cb(pix, width, height, WIDTH << 1);
@@ -258,7 +272,11 @@ void retro_run()
 void retro_get_system_info(struct retro_system_info *info)
 {
    memset(info, 0, sizeof(*info));
+#ifdef WANT_PCE_FAST_EMU
+   info->library_name     = "Mednafen PCE FAST";
+#else
    info->library_name     = "Mednafen PCE";
+#endif
    info->library_version  = "v0.9.24";
    info->need_fullpath    = true;
    info->valid_extensions = "pce|PCE|cue|CUE";

@@ -112,8 +112,5 @@
 
 
  EXP:
-               if(IsHES)
-                return(ReadIBP(A));
-
  //printf("Meow: %08x, %02x:%04x\n", A, A >> 13, A & 0x1FFF);
  return(0xFF);
