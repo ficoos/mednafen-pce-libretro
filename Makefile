@@ -21,7 +21,9 @@ ifeq ($(platform), unix)
    fpic := -fPIC
    SHARED := -shared -Wl,--version-script=mednafen/libretro/link.T -Wl,-no-undefined
    ENDIANNESS_DEFINES := -DLSB_FIRST
-   IS_X86 = 1
+   ifneq ($(shell uname -p | grep -E '((i.|x)86|amd64)'),)
+      IS_X86 = 1
+   endif
    LIBS := -pthread -lz
 else ifeq ($(platform), osx)
    TARGET := libretro.dylib
@@ -192,7 +194,7 @@ OBJECTS := $(SOURCES:.cpp=.o) $(SOURCES_C:.c=.o)
 
 all: $(TARGET)
 
-FLAGS += -ffast-math  -funroll-loops
+FLAGS += -ffast-math  -funroll-loops -fsigned-char
 FLAGS += -I. -I$(MEDNAFEN_DIR) -I$(MEDNAFEN_DIR)/include -I$(MEDNAFEN_DIR)/intl -I$(MEDNAFEN_DIR)/hw_cpu -I$(MEDNAFEN_DIR)/hw_misc -I$(MEDNAFEN_DIR)/hw_sound -I$(MEDNAFEN_DIR)/hw_video -I$(MEDNAFEN_DIR)/compress $(EXTRA_INCLUDES)
 
 FLAGS += $(ENDIANNESS_DEFINES) -DHAVE_MKDIR -DSIZEOF_DOUBLE=8 $(WARNINGS) -DMEDNAFEN_VERSION=\"0.9.24\" -DMEDNAFEN_VERSION_NUMERIC=924 -DPSS_STYLE=1 -DMPC_FIXED_POINT $(PCE_CORE_DEFINES) -DSTDC_HEADERS -D__LIBRETRO__ -D__STDC_LIMIT_MACROS -D_LOW_ACCURACY_
