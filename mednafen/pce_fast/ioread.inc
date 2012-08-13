@@ -119,7 +119,7 @@
                if(HuCPU.in_block_move)
                 return(0);
                {
-                uint8 ret = INPUT_Read(A);
+                uint8 ret = INPUT_Read(A, 0);
                 PCEIODataBuffer = ret;
                 return(ret);
                }

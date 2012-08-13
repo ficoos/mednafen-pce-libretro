@@ -126,7 +126,7 @@ static DECLFW(IOWrite)
 	       HuC6280_TimerWrite(A, V);
 	       break;
 
-  case 0x1000: PCEIODataBuffer = V; INPUT_Write(A, V); break;
+  case 0x1000: PCEIODataBuffer = V; INPUT_Write(HuCPU.timestamp, A, V); break;
   case 0x1400: PCEIODataBuffer = V; HuC6280_IRQStatusWrite(A, V); break;
   case 0x1800: if(IsTsushin)
                 PCE_TsushinWrite(A, V);
@@ -488,7 +488,7 @@ static void Emulate(EmulateSpecStruct *espec)
 
  espec->MasterCycles = HuCPU.timestamp * 3;
 
- INPUT_FixTS();
+ INPUT_FixTS(HuCPU.timestamp);
 
  HuC6280_ResetTS();
 

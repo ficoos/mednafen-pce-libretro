@@ -115,16 +115,19 @@ PCE_SOURCES := $(PCE_DIR)/vce.cpp \
 	$(PCE_DIR)/huc.cpp \
 	$(PCE_DIR)/tsushin.cpp \
 	$(PCE_DIR)/subhw.cpp \
-	$(PCE_DIR)/mcgenjin.cpp \
 	$(PCE_DIR)/input/gamepad.cpp \
+	$(PCE_DIR)/input/mouse.cpp \
 	$(PCE_DIR)/input/tsushinkb.cpp \
-	$(PCE_DIR)/input/mouse.cpp
+	$(PCE_DIR)/mcgenjin.cpp
 
 PCE_FAST_SOURCES := $(PCE_FAST_DIR)/huc.cpp \
 	$(PCE_FAST_DIR)/huc6280.cpp \
 	$(PCE_FAST_DIR)/input.cpp \
 	$(PCE_FAST_DIR)/pce.cpp \
 	$(PCE_FAST_DIR)/tsushin.cpp \
+	$(PCE_FAST_DIR)/input/gamepad.cpp \
+	$(PCE_FAST_DIR)/input/mouse.cpp \
+	$(PCE_FAST_DIR)/input/tsushinkb.cpp \
 	$(PCE_FAST_DIR)/vdc.cpp
 
 ifeq ($(FAST), 1)
