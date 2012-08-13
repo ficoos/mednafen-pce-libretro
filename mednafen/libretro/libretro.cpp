@@ -89,13 +89,12 @@ void MDFND_WaitThread(MDFN_Thread *thr, int *val)
    if (val)
    {
       *val = 0;
-      //std::cerr << "WaitThread relies on return value." << std::endl;
    }
 }
 
 void MDFND_KillThread(MDFN_Thread *thr)
 {
-   //std::cerr << "Killing a thread is a BAD IDEA!" << std::endl;
+   // Killing a thread is a bad idea
 }
 
 MDFN_Mutex *MDFND_CreateMutex()
@@ -203,9 +202,12 @@ void retro_unload_game()
 
 static void update_input (void)
 {
-   static uint8_t input_buf_p1;
-   static uint8_t input_buf_p2;
-   input_buf_p1 = input_buf_p2 = 0;
+   uint8_t input_buf_p1 = 0;
+   uint8_t input_buf_p2 = 0;
+   uint8_t input_buf_p3 = 0;
+   uint8_t input_buf_p4 = 0;
+   uint8_t input_buf_p5 = 0;
+
    static unsigned map[] = {
       RETRO_DEVICE_ID_JOYPAD_Y,
       RETRO_DEVICE_ID_JOYPAD_B,
@@ -219,20 +221,29 @@ static void update_input (void)
       RETRO_DEVICE_ID_JOYPAD_X,
       RETRO_DEVICE_ID_JOYPAD_L,
       RETRO_DEVICE_ID_JOYPAD_R,
-      RETRO_DEVICE_ID_JOYPAD_L2,
+      RETRO_DEVICE_ID_JOYPAD_L2
    };
 
    for (unsigned i = 0; i < 13; i++)
    {
-      input_buf_p1 |= map[i] != -1u &&
-         input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, map[i]) ? (1 << i) : 0;
-      input_buf_p2 |= map[i] != -1u &&
-         input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, map[i]) ? (1 << i) : 0;
+      input_buf_p1 |= input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, map[i]) ? (1 << i) : 0;
+      input_buf_p2 |= input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, map[i]) ? (1 << i) : 0;
+      input_buf_p3 |= input_state_cb(2, RETRO_DEVICE_JOYPAD, 0, map[i]) ? (1 << i) : 0;
+      input_buf_p4 |= input_state_cb(3, RETRO_DEVICE_JOYPAD, 0, map[i]) ? (1 << i) : 0;
+      input_buf_p5 |= input_state_cb(4, RETRO_DEVICE_JOYPAD, 0, map[i]) ? (1 << i) : 0;
    }
 
    // Possible endian bug ...
-   MDFNI_SetInput(0, "gamepad", &input_buf_p1, 0);
-   MDFNI_SetInput(1, "gamepad", &input_buf_p2, 0);
+   if(input_buf_p1 != 0)
+      MDFNI_SetInput(0, "gamepad", &input_buf_p1, 0);
+   if(input_buf_p2 != 0)
+      MDFNI_SetInput(1, "gamepad", &input_buf_p2, 0);
+   if(input_buf_p3 != 0)
+      MDFNI_SetInput(2, "gamepad", &input_buf_p3, 0);
+   if(input_buf_p4 != 0)
+      MDFNI_SetInput(3, "gamepad", &input_buf_p4, 0);
+   if(input_buf_p5 != 0)
+      MDFNI_SetInput(4, "gamepad", &input_buf_p5, 0);
 }
 
 void retro_run()
@@ -279,7 +290,7 @@ void retro_get_system_info(struct retro_system_info *info)
 #endif
    info->library_version  = "v0.9.24";
    info->need_fullpath    = true;
-   info->valid_extensions = "pce|PCE|cue|CUE";
+   info->valid_extensions = "pce|PCE|cue|CUE|zip|ZIP";
    info->block_extract    = false;
 }
 
