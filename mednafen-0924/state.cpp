@@ -33,7 +33,7 @@ static int SaveStateStatus[10];
 
 #define RLSB 		MDFNSTATE_RLSB	//0x80000000
 
-int32 smem_read(StateMem *st, void *buffer, uint32 len)
+static int32 smem_read(StateMem *st, void *buffer, uint32 len)
 {
  if((len + st->loc) > st->len)
   return(0);
@@ -44,7 +44,7 @@ int32 smem_read(StateMem *st, void *buffer, uint32 len)
  return(len);
 }
 
-int32 smem_write(StateMem *st, void *buffer, uint32 len)
+static int32 smem_write(StateMem *st, void *buffer, uint32 len)
 {
  if((len + st->loc) > st->malloced)
  {
@@ -63,7 +63,7 @@ int32 smem_write(StateMem *st, void *buffer, uint32 len)
  return(len);
 }
 
-int32 smem_putc(StateMem *st, int value)
+static int32 smem_putc(StateMem *st, int value)
 {
  uint8 tmpval = value;
  if(smem_write(st, &tmpval, 1) != 1)
@@ -71,12 +71,12 @@ int32 smem_putc(StateMem *st, int value)
  return(1);
 }
 
-int32 smem_tell(StateMem *st)
+static int32 smem_tell(StateMem *st)
 {
  return(st->loc);
 }
 
-int32 smem_seek(StateMem *st, uint32 offset, int whence)
+static int32 smem_seek(StateMem *st, uint32 offset, int whence)
 {
  switch(whence)
  {
@@ -100,7 +100,7 @@ int32 smem_seek(StateMem *st, uint32 offset, int whence)
  return(0);
 }
 
-int smem_write32le(StateMem *st, uint32 b)
+static int smem_write32le(StateMem *st, uint32 b)
 {
  uint8 s[4];
  s[0]=b;
@@ -110,7 +110,7 @@ int smem_write32le(StateMem *st, uint32 b)
  return((smem_write(st, s, 4)<4)?0:4);
 }
 
-int smem_read32le(StateMem *st, uint32 *b)
+static int smem_read32le(StateMem *st, uint32 *b)
 {
  uint8 s[4];
 
@@ -121,7 +121,6 @@ int smem_read32le(StateMem *st, uint32 *b)
 
  return(4);
 }
-
 
 static bool ValidateSFStructure(SFORMAT *sf)
 {
@@ -150,8 +149,6 @@ static bool ValidateSFStructure(SFORMAT *sf)
 
 static bool SubWrite(StateMem *st, SFORMAT *sf, int data_only, const char *name_prefix = NULL)
 {
- // FIXME?  It's kind of slow, and we definitely don't want it on with state rewinding...
- if(!data_only) 
   ValidateSFStructure(sf);
 
  while(sf->size || sf->name)	// Size can sometimes be zero, so also check for the text name.  These two should both be zero only at the end of a struct.
@@ -164,7 +161,7 @@ static bool SubWrite(StateMem *st, SFORMAT *sf, int data_only, const char *name_
 
   if(sf->size == (uint32)~0)		/* Link to another struct.	*/
   {
-   if(!SubWrite(st, (SFORMAT *)sf->v, data_only, name_prefix))
+   if(!SubWrite(st, (SFORMAT *)sf->v, 0, name_prefix))
     return(0);
 
    sf++;
@@ -173,15 +170,6 @@ static bool SubWrite(StateMem *st, SFORMAT *sf, int data_only, const char *name_
 
   int32 bytesize = sf->size;
 
-  // If we're only saving the raw data, and we come across a bool type, we save it as it is in memory, rather than converting it to
-  // 1-byte.  In the SFORMAT structure, the size member for bool entries is the number of bool elements, not the total in-memory size,
-  // so we adjust it here.
-  if(data_only && (sf->flags & MDFNSTATE_BOOL))
-  {
-   bytesize *= sizeof(bool);
-  }
-  
-  if(!data_only)
   {
    char nameo[1 + 256];
    int slen;
@@ -215,7 +203,7 @@ static bool SubWrite(StateMem *st, SFORMAT *sf, int data_only, const char *name_
     
   // Special case for the evil bool type, to convert bool to 1-byte elements.
   // Don't do it if we're only saving the raw data.
-  if((sf->flags & MDFNSTATE_BOOL) && !data_only)
+  if((sf->flags & MDFNSTATE_BOOL))
   {
    for(int32 bool_monster = 0; bool_monster < bytesize; bool_monster++)
    {
@@ -227,7 +215,6 @@ static bool SubWrite(StateMem *st, SFORMAT *sf, int data_only, const char *name_
   else
    smem_write(st, (uint8 *)sf->v, bytesize);
 
-  if(!data_only)
   {
    /* Now restore the original byte order. */
    if(sf->flags & MDFNSTATE_BOOL)
@@ -254,7 +241,6 @@ static int WriteStateChunk(StateMem *st, const char *sname, SFORMAT *sf, int dat
  int32 data_start_pos;
  int32 end_pos;
 
- if(!data_only)
  {
   uint8 sname_tmp[32];
 
@@ -271,12 +257,11 @@ static int WriteStateChunk(StateMem *st, const char *sname, SFORMAT *sf, int dat
 
  data_start_pos = smem_tell(st);
 
- if(!SubWrite(st, sf, data_only))
+ if(!SubWrite(st, sf, 0))
   return(0);
 
  end_pos = smem_tell(st);
 
- if(!data_only)
  {
   smem_seek(st, data_start_pos - 4, SEEK_SET);
   smem_write32le(st, end_pos - data_start_pos);
@@ -322,47 +307,10 @@ static void MakeSFMap(SFORMAT *sf, SFMap_t &sfmap)
  }
 }
 
-// Fast raw chunk reader
-static void DOReadChunk(StateMem *st, SFORMAT *sf)
-{
- while(sf->size || sf->name)       // Size can sometimes be zero, so also check for the text name.  
-				// These two should both be zero only at the end of a struct.
- {
-  if(!sf->size || !sf->v)
-  {
-   sf++;
-   continue;
-  }
-
-  if(sf->size == (uint32) ~0) // Link to another SFORMAT struct
-  {
-   DOReadChunk(st, (SFORMAT *)sf->v);
-   sf++;
-   continue;
-  }
-
-  int32 bytesize = sf->size;
-
-  // Loading raw data, bool types are stored as they appear in memory, not as single bytes in the full state format.
-  // In the SFORMAT structure, the size member for bool entries is the number of bool elements, not the total in-memory size,
-  // so we adjust it here.
-  if(sf->flags & MDFNSTATE_BOOL)
-   bytesize *= sizeof(bool);
-
-  smem_read(st, (uint8 *)sf->v, bytesize);
-  sf++;
- }
-}
-
 static int ReadStateChunk(StateMem *st, SFORMAT *sf, int size, int data_only)
 {
  int temp;
 
- if(data_only)
- {
-  DOReadChunk(st, sf);
- }
- else
  {
   SFMap_t sfmap;
   SFMap_t sfmap_found;	// Used for identifying variables that are missing in the save state.
@@ -467,14 +415,6 @@ int MDFNSS_StateAction(StateMem *st, int load, int data_only, std::vector <SSDes
 
  if(load)
  {
-  if(data_only)
-  {
-   for(section = sections.begin(); section != sections.end(); section++)
-   {
-     ReadStateChunk(st, section->sf, ~0, 1);
-   }
-  }
-  else
   {
    char sname[32];
 
@@ -528,7 +468,7 @@ int MDFNSS_StateAction(StateMem *st, int load, int data_only, std::vector <SSDes
  {
   for(section = sections.begin(); section != sections.end(); section++)
   {
-   if(!WriteStateChunk(st, section->name, section->sf, data_only))
+   if(!WriteStateChunk(st, section->name, section->sf, 0))
     return(0);
   }
  }
@@ -541,7 +481,7 @@ int MDFNSS_StateAction(StateMem *st, int load, int data_only, SFORMAT *sf, const
  std::vector <SSDescriptor> love;
 
  love.push_back(SSDescriptor(sf, name, optional));
- return(MDFNSS_StateAction(st, load, data_only, love));
+ return(MDFNSS_StateAction(st, load, 0, love));
 }
 
 static int MDFNSS_SaveSM(StateMem *st)
