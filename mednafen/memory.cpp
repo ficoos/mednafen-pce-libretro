@@ -20,6 +20,8 @@
 #include <stdlib.h>
 #include <errno.h>
 
+#include "mednafen-memory.h"
+
 void *MDFN_calloc_real(uint32 nmemb, uint32 size, const char *purpose, const char *_file, const int _line)
 {
  void *ret;

@@ -240,15 +240,6 @@ typedef struct
 	// performance possible.  HOWEVER, emulation modules must make sure the value is in a range(with minimum and maximum) that their code can handle
 	// before they try to handle it.
 	double soundmultiplier;
-
-	// True if we want to rewind one frame.  Set by the driver code.
-	bool NeedRewind;
-
-	// Sound reversal during state rewinding is normally done in mednafen.cpp, but
-        // individual system emulation code can also do it if this is set, and clear it after it's done.
-        // (Also, the driver code shouldn't touch this variable)
-	bool NeedSoundReverse;
-
 } EmulateSpecStruct;
 
 typedef enum
@@ -312,6 +303,7 @@ typedef struct
  void (*RemoveReadPatches)(void);
  uint8 (*MemRead)(uint32 addr);
 
+ bool SaveStateAltersState;	// true for bsnes and some libco-style emulators, false otherwise.
  // Main save state routine, called by the save state code in state.cpp.
  // When saving, load is set to 0.  When loading, load is set to the version field of the save state being loaded.
  // data_only is true when the save state data is temporary, such as being saved into memory for state rewinding.

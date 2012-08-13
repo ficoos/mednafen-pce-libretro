@@ -9,6 +9,8 @@ typedef struct
 enum
 {
  MDFN_COLORSPACE_RGB = 0,
+ MDFN_COLORSPACE_YCbCr = 1,
+ //MDFN_COLORSPACE_YUV = 2, // TODO, maybe.
 };
 
 class MDFN_PixelFormat
@@ -52,16 +54,13 @@ class MDFN_PixelFormat
  // Creates a color value for the surface corresponding to the 8-bit R/G/B/A color passed.
  INLINE uint32 MakeColor(uint8 r, uint8 g, uint8 b, uint8 a = 0) const
  {
-    r >>= 3;
-    g >>= 3;
-    b >>= 3;
-    return ((r << 10) | (g << 5) | (b << 0));
+    return (((r >> 3) << 10) | ((g >> 3) << 5) | ((b >> 3) << 0));
  }
 
  // Gets the R/G/B/A values for the passed 32-bit surface pixel value
  INLINE void DecodeColor(uint32 value, int &r, int &g, int &b, int &a) const
  {
-    r = ((value & 0x1f) << 10) & 0x7fff; 
+    r = ((value & 0x1f) << 10) & 0x7fff;
     g = (((value & 0x3e0) << 5) <<5) & 0x7fff;
     b = (((value & 0x7c00) >> 10)) & 0x7fff;
  }
@@ -103,25 +102,30 @@ class MDFN_Surface //typedef struct
 
  MDFN_PixelFormat format;
 
+ void Fill(uint8 r, uint8 g, uint8 b, uint8 a);
  void SetFormat(const MDFN_PixelFormat &new_format, bool convert);
 
  // Creates a 32-bit value for the surface corresponding to the R/G/B/A color passed.
  INLINE uint32 MakeColor(uint8 r, uint8 g, uint8 b, uint8 a = 0) const
  {
-  return(format.MakeColor(r, g, b, a));
+    return (((r >> 3) << 10) | ((g >> 3) << 5) | ((b >> 3) << 0));
  }
 
  // Gets the R/G/B/A values for the passed 32-bit surface pixel value
  INLINE void DecodeColor(uint32 value, int &r, int &g, int &b, int &a) const
  {
-  format.DecodeColor(value, r, g, b, a);
+    r = ((value & 0x1f) << 10) & 0x7fff;
+    g = (((value & 0x3e0) << 5) <<5) & 0x7fff;
+    b = (((value & 0x7c00) >> 10)) & 0x7fff;
  }
 
  INLINE void DecodeColor(uint32 value, int &r, int &g, int &b) const
  {
   int dummy_a;
 
-  DecodeColor(value, r, g, b, dummy_a);
+  r = ((value & 0x1f) << 10) & 0x7fff;
+  g = (((value & 0x3e0) << 5) <<5) & 0x7fff;
+  b = (((value & 0x7c00) >> 10)) & 0x7fff;
  }
  private:
  void Init(void *const p_pixels, const uint32 p_width, const uint32 p_height, const uint32 p_pitchinpix, const MDFN_PixelFormat &nf);

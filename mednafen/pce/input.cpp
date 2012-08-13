@@ -36,6 +36,11 @@ enum
  PCEINPUT_TSUSHINKB = 3,
 };
 
+//PCE_Input_Device::PCE_Input_Device(int which)
+//{
+//
+//}
+
 PCE_Input_Device::~PCE_Input_Device()
 {
 
@@ -137,18 +142,6 @@ void PCEINPUT_SetInput(int port, const char *type, void *ptr)
  data_ptr[port] = (uint8 *)ptr;
 
  RemakeDevices(port);
-}
-
-uint16 INPUT_HESHack(void)
-{
- uint16 ret = 0;
-
- switch(InputTypes[0])
- {
-  case PCEINPUT_GAMEPAD: ret = MDFN_de16lsb(data_ptr[0]);
-			 break;
- }
- return(ret);
 }
 
 void INPUT_Frame(void)

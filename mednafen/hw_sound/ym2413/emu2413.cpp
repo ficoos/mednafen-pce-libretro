@@ -70,7 +70,7 @@
 
 **************************************************************************************/
 
-#include "../../mednafen.h"
+#include "mednafen/mednafen.h"
 #include <memory.h>
 #include <string.h>
 #include <math.h>

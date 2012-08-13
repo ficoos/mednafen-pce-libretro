@@ -17,10 +17,11 @@
 
 /* VDC emulation */
 
-#include "../mednafen.h"
-#include "../video.h"
-#include "../lepacker.h"
+#include "../../../mednafen.h"
+#include "../../../video.h"
+#include "../../../lepacker.h"
 
+#include <trio/trio.h>
 #include <math.h>
 #include "vdc.h"
 
@@ -108,7 +109,7 @@ uint32 VDC::GetRegister(const unsigned int id, char *special, const uint32 speci
 
 	if(special)
 	{
-	 snprintf(special, special_len, "Sprite Hit IRQ: %s, Sprite Overflow IRQ: %s, RCR IRQ: %s, VBlank IRQ: %s, Sprites: %s, Background: %s", (value & 1) ? "On" : "Off", (value & 2) ? "On" : "Off",
+	 trio_snprintf(special, special_len, "Sprite Hit IRQ: %s, Sprite Overflow IRQ: %s, RCR IRQ: %s, VBlank IRQ: %s, Sprites: %s, Background: %s", (value & 1) ? "On" : "Off", (value & 2) ? "On" : "Off",
 	        (value & 4) ? "On" : "Off", (value & 8) ? "On" : "Off", (value & 0x40) ? "On" : "Off", (value & 0x80) ? "On" : "Off");
 	}
 	break;
@@ -130,7 +131,7 @@ uint32 VDC::GetRegister(const unsigned int id, char *special, const uint32 speci
 
 	if(special)
 	{
-	 snprintf(special, special_len, "CG Mode: %d, BAT Width: %d(tiles), BAT Height: %d(tiles)", (int)(bool)(value & 0x80), 
+	 trio_snprintf(special, special_len, "CG Mode: %d, BAT Width: %d(tiles), BAT Height: %d(tiles)", (int)(bool)(value & 0x80), 
 											     bat_width_tab[(value >> 4) & 0x3],
 											     bat_height_tab[(value >> 6) & 0x1]);
 	}
@@ -140,7 +141,7 @@ uint32 VDC::GetRegister(const unsigned int id, char *special, const uint32 speci
 	value = HSR;
 	if(special)
 	{
-	 snprintf(special, special_len, "HSW: %02x, HDS: %02x", value & 0x1F, (value >> 8) & 0x7F);
+	 trio_snprintf(special, special_len, "HSW: %02x, HDS: %02x", value & 0x1F, (value >> 8) & 0x7F);
 	}
 	break;
 
@@ -148,7 +149,7 @@ uint32 VDC::GetRegister(const unsigned int id, char *special, const uint32 speci
 	value = HDR;
 	if(special)
 	{
-	 snprintf(special, special_len, "HDW: %02x, HDE: %02x", value & 0x7F, (value >> 8) & 0x7F);
+	 trio_snprintf(special, special_len, "HDW: %02x, HDE: %02x", value & 0x7F, (value >> 8) & 0x7F);
 	}
 	break;
 
@@ -157,7 +158,7 @@ uint32 VDC::GetRegister(const unsigned int id, char *special, const uint32 speci
 	value = VSR;
 	if(special)
 	{
-	 snprintf(special, special_len, "VSW: %02x, VDS: %02x", value & 0x1F, (value >> 8) & 0xFF);
+	 trio_snprintf(special, special_len, "VSW: %02x, VDS: %02x", value & 0x1F, (value >> 8) & 0xFF);
 	}
 	break;
 
@@ -173,7 +174,7 @@ uint32 VDC::GetRegister(const unsigned int id, char *special, const uint32 speci
 	value = DCR;
 	if(special)
 	{
-	 snprintf(special, special_len, "SATB DMA IRQ: %s, VRAM DMA IRQ: %s, DMA Source Address: %s, DMA Dest Address: %s, Auto SATB DMA: %s",
+	 trio_snprintf(special, special_len, "SATB DMA IRQ: %s, VRAM DMA IRQ: %s, DMA Source Address: %s, DMA Dest Address: %s, Auto SATB DMA: %s",
         	(DCR & 0x1) ? "On" : "Off", (DCR & 0x2) ? "On" : "Off", (DCR & 0x4) ? "Decrement" : "Increment", (DCR & 0x8) ? "Decrement" : "Increment", 
 	        (DCR & 0x10) ? "On" : "Off");
 	}
@@ -1865,3 +1866,85 @@ int VDC::StateAction(StateMem *sm, int load, int data_only, const char *sname)
 
  return(ret);
 }
+
+#ifdef WANT_DEBUGGER
+bool VDC::DoGfxDecode(uint32 *target, const uint32 *color_table, const uint32 TransparentColor, bool DecodeSprites, 
+	int32 w, int32 h, int32 scroll)
+{
+ const uint32 *palette_ptr = color_table;
+
+ if(DecodeSprites)
+ {
+  for(int y = 0; y < h; y++)
+  {
+   for(int x = 0; x < w; x += 16)
+   {
+    int which_tile = (x / 16) + (scroll + (y / 16)) * (w / 16);
+
+    if(which_tile >= VRAM_Size / 64)
+    {
+     for(int sx = 0; sx < 16; sx++)
+     {
+      target[x + sx] = TransparentColor;
+      target[x + w * 1 + sx] = 0;
+      target[x + w * 2 + sx] = 0;
+     }
+     continue;
+    }
+
+    uint16 cg[4];
+    cg[0] = VRAM[which_tile * 64 + (y & 15)];
+    cg[1] = VRAM[which_tile * 64 + (y & 15) + 16];
+    cg[2] = VRAM[which_tile * 64 + (y & 15) + 32];
+    cg[3] = VRAM[which_tile * 64 + (y & 15) + 48];
+    for(int sx = 0; sx < 16; sx++)
+    {
+     int rev_sx = 15 - sx;
+     target[x + sx] = palette_ptr[(((cg[0] >> rev_sx) & 1) << 0) |
+                (((cg[1] >> rev_sx) & 1) << 1) | (((cg[2] >> rev_sx) & 1) << 2) | (((cg[3] >> rev_sx) & 1) << 3)];
+     target[x + w * 1 + sx] = which_tile;
+     target[x + w * 2 + sx] = which_tile * 64;
+    }
+   }
+   target += w * 3;
+  }
+ }
+ else for(int y = 0; y < h; y++)
+ {
+  for(int x = 0; x < w; x+=8)
+  {
+   int which_tile = (x / 8) + (scroll + (y / 8)) * (w / 8);
+
+   if(which_tile >= (VRAM_Size / 16))
+   {
+    for(int sx = 0; sx < 8; sx++)
+    {
+     target[x + sx] = TransparentColor;
+     target[x + w * 1 + sx] = 0;
+     target[x + w * 2 + sx] = 0;
+    }
+    continue;
+   }
+
+   target[x + 0] = palette_ptr[ bg_tile_cache[which_tile][y & 0x7][0]];
+   target[x + 1] = palette_ptr[ bg_tile_cache[which_tile][y & 0x7][1]];
+   target[x + 2] = palette_ptr[ bg_tile_cache[which_tile][y & 0x7][2]];
+   target[x + 3] = palette_ptr[ bg_tile_cache[which_tile][y & 0x7][3]];
+   target[x + 4] = palette_ptr[ bg_tile_cache[which_tile][y & 0x7][4]];
+   target[x + 5] = palette_ptr[ bg_tile_cache[which_tile][y & 0x7][5]];
+   target[x + 6] = palette_ptr[ bg_tile_cache[which_tile][y & 0x7][6]];
+   target[x + 7] = palette_ptr[ bg_tile_cache[which_tile][y & 0x7][7]];
+
+   target[x + w*1 + 0]=target[x + w*1 + 1]=target[x + w*1 + 2]=target[x + w*1 + 3] =
+   target[x + w*1 + 4]=target[x + w*1 + 5]=target[x + w*1 + 6]=target[x + w*1 + 7] = which_tile;
+
+   target[x + w*2 + 0]=target[x + w*2 + 1]=target[x + w*2 + 2]=target[x + w*2 + 3] =
+   target[x + w*2 + 4]=target[x + w*2 + 5]=target[x + w*2 + 6]=target[x + w*2 + 7] = which_tile * 16;
+  }
+  target += w * 3;
+ }
+
+ return(1);
+}
+#endif
+

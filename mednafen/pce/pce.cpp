@@ -17,15 +17,15 @@
 
 #include "pce.h"
 #include "vce.h"
-#include "../hw_sound/pce_psg/pce_psg.h"
+#include "pce_psg/pce_psg.h"
 #include "input.h"
 #include "huc.h"
 #include "subhw.h"
 #include "../cdrom/pcecd.h"
 #include "../cdrom/scsicd.h"
-#include "hes.h"
+#include "debug.h"
 #include "tsushin.h"
-#include "../hw_misc/arcade_card/arcade_card.h"
+#include "arcade_card/arcade_card.h"
 #include "../mempatcher.h"
 #include "../cdrom/cdromif.h"
 #include "../md5.h"
@@ -70,7 +70,6 @@ uint64 PCE_TimestampBase;	// Only used with the debugger for the time being.
 
 extern MDFNGI EmulatedPCE;
 static bool IsSGX;
-static bool IsHES;
 
 // Accessed in debug.cpp
 static uint8 BaseRAM[32768]; // 8KB for PCE, 32KB for Super Grafx
@@ -90,19 +89,23 @@ HuC6280::readfunc NonCheatPCERead[0x100];
 
 static DECLFR(PCEBusRead)
 {
+#if 0
  if(!PCE_InDebug)
  {
   PCE_DEBUG("Unmapped Read: %02x %04x\n", A >> 13, A);
  }
+#endif
  return(0xFF);
 }
 
 static DECLFW(PCENullWrite)
 {
+#if 0
  if(!PCE_InDebug)
  {
   PCE_DEBUG("Unmapped Write: %02x, %08x %02x\n", A >> 13, A, V);
  }
+#endif
 }
 
 static DECLFR(BaseRAMReadSGX)
@@ -194,16 +197,17 @@ static DECLFR(IORead)
 		return(ret);
 	       }
 
-  case 0x1C00: if(IsHES)
-		return(ReadIBP(A)); 
+  case 0x1C00:
 	       return(SubHW_ReadIOPage(A));
 	       break; // Expansion
  }
 
+#if 0
  if(!PCE_InDebug)
  {
   PCE_DEBUG("I/O Unmapped Read: %04x\n", A);
  }
+#endif
 
  return(0xFF);
 }
@@ -241,10 +245,12 @@ static DECLFW(IOWrite)
 
 	       if(!PCE_IsCD)
 	       {
+#if 0
 		if(!PCE_InDebug)
 		{
 		 PCE_DEBUG("I/O Unmapped Write: %04x %02x\n", A, V);
 		}
+#endif
 		break;
 	       }
 
@@ -262,10 +268,7 @@ static DECLFW(IOWrite)
 
 	       break;
 
-  case 0x1C00:  //if(!PCE_InDebug)
-		//{
-		// PCE_DEBUG("I/O Unmapped Write: %04x %02x\n", A, V);
-		//}
+  case 0x1C00:
 		SubHW_WriteIOPage(A, V);
 		break;
  }
@@ -283,19 +286,15 @@ static bool LoadCustomPalette(const char *path)
 {
  uint8 CustomColorMap[1024 * 3];
 
- printf("path: %s\n", path);
- if(strcmp(path,"") != 0)
- {
-    MDFN_printf("Loading custom palette from %s...\n",  path);
-    MDFN_indent(1);
- }
+ MDFN_printf(_("Loading custom palette from \"%s\"...\n"),  path);
+ MDFN_indent(1);
 
  gzFile gp = gzopen(path, "rb");
  if(!gp)
  {
   ErrnoHolder ene(errno);
 
-  MDFN_printf("Error opening file: %s\n", ene.StrError());        // FIXME, zlib and errno...
+  MDFN_printf(_("Error opening file: %s\n"), ene.StrError());        // FIXME, zlib and errno...
   MDFN_indent(-1);
   return(FALSE);
  }
@@ -310,7 +309,7 @@ static bool LoadCustomPalette(const char *path)
 
   if(length_read != 1024 * 3 && length_read != 512 * 3)
   {
-   MDFN_printf("Error reading file\n");
+   MDFN_printf(_("Error reading file\n"));
    MDFN_indent(-1);
    return(FALSE);
   }
@@ -328,7 +327,7 @@ static void LoadCommonPre(void);
 
 static bool TestMagic(const char *name, MDFNFILE *fp)
 {
- if(memcmp(fp->f_data, "HESM", 4) && strcasecmp(fp->ext, "pce") && strcasecmp(fp->ext, "sgx"))
+ if(memcmp(fp->f_data, "HESM", 4) && strcasecmp(fp->f_ext, "pce") && strcasecmp(fp->f_ext, "sgx"))
   return(FALSE);
 
  return(TRUE);
@@ -350,10 +349,10 @@ static void SetCDSettings(bool silent_status = false)
  if(!silent_status)
  {
   if(cd_settings.CDDA_Volume != 1.0)
-   MDFN_printf("CD-DA Volume: %d%%\n", (int)(100 * cd_settings.CDDA_Volume));
+   MDFN_printf(_("CD-DA Volume: %d%%\n"), (int)(100 * cd_settings.CDDA_Volume));
 
   if(cd_settings.ADPCM_Volume != 1.0)
-   MDFN_printf("ADPCM Volume: %d%%\n", (int)(100 * cd_settings.ADPCM_Volume));
+   MDFN_printf(_("ADPCM Volume: %d%%\n"), (int)(100 * cd_settings.ADPCM_Volume));
  }
 
 
@@ -361,7 +360,7 @@ static void SetCDSettings(bool silent_status = false)
 
  if(cdpsgvolume != 100)
  {
-  MDFN_printf("CD PSG Volume: %d%%\n", cdpsgvolume);
+  MDFN_printf(_("CD PSG Volume: %d%%\n"), cdpsgvolume);
  }
 
  psg->SetVolume(0.678 * cdpsgvolume / 100);
@@ -374,19 +373,13 @@ static void CDSettingChanged(const char *name)
 
 static int Load(const char *name, MDFNFILE *fp)
 {
- fprintf(stderr, "PCE Load: Data #1: %p, f_data #2: %p, Size #3: %u\n", fp->data, fp->f_data, (unsigned)fp->size);
  uint32 headerlen = 0;
  uint32 r_size;
 
- IsHES = 0;
  IsSGX = 0;
-
- if(!memcmp(fp->f_data, "HESM", 4))
-  IsHES = 1;
 
  LoadCommonPre();
 
- if(!IsHES)
  {
   if(fp->f_size & 0x200) // 512 byte header!
    headerlen = 512;
@@ -398,19 +391,8 @@ static int Load(const char *name, MDFNFILE *fp)
  uint32 crc = crc32(0, fp->f_data + headerlen, fp->f_size - headerlen);
 
 
- if(IsHES)
- {
-  if(!PCE_HESLoad(fp->f_data, fp->f_size))
-   return(0);
-
-  PCE_IsCD = 1;
-  PCECD_Init(NULL, PCECDIRQCB, PCE_MASTER_CLOCK, 1, &sbuf[0], &sbuf[1]);
- }
- else
- {
-  HuCLoad(fp->f_data + headerlen, fp->f_size - headerlen, crc, MDFN_GetSettingB("pce.disable_bram_hucard"));
- }
- if(!strcasecmp(fp->ext, "sgx"))
+ HuCLoad(fp->f_data + headerlen, fp->f_size - headerlen, crc, MDFN_GetSettingB("pce.disable_bram_hucard"));
+ if(!strcasecmp(fp->f_ext, "sgx"))
   IsSGX = TRUE;
 
  if(fp->f_size >= 8192 && !memcmp(fp->f_data + headerlen, "DARIUS Version 1.11b", strlen("DARIUS VERSION 1.11b")))
@@ -460,7 +442,7 @@ static void LoadCommonPre(void)
  // FIXME:  Make these globals less global!
  PCE_ACEnabled = MDFN_GetSettingB("pce.arcadecard");
 
- HuCPU = new HuC6280(IsHES);
+ HuCPU = new HuC6280(/*IsHES*/false);
 
  for(int x = 0; x < 0x100; x++)
  {
@@ -476,8 +458,6 @@ static int LoadCommon(void)
 { 
  IsSGX |= MDFN_GetSettingB("pce.forcesgx") ? 1 : 0;
 
- if(IsHES)
-  IsSGX = 1;
  // Don't modify IsSGX past this point.
  
  vce = new VCE(IsSGX, MDFN_GetSettingB("pce.nospritelimit"));
@@ -515,7 +495,7 @@ static int LoadCommon(void)
   {
    if(el->number == psgrevision)
    {
-    MDFN_printf("PSG Revision: %s\n", el->description);
+    MDFN_printf(_("PSG Revision: %s\n"), el->description);
     break;
    }
   }
@@ -550,7 +530,6 @@ static int LoadCommon(void)
  for(unsigned int i = 0; i < 0x100; i++)
   NonCheatPCERead[i] = HuCPU->GetReadHandler(i);
 
- if(!IsHES)
  {
   MDFNGameInfo->nominal_height = MDFN_GetSettingUI("pce.slend") - MDFN_GetSettingUI("pce.slstart") + 1;
   MDFNGameInfo->nominal_width = MDFN_GetSettingB("pce.h_overscan") ? 320 : 288;
@@ -560,6 +539,11 @@ static int LoadCommon(void)
  }
 
  vce->SetShowHorizOS(MDFN_GetSettingB("pce.h_overscan")); 
+
+#ifdef WANT_DEBUGGER
+ PCEDBG_Init(IsSGX, psg);
+#endif
+
 
  return(1);
 }
@@ -593,7 +577,6 @@ static bool DetectGECD(CDIF *cdiface)	// Very half-assed detection until(if) we 
      };
      uint32 zecrc = crc32(0, sector_buffer, 2048);
 
-     //printf("%04x\n", zecrc);
      for(unsigned int i = 0; i < sizeof(known_crcs) / sizeof(uint32); i++)
       if(known_crcs[i] == zecrc)
        return(true);
@@ -668,7 +651,6 @@ static int LoadCD(std::vector<CDIF *> *CDInterfaces)
 
  MDFNFILE fp;
 
- IsHES = 0;
  IsSGX = 0;
 
  LoadCommonPre();
@@ -676,7 +658,7 @@ static int LoadCD(std::vector<CDIF *> *CDInterfaces)
  const char *bios_sname = DetectGECD((*CDInterfaces)[0]) ? "pce.gecdbios" : "pce.cdbios";
  std::string bios_path = MDFN_MakeFName(MDFNMKF_FIRMWARE, 0, MDFN_GetSettingS(bios_sname).c_str() );
 
- if(!fp.Open(bios_path, KnownBIOSExtensions, "CD BIOS"))
+ if(!fp.Open(bios_path, KnownBIOSExtensions, _("CD BIOS")))
  {
   return(0);
  }
@@ -684,16 +666,10 @@ static int LoadCD(std::vector<CDIF *> *CDInterfaces)
  if(fp.Size() & 0x200)
   headerlen = 512;
 
-
- //md5.starts();
- //md5.update(fp.Data(), fp.Size());
- //md5.update(MDFNGameInfo->MD5, 16);
- //md5.finish(MDFNGameInfo->MD5);
-
  bool disable_bram_cd = MDFN_GetSettingB("pce.disable_bram_cd");
 
  if(disable_bram_cd)
-  MDFN_printf("Warning: BRAM is disabled per pcfx.disable_bram_cd setting.  This is simulating a malfunction.\n");
+  MDFN_printf(_("Warning: BRAM is disabled per pcfx.disable_bram_cd setting.  This is simulating a malfunction.\n"));
 
  if(!HuCLoad(fp.Data() + headerlen, fp.Size() - headerlen, 0, disable_bram_cd, PCE_ACEnabled ? SYSCARD_ARCADE : SYSCARD_3))
  {
@@ -717,8 +693,8 @@ static int LoadCD(std::vector<CDIF *> *CDInterfaces)
  SCSICD_SetDisc(false, (*CDInterfaces)[0], true);
 
 
- MDFN_printf("CD Layout:   0x%s\n", md5_context::asciistr(MDFNGameInfo->MD5, 0).c_str());
- MDFN_printf("Arcade Card Emulation: %s\n", PCE_ACEnabled ? "Enabled" : "Disabled");
+ MDFN_printf(_("CD Layout:   0x%s\n"), md5_context::asciistr(MDFNGameInfo->MD5, 0).c_str());
+ MDFN_printf(_("Arcade Card Emulation:  %s\n"), PCE_ACEnabled ? _("Enabled") : _("Disabled"));
 
  return(LoadCommon());
 }
@@ -731,12 +707,7 @@ static void CloseGame(void)
   PCECD_Close();
  }
 
- if(IsHES)
-  HES_Close();
- else
- {
-  HuCClose();
- }
+ HuCClose();
 
  if(vce)
  {
@@ -773,16 +744,14 @@ static void Emulate(EmulateSpecStruct *espec)
  if(espec->SoundFormatChanged)
   SetSoundRate(espec->SoundRate);
 
- vce->StartFrame(espec->surface, &espec->DisplayRect, espec->LineWidths, IsHES ? 1 : espec->skip);
+ vce->StartFrame(espec->surface, &espec->DisplayRect, espec->LineWidths, espec->skip);
 
  // Begin loop here:
- //for(int i = 0; i < 2; i++)
  bool rp_rv;
  do
  {
   INPUT_Frame();
 
-  //vce->RunFrame(espec->surface, &espec->DisplayRect, espec->LineWidths, IsHES ? 1 : espec->skip);
   rp_rv = vce->RunPartial();
 
   INPUT_FixTS(HuCPU->Timestamp());
@@ -792,8 +761,6 @@ static void Emulate(EmulateSpecStruct *espec)
   psg->EndFrame(HuCPU->Timestamp() / 3);
 
   HuC_EndFrame(HuCPU->Timestamp());
-
-  //assert(!(HuCPU->Timestamp() % 3));
 
   if(espec->SoundBuf)
   {
@@ -831,12 +798,6 @@ static void Emulate(EmulateSpecStruct *espec)
    MDFN_MidSync(espec);
   }
  } while(!rp_rv);
-
- // End loop here.
- //printf("%d\n", vce->GetScanlineNo());
-
- if(IsHES)
-  HES_Update(espec, INPUT_HESHack());	//Draw(espec->skip ? NULL : espec->surface, espec->skip ? NULL : &espec->DisplayRect, espec->SoundBuf, espec->SoundBufSize, INPUT_HESHack());
 }
 
 void PCE_MidSync(void)
@@ -844,8 +805,6 @@ void PCE_MidSync(void)
  INPUT_Frame();
 
  es->MasterCycles = HuCPU->Timestamp();
-
- //MDFN_MidSync(es);
 }
 
 static int StateAction(StateMem *sm, int load, int data_only)
@@ -897,10 +856,7 @@ void PCE_Power(void)
  vce->Reset(timestamp);
  psg->Power(timestamp);
 
- if(IsHES)
-  HES_Reset();
- else
-  HuC_Power();
+ HuC_Power();
 
  PCEINPUT_Power(timestamp);
 
@@ -920,15 +876,15 @@ static void CDInsertEject(void)
  {
   if(!(*cdifs)[disc]->Eject(CD_TrayOpen))
   {
-   MDFN_DispMessage("Eject error.");
+   MDFN_DispMessage(_("Eject error."));
    CD_TrayOpen = !CD_TrayOpen;
   }
  }
 
  if(CD_TrayOpen)
-  MDFN_DispMessage("Virtual CD Drive Tray Open");
+  MDFN_DispMessage(_("Virtual CD Drive Tray Open"));
  else
-  MDFN_DispMessage("Virtual CD Drive Tray Closed");
+  MDFN_DispMessage(_("Virtual CD Drive Tray Closed"));
 
  SCSICD_SetDisc(CD_TrayOpen, (CD_SelectedDisc >= 0 && !CD_TrayOpen) ? (*cdifs)[CD_SelectedDisc] : NULL);
 }
@@ -949,9 +905,9 @@ static void CDSelect(void)
    CD_SelectedDisc = -1;
 
   if(CD_SelectedDisc == -1)
-   MDFN_DispMessage("Disc absence selected.");
+   MDFN_DispMessage(_("Disc absence selected."));
   else
-   MDFN_DispMessage("Disc %d of %d selected.", CD_SelectedDisc + 1, (int)cdifs->size());
+   MDFN_DispMessage(_("Disc %d of %d selected."), CD_SelectedDisc + 1, (int)cdifs->size());
  }
 }
 
@@ -1091,7 +1047,11 @@ MDFNGI EmulatedPCE =
  "PC Engine (CD)/TurboGrafx 16 (CD)/SuperGrafx",
  KnownExtensions,
  MODPRIO_INTERNAL_HIGH,
+ #ifdef WANT_DEBUGGER
+ &PCEDBGInfo,
+ #else
  NULL,
+ #endif
  &PCEInputInfo,
  Load,
  TestMagic,
@@ -1105,6 +1065,7 @@ MDFNGI EmulatedPCE =
  InstallReadPatch,
  RemoveReadPatches,
  MemRead,
+ false,
  StateAction,
  Emulate,
  PCEINPUT_SetInput,

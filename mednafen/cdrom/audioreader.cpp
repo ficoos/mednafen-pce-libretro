@@ -20,7 +20,10 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 
 #include "../tremor/ivorbisfile.h"
 #include "../mpcdec/mpcdec.h"
@@ -32,6 +35,7 @@
 #include <string.h>
 #include <errno.h>
 #include <time.h>
+#include <trio/trio.h>
 
 #include "../general.h"
 #include "../mednafen-endian.h"

@@ -4,7 +4,7 @@ DEFS = -DLOCALEDIR=\"$(datadir)/locale\" @DEFS@ @MATH_OPTIMIZER_FLAGS@
 DEFAULT_INCLUDES = -I$(top_builddir)/include -I$(top_builddir)/include/blip -I$(top_srcdir)/intl -I$(top_srcdir)
 
 bin_PROGRAMS	=	mednafen
-mednafen_SOURCES 	= 	debug.cpp error.cpp mempatcher.cpp settings.cpp endian.cpp mednafen.cpp file.cpp general.cpp md5.cpp memory.cpp netplay.cpp state.cpp movie.cpp player.cpp PSFLoader.cpp tests.cpp qtrecord.cpp cdplay.cpp okiadpcm.cpp math_ops.cpp FileWrapper.cpp Stream.cpp
+mednafen_SOURCES 	= 	debug.cpp error.cpp mempatcher.cpp settings.cpp endian.cpp mednafen.cpp file.cpp general.cpp md5.cpp memory.cpp netplay.cpp state.cpp movie.cpp player.cpp PSFLoader.cpp tests.cpp qtrecord.cpp cdplay.cpp okiadpcm.cpp FileWrapper.cpp Stream.cpp MemoryStream.cpp
 mednafen_LDADD 		= 	trio/libtrio.a drivers/libmdfnsdl.a sexyal/libsexyal.a @SDL_LIBS@
 mednafen_DEPENDENCIES	=	trio/libtrio.a drivers/libmdfnsdl.a sexyal/libsexyal.a
 

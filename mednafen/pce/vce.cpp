@@ -28,12 +28,16 @@
 #include <math.h>
 #include "../video.h"
 #include "vce.h"
-#include "../hw_video/huc6270/vdc.h"
+#include "huc6270/vdc.h"
+#include "debug.h"
 #include "subhw.h"
 #include "../cdrom/pcecd.h"
+#include <trio/trio.h>
 
 namespace MDFN_IEN_PCE
 {
+
+#define SUPERDUPERMODE	0
 
 static const int vce_ratios[4] = { 4, 3, 2, 2 };
 
@@ -133,6 +137,15 @@ VCE::VCE(bool want_sgfx, bool nospritelimit)
 
  memset(systemColorMap32, 0, sizeof(systemColorMap32));
  memset(bw_systemColorMap32, 0, sizeof(bw_systemColorMap32));
+
+ #ifdef WANT_DEBUGGER
+ GfxDecode_Buf = NULL;
+ GfxDecode_Line = -1;
+ GfxDecode_Layer = 0;
+ GfxDecode_Scroll = 0;
+ GfxDecode_Pbn = 0;
+ #endif
+
 
  SetShowHorizOS(false);
 }
@@ -344,6 +357,14 @@ void VCE::SetVCECR(uint8 V)
 
  lc263 = (V & 0x04);
 
+ #if 0
+ int new_dot_clock = V & 1;
+ if(V & 2)
+  new_dot_clock = 2;
+
+ dot_clock = new_dot_clock;
+ #endif
+
  dot_clock = V & 0x3;
  if(dot_clock == 3)	// Remove this once we determine any relevant differences between 2 and 3.
   dot_clock = 2;
@@ -381,9 +402,9 @@ void VCE::SetPixelFormat(const MDFN_PixelFormat &format)
   }
   else
   {
-   float y;
+   double y;
 
-   y = roundf(0.300 * r + 0.589 * g + 0.111 * b);
+   y = round(0.300 * r + 0.589 * g + 0.111 * b);
 
    if(y < 0)
     y = 0;
@@ -408,18 +429,40 @@ void VCE::SetPixelFormat(const MDFN_PixelFormat &format)
  //
  for(int n = 0; n < 4096; n++)
  {
+#if 0
+  float y = (float)((n >> 8) & 0xF) / 15;
+  float i = (float)((n >> 4) & 0xF) / 16;
+  float q = (float)((n >> 0) & 0xF) / 16;
+  int r, g, b;
+
+  i *= 1.1914;
+  q *= 1.0452;
+
+  i -= 0.5957;
+  q -= 0.5226;
+
+  r = 255 * (y + (0.9563 * i) + (0.6210 * q));
+  g = 255 * (y + (-0.2721 * i) + (-0.6474 * q));
+  b = 255 * (y + (-1.1070 * i) + (1.7046 * q));
+  if(r < 0) r = 0; if(r > 255) r = 255;
+  if(g < 0) g = 0; if(g > 255) g = 255;
+  if(b < 0) b = 0; if(b > 255) b = 255;
+#else
   int r, g, b;
 
   r = ((n >> 8) & 0xF) * 17;
   g = ((n >> 4) & 0xF) * 17;
   b = ((n >> 0) & 0xF) * 17;
-
+#endif
   SubTLUT[n] = format.MakeColor(r, g, b);
  }
 }
 
 bool VCE::SetCustomColorMap(const uint8 *triplets, const uint32 count)
 {
+ assert(count == 512 || count == 1024);
+ assert(triplets);
+
  if(!(CustomColorMap = (uint8*)MDFN_malloc(count * 3, _("custom color map"))))
   return(FALSE);
 
@@ -658,5 +701,143 @@ int VCE::StateAction(StateMem *sm, int load, int data_only)
  return(ret);
 }
 
+
+#ifdef WANT_DEBUGGER
+
+uint32 VCE::GetRegister(const unsigned int id, char *special, const uint32 special_len)
+{
+ uint32 value = 0xDEADBEEF;
+
+ switch(id)
+ {
+  case GSREG_CR:
+		value = CR;
+		if(special)
+		{
+		 trio_snprintf(special, special_len, "Clock: %.2fMHz, %d lines/frame, Strip colorburst: %s",
+				round(PCE_MASTER_CLOCK / 1e4 / vce_ratios[(value & 0x3) &~ ((value & 0x2) >> 1)]) / 100,
+				(value & 0x04) ? 263 : 262,
+				(value & 0x80) ? "On" : "Off");
+		}
+		break;
+
+  case GSREG_CTA:
+		value = ctaddress;
+		break;
+
+  case GSREG_SCANLINE:
+		value = scanline;
+		break;
+
+  // VPC:
+  case GSREG_ST_MODE:
+		value = st_mode;
+		break;
+
+  case GSREG_WINDOW_WIDTH_0:
+  case GSREG_WINDOW_WIDTH_1:
+		value = winwidths[id - GSREG_WINDOW_WIDTH_0];
+		if(special)
+		{
+		 trio_snprintf(special, special_len, "Window width: %d%s", value - 0x40, (value <= 0x40) ? "(window disabled)" : "");
+		}
+		break;
+
+  case GSREG_PRIORITY_0:
+  case GSREG_PRIORITY_1:
+		value = priority[id - GSREG_PRIORITY_0];
+		break;
+ }
+ return(value);
+}
+
+void VCE::SetRegister(const unsigned int id, const uint32 value)
+{
+ switch(id)
+ {
+  case GSREG_CR:
+		SetVCECR(value);
+		break;
+
+  case GSREG_CTA:
+		ctaddress = value & 0x1FF;
+		break;
+  // VPC:
+  case GSREG_ST_MODE:
+                st_mode = (bool)value;
+                break;
+
+  case GSREG_WINDOW_WIDTH_0:
+  case GSREG_WINDOW_WIDTH_1:
+                winwidths[id - GSREG_WINDOW_WIDTH_0] = value & 0x3FF;
+                break;
+
+  case GSREG_PRIORITY_0:
+  case GSREG_PRIORITY_1:
+                priority[id - GSREG_PRIORITY_0] = value;
+                break;
+
+ }
+}
+
+void VCE::SetGraphicsDecode(MDFN_Surface *surface, int line, int which, int xscroll, int yscroll, int pbn)
+{
+ GfxDecode_Buf = surface;
+ GfxDecode_Line = line;
+ GfxDecode_Layer = which;
+ GfxDecode_Scroll = yscroll;
+ GfxDecode_Pbn = pbn;
+
+ if(GfxDecode_Buf && GfxDecode_Line == -1)
+  DoGfxDecode();
+}
+
+uint32 VCE::GetRegisterVDC(const unsigned int which_vdc, const unsigned int id, char *special, const uint32 special_len)
+{
+ assert(which_vdc < (unsigned int)chip_count);
+
+ return(vdc[which_vdc]->GetRegister(id, special, special_len));
+}
+
+void VCE::SetRegisterVDC(const unsigned int which_vdc, const unsigned int id, const uint32 value)
+{
+ assert(which_vdc < (unsigned int)chip_count);
+
+ vdc[which_vdc]->SetRegister(id, value);
+}
+
+
+uint16 VCE::PeekPRAM(const uint16 Address)
+{
+ return(color_table[Address & 0x1FF]);
+}
+
+void VCE::PokePRAM(const uint16 Address, const uint16 Data)
+{ 
+ color_table[Address & 0x1FF] = Data & 0x1FF;
+ FixPCache(Address);
+}
+
+
+void VCE::DoGfxDecode(void)
+{
+ const int which_vdc = (GfxDecode_Layer >> 1) & 1;
+ const bool DecodeSprites = GfxDecode_Layer & 1;
+ uint32 neo_palette[16];
+
+ assert(GfxDecode_Buf);
+
+ if(GfxDecode_Pbn == -1)
+ {
+  for(int x = 0; x < 16; x++)
+   neo_palette[x] = GfxDecode_Buf->MakeColor(x * 17, x * 17, x * 17, 0xFF);
+ }
+ else
+  for(int x = 0; x < 16; x++)
+   neo_palette[x] = color_table_cache[x | (DecodeSprites ? 0x100 : 0x000) | ((GfxDecode_Pbn & 0xF) << 4)] | GfxDecode_Buf->MakeColor(0, 0, 0, 0xFF);
+
+ vdc[which_vdc]->DoGfxDecode(GfxDecode_Buf->pixels, neo_palette, GfxDecode_Buf->MakeColor(0, 0, 0, 0xFF), DecodeSprites, GfxDecode_Buf->w, GfxDecode_Buf->h, GfxDecode_Scroll);
+}
+#endif
 
 };

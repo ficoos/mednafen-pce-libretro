@@ -14,7 +14,7 @@ namespace MDFN_IEN_PCE
 
 };
 
-#include "../hw_cpu/huc6280/huc6280.h"
+#include "huc6280/huc6280.h"
 
 namespace MDFN_IEN_PCE
 {

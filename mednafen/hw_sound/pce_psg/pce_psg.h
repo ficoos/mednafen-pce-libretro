@@ -2,6 +2,7 @@
 #define _PCE_PSG_H
 
 #include <blip/Blip_Buffer.h>
+#include <blip/Stereo_Buffer.h>
 
 class PCE_PSG;
 

@@ -18,6 +18,7 @@
 #include "../mednafen.h"
 #include <string.h>
 #include <sys/types.h>
+#include <trio/trio.h>
 #include "cdromif.h"
 #include "CDAccess.h"
 #include "../general.h"
@@ -144,7 +145,7 @@ static int ReadThreadStart_C(void *v_arg)
 
  if(args->device_name)
  {
-  char device_name[256];
+  char device_name[strlen(args->device_name) + 1];
 
   strcpy(device_name, args->device_name);
  

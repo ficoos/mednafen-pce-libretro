@@ -35,6 +35,10 @@
 
 #include <string.h>
 
+#ifdef WANT_DEBUGGER
+ #include        <trio/trio.h>
+#endif
+
 //#define IncPC()	{ PC++; if(!(PC & 0x1FFF)) printf("Crossing: %04x %02x\n", PC - 1, lastop); }
 
 #define LASTCYCLE /*assert(((P & I_FLAG) ? 0 : (uint32)~0) == PIMaskCache);*/ IRQSample = (IRQlow & IRQMask) & PIMaskCache; IFlagSample = P & I_FLAG; ADDCYC(1);
@@ -460,6 +464,20 @@ HuC6280::HuC6280(const bool emulate_wai) : EmulateWAI(emulate_wai)
 
 HuC6280::~HuC6280()
 {
+ #if 0
+ for(int op = 0; op < 256; op++)
+ {
+  printf("%02x: Nominal: %d, Real: ", op, CycTable[op]);
+
+  for(int i = 0; i < 256; i++)
+  {
+   if(CycTimes[op][i])
+    printf("%d, ", i);
+  }
+
+  printf("\n");
+ }
+ #endif
 }
 
 void HuC6280::Power(void)

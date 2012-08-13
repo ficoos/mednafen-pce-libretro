@@ -384,6 +384,7 @@ unsigned int mdfn_shifty_test[4] =
 
 bool MDFN_RunMathTests(void)
 {
+#if 0
  MathTestEntry *itoo = math_test_vals;
 
  if(!DoSizeofTests())
@@ -647,6 +648,7 @@ bool MDFN_RunMathTests(void)
   printf("%s ------ dir=%s --- base=%s --- ext=%s\n", file_path.c_str(), dir_path.c_str(), file_base.c_str(), file_ext.c_str());
 
  }
+#endif
 #endif
 
 

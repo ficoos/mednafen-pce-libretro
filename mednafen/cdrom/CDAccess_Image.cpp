@@ -33,16 +33,17 @@
 #define _CDROMFILE_INTERNAL
 #include "../mednafen.h"
 
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #ifdef __CELLOS_LV2__
 #include <unistd.h>
 #endif
 
-#include <sys/types.h>
-#include <sys/stat.h>
-
 #include <string.h>
 #include <errno.h>
 #include <time.h>
+#include <trio/trio.h>
 
 #include "../general.h"
 #include "../mednafen-endian.h"
@@ -241,12 +242,12 @@ void CDAccess_Image::ParseTOCFileLineInfo(CDRFILE_TRACK_INFO *track, const int t
  if(track->SubchannelMode)
   sector_mult += 96;
 
- if(binoffset && sscanf(binoffset, "%ld", &tmp_long) == 1)
+ if(binoffset && trio_sscanf(binoffset, "%ld", &tmp_long) == 1)
  {
   offset += tmp_long;
  }
 
- if(msfoffset && sscanf(msfoffset, "%d:%d:%d", &m, &s, &f) == 3)
+ if(msfoffset && trio_sscanf(msfoffset, "%d:%d:%d", &m, &s, &f) == 3)
  {
   offset += ((m * 60 + s) * 75 + f) * sector_mult;
  }
@@ -259,7 +260,7 @@ void CDAccess_Image::ParseTOCFileLineInfo(CDRFILE_TRACK_INFO *track, const int t
  {
   tmp_long = sectors;
 
-  if(sscanf(length, "%d:%d:%d", &m, &s, &f) == 3)
+  if(trio_sscanf(length, "%d:%d:%d", &m, &s, &f) == 3)
    tmp_long = (m * 60 + s) * 75 + f;
   else if(track->DIFormat == DI_FORMAT_AUDIO)
   {
@@ -336,7 +337,7 @@ void CDAccess_Image::ImageOpen(const char *path)
     }
    }
 
-   if(sscanf(linebuf, "%s %[^\r\n]", cmdbuf, raw_args) < 1)
+   if(trio_sscanf(linebuf, "%s %[^\r\n]", cmdbuf, raw_args) < 1)
     continue;	// Skip blank lines
    
    UnQuotify(UnQuotify(UnQuotify(UnQuotify(raw_args, args[0]), args[1]), args[2]), args[3]);
@@ -460,7 +461,7 @@ void CDAccess_Image::ImageOpen(const char *path)
       throw(MDFN_Error(0, _("Command %s is outside of a TRACK definition!\n"), cmdbuf));
      }
      int m,s,f;
-     sscanf(args[0], "%d:%d:%d", &m, &s, &f);
+     trio_sscanf(args[0], "%d:%d:%d", &m, &s, &f);
      TmpTrack.pregap = (m * 60 + s) * 75 + f;
     } // end to PREGAP
     else if(!strcasecmp(cmdbuf, "START"))
@@ -470,7 +471,7 @@ void CDAccess_Image::ImageOpen(const char *path)
       throw(MDFN_Error(0, _("Command %s is outside of a TRACK definition!\n"), cmdbuf));
      }
      int m,s,f;
-     sscanf(args[0], "%d:%d:%d", &m, &s, &f);
+     trio_sscanf(args[0], "%d:%d:%d", &m, &s, &f);
      TmpTrack.pregap = (m * 60 + s) * 75 + f;
     }
    } /*********** END TOC HANDLING ************/
@@ -564,7 +565,7 @@ void CDAccess_Image::ImageOpen(const char *path)
      if(active_track >= 0)
      {
       int m,s,f;
-      sscanf(args[1], "%d:%d:%d", &m, &s, &f);
+      trio_sscanf(args[1], "%d:%d:%d", &m, &s, &f);
 
       if(!strcasecmp(args[0], "01") || !strcasecmp(args[0], "1"))
        TmpTrack.index[1] = (m * 60 + s) * 75 + f;
@@ -577,7 +578,7 @@ void CDAccess_Image::ImageOpen(const char *path)
      if(active_track >= 0)
      {
       int m,s,f;
-      sscanf(args[0], "%d:%d:%d", &m, &s, &f);
+      trio_sscanf(args[0], "%d:%d:%d", &m, &s, &f);
       TmpTrack.pregap = (m * 60 + s) * 75 + f;
      }
     }
@@ -586,7 +587,7 @@ void CDAccess_Image::ImageOpen(const char *path)
      if(active_track >= 0)
      {
       int m,s,f;
-      sscanf(args[0], "%d:%d:%d", &m, &s, &f);
+      trio_sscanf(args[0], "%d:%d:%d", &m, &s, &f);
       TmpTrack.postgap = (m * 60 + s) * 75 + f;
      }
     }
@@ -800,6 +801,31 @@ void CDAccess_Image::Read_Raw_Sector(uint8 *buf, int32 lba)
   {
    throw(MDFN_Error(0, _("Could not find track for sector %u!"), lba));
   }
+
+#if 0
+ if(qbuf[0] & 0x40)
+ {
+  uint8 dummy_buf[2352 + 96];
+  bool any_mismatch = FALSE;
+
+  memcpy(dummy_buf + 16, buf + 16, 2048); 
+  memset(dummy_buf + 2352, 0, 96);
+
+  MakeSubPQ(lba, dummy_buf + 2352);
+  encode_mode1_sector(lba + 150, dummy_buf);
+
+  for(int i = 0; i < 2352 + 96; i++)
+  {
+   if(dummy_buf[i] != buf[i])
+   {
+    printf("Mismatch at %d, %d: %02x:%02x; ", lba, i, dummy_buf[i], buf[i]);
+    any_mismatch = TRUE;
+   }
+  }
+  if(any_mismatch)
+   puts("\n");
+ }
+#endif
 
  //subq_deinterleave(buf + 2352, qbuf);
  //printf("%02x\n", qbuf[0]);

@@ -18,6 +18,7 @@
 #include "../mednafen.h"
 #include "../clamp.h"
 #include <math.h>
+#include <trio/trio.h>
 #include "scsicd.h"
 #include "cdromif.h"
 #include "SimpleFIFO.h"
@@ -967,6 +968,27 @@ static void DoREZEROUNIT(const uint8 *cdb)
  SCSIDBG("Rezero Unit: %02x\n", cdb[5]);
  SendStatusAndMessage(STATUS_GOOD, 0x00);
 }
+
+// This data was originally taken from a PC-FXGA software loader, but
+// while it was mostly correct(maybe it is correct for the FXGA, but not for the PC-FX?),
+// it was 3 bytes too long, and the last real byte was 0x45 instead of 0x20.
+// TODO:  Investigate this discrepancy by testing an FXGA with the official loader software.
+#if 0
+static const uint8 InqData[0x24] = 
+{
+ // Standard
+ 0x05, 0x80, 0x02, 0x00,
+
+ // Additional Length
+ 0x1F,
+
+ // Vendor Specific
+ 0x00, 0x00, 0x00, 0x4E, 0x45, 0x43, 0x20, 0x20, 
+ 0x20, 0x20, 0x20, 0x43, 0x44, 0x2D, 0x52, 0x4F, 
+ 0x4D, 0x20, 0x44, 0x52, 0x49, 0x56, 0x45, 0x3A, 
+ 0x46, 0x58, 0x20, 0x31, 0x2E, 0x30, 0x20
+};
+#endif
 
 // Miraculum behaves differently if the last byte(offset 0x23) of the inquiry data is 0x45(ASCII character 'E').  Relavent code is at PC=0x3E382
 // If it's = 0x45, it will run MODE SELECT, and transfer this data to the CD unit: 00 00 00 00 29 01 00
@@ -2410,6 +2432,15 @@ static INLINE void RunCDDA(uint32 system_timestamp, int32 run_time)
     {
      cdda.CDDAStatus = CDDASTATUS_STOPPED;
 
+     #if 0
+     cd.data_transfer_done = FALSE;
+     cd.key_pending = SENSEKEY_NOT_READY;
+     cd.asc_pending = ASC_MEDIUM_NOT_PRESENT;
+     cd.ascq_pending = 0x00;
+     cd.fru_pending = 0x00;
+     SendStatusAndMessage(STATUS_CHECK_CONDITION, 0x00);
+     #endif
+
      break;
     }
 
@@ -2641,11 +2672,11 @@ uint32 SCSICD_Run(scsicd_timestamp_t system_timestamp)
 
        log_buffer[0] = 0;
        
-       lb_pos = snprintf(log_buffer, 1024, "Command: %02x, %s%s  ", cd.command_buffer[0], cmd_info_ptr->pretty_name ? cmd_info_ptr->pretty_name : "!!BAD COMMAND!!",
+       lb_pos = trio_snprintf(log_buffer, 1024, "Command: %02x, %s%s  ", cd.command_buffer[0], cmd_info_ptr->pretty_name ? cmd_info_ptr->pretty_name : "!!BAD COMMAND!!",
 			(cmd_info_ptr->flags & SCF_UNTESTED) ? "(UNTESTED)" : "");
 
        for(int i = 0; i < RequiredCDBLen[cd.command_buffer[0] >> 4]; i++)
-        lb_pos += snprintf(log_buffer + lb_pos, 1024 - lb_pos, "%02x ", cd.command_buffer[i]);
+        lb_pos += trio_snprintf(log_buffer + lb_pos, 1024 - lb_pos, "%02x ", cd.command_buffer[i]);
 
        SCSILog("SCSI", "%s", log_buffer);
        //puts(log_buffer);
@@ -2827,6 +2858,99 @@ void SCSICD_SetLog(void (*logfunc)(const char *, const char *, ...))
 {
  SCSILog = logfunc;
 }
+#if 0
+static void kaiser_window( double* io, int count, double beta )
+{
+        int const accuracy = 20; //12;
+
+        double* end = io + count;
+
+        double beta2    = beta * beta * (double) -0.25;
+        double to_fract = beta2 / ((double) count * count);
+        double i        = 0;
+        double rescale;
+        for ( ; io < end; ++io, i += 1 )
+        {
+                double x = i * i * to_fract - beta2;
+                double u = x;
+                double k = x + 1;
+
+                double n = 2;
+                do
+                {
+                        u *= x / (n * n);
+                        n += 1;
+                        k += u;
+                }
+                while ( k <= u * (1 << accuracy) );
+
+                if ( !i )
+                        rescale = 1 / k; // otherwise values get large
+
+                *io *= k * rescale;
+        }
+}
+
+static void gen_sinc( double* out, int size, double cutoff, double kaiser )
+{
+        assert( size % 2 == 0 ); // size must be enev
+
+        int const half_size = size / 2;
+        double* const mid = &out [half_size];
+
+        // Generate right half of sinc
+        for ( int i = 0; i < half_size; i++ )
+        {
+                double angle = (i * 2 + 1) * (M_PI / 2);
+                mid [i] = sin( angle * cutoff ) / angle;
+        }
+
+        kaiser_window( mid, half_size, kaiser );
+
+        // Mirror for left half
+        for ( int i = 0; i < half_size; i++ )
+                out [i] = mid [half_size - 1 - i];
+}
+
+static void normalize( double* io, int size, double gain = 1.0 )
+{
+        double sum = 0;
+        for ( int i = 0; i < size; i++ )
+                sum += io [i];
+
+        double scale = gain / sum;
+        for ( int i = 0; i < size; i++ )
+                io [i] *= scale;
+}
+
+struct my_kernel : blip_eq_t
+{
+        double cutoff;
+
+        my_kernel( double cutoff ) : cutoff( cutoff )
+        {
+        }
+
+        void generate( double* out, int count ) const
+        {
+                double tmp_buf[count * 2];
+                double moo = 0;
+
+		printf("%f %f\n", (double)cutoff, (double)oversample);
+
+                gen_sinc(tmp_buf, count * 2, cutoff / oversample * 2, 10);
+                normalize(tmp_buf, count * 2, 1); //189216615);
+
+                for(int i = 0; i < count; i++)
+                {
+                 out[i] = tmp_buf[count + i];
+                 moo += out[i];
+                }
+                printf("Moo: %f\n", moo);
+        }
+};
+#endif
+
 
 void SCSICD_SetTransferRate(uint32 TransferRate)
 {

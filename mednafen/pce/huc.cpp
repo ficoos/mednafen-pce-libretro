@@ -18,7 +18,7 @@
 #include "pce.h"
 #include "huc.h"
 #include "../cdrom/pcecd.h"
-#include "../hw_misc/arcade_card/arcade_card.h"
+#include "arcade_card/arcade_card.h"
 #include "../md5.h"
 #include "../file.h"
 #include "../cdrom/cdromif.h"
@@ -530,7 +530,7 @@ void HuCClose(void)
 
     mcg->ReadNV(i, &tmp_buf[0], 0, tmp_buf.size());
 
-    snprintf(buf, sizeof(buf), "mg%d", i);
+    trio_snprintf(buf, sizeof(buf), "mg%d", i);
     MDFN_DumpToFile(MDFN_MakeFName(MDFNMKF_SAV, 0, buf).c_str(), 6, &tmp_buf[0], tmp_buf.size());
    }
   }
@@ -604,11 +604,15 @@ bool HuC_IsBRAMAvailable(void)
 
 uint8 HuC_PeekBRAM(uint32 A)
 {
+ assert(HuC_IsBRAMAvailable());
+
  return(SaveRAM[A & 2047]);
 }
 
 void HuC_PokeBRAM(uint32 A, uint8 V)
 {
+ assert(HuC_IsBRAMAvailable());
+
  SaveRAM[A & 2047] = V;
 }
 

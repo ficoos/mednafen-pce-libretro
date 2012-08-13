@@ -1,4 +1,4 @@
-DEBUG=1
+DEBUG=0
 #set later according to platform
 IS_X86 = 0
 
@@ -18,7 +18,7 @@ endif
 ifeq ($(platform), unix)
    TARGET := libretro.so
    fpic := -fPIC
-   SHARED := -shared -Wl,--version-script=link.T -Wl,-no-undefined
+   SHARED := -shared -Wl,--version-script=mednafen/libretro/link.T -Wl,-no-undefined
    ENDIANNESS_DEFINES := -DLSB_FIRST
    IS_X86 = 1
    LIBS := -pthread -lz
@@ -66,14 +66,14 @@ else ifeq ($(platform), wii)
 else
    TARGET := retro.dll
    CC = gcc
-   SHARED := -shared -static-libgcc -static-libstdc++ -s -Wl,--version-script=link.T
+   SHARED := -shared -static-libgcc -static-libstdc++ -s -Wl,--version-script=mednafen/libretro/link.T
    LIBS := -lz
    ENDIANNESS_DEFINES += -D__WIN32__ -D__WIN32_LIBRETRO__ -Wno-missing-field-initializers -DMSB_FIRST
    IS_X86 = 1
 endif
 
 ifeq ($(IS_X86), 1)
-X86_DEFINES = -DARCH_X86 -msse -msse2
+X86_DEFINES = -DARCH_X86
 CFLAGS +=  $(X86_DEFINES)
 CXXFLAGS +=  $(X86_DEFINES)
 endif
@@ -88,6 +88,7 @@ endif
 
 
 MEDNAFEN_DIR := mednafen
+LIBRETRO_DIR := $(MEDNAFEN_DIR)/libretro
 PCE_DIR := $(MEDNAFEN_DIR)/pce
 
 HW_CPU_SOURCES_C := $(MEDNAFEN_DIR)/hw_cpu/c68k/c68k.c \
@@ -104,15 +105,12 @@ HW_VIDEO_SOURCES := $(MEDNAFEN_DIR)/hw_video/huc6270/vdc.cpp
 ifeq ($(HAVE_RZLIB), 1)
 CFLAGS += -DHAVE_RZLIB=1
 CXXFLAGS += -DHAVE_RZLIB=1
-else
-ZLIB_SRC = $(MEDNAFEN_DIR)/compress/unzip.c
 endif
 
 PCE_SOURCES := $(PCE_DIR)/vce.cpp \
 	$(PCE_DIR)/pce.cpp \
 	$(PCE_DIR)/input.cpp \
 	$(PCE_DIR)/huc.cpp \
-	$(PCE_DIR)/hes.cpp \
 	$(PCE_DIR)/tsushin.cpp \
 	$(PCE_DIR)/subhw.cpp \
 	$(PCE_DIR)/mcgenjin.cpp \
@@ -120,12 +118,15 @@ PCE_SOURCES := $(PCE_DIR)/vce.cpp \
 	$(PCE_DIR)/input/tsushinkb.cpp \
 	$(PCE_DIR)/input/mouse.cpp
 
-MEDNAFEN_SOURCES := $(MEDNAFEN_DIR)/cdrom/cdromif.cpp \
-	$(MEDNAFEN_DIR)/math_ops.cpp \
-	$(MEDNAFEN_DIR)/settings.cpp \
+PCE_CORE_SOURCES := $(PCE_SOURCES)
+
+MEDNAFEN_SOURCES := $(MEDNAFEN_DIR)/settings.cpp \
 	$(MEDNAFEN_DIR)/general.cpp \
 	$(MEDNAFEN_DIR)/FileWrapper.cpp \
 	$(MEDNAFEN_DIR)/endian.cpp \
+	$(MEDNAFEN_DIR)/mempatcher.cpp \
+        $(MEDNAFEN_DIR)/error.cpp \
+	$(MEDNAFEN_DIR)/cdrom/cdromif.cpp \
 	$(MEDNAFEN_DIR)/cdrom/CDAccess.cpp \
 	$(MEDNAFEN_DIR)/cdrom/CDAccess_Image.cpp \
 	$(MEDNAFEN_DIR)/cdrom/CDUtility.cpp \
@@ -139,39 +140,44 @@ MEDNAFEN_SOURCES := $(MEDNAFEN_DIR)/cdrom/cdromif.cpp \
 	$(MEDNAFEN_DIR)/cdrom/l-ec.cpp \
 	$(MEDNAFEN_DIR)/cdrom/crc32.cpp \
 	$(MEDNAFEN_DIR)/video/surface.cpp \
-	$(MEDNAFEN_DIR)/video/resize.cpp \
 	$(MEDNAFEN_DIR)/string/escape.cpp \
 	$(MEDNAFEN_DIR)/string/ConvertUTF.cpp \
 	$(MEDNAFEN_DIR)/sound/Blip_Buffer.cpp \
+	$(MEDNAFEN_DIR)/sound/Fir_Resampler.cpp \
+	$(MEDNAFEN_DIR)/mednafen.cpp \
+	$(MEDNAFEN_DIR)/memory.cpp \
+	$(MEDNAFEN_DIR)/video/video.cpp \
+	$(MEDNAFEN_DIR)/state.cpp \
 	$(MEDNAFEN_DIR)/file.cpp \
 	$(MEDNAFEN_DIR)/okiadpcm.cpp \
+	$(MEDNAFEN_DIR)/Stream.cpp \
+	$(MEDNAFEN_DIR)/MemoryStream.cpp \
+	$(MEDNAFEN_DIR)/tests.cpp \
 	$(MEDNAFEN_DIR)/md5.cpp
 
 MPC_SRC := $(wildcard $(MEDNAFEN_DIR)/mpcdec/*.c)
 TREMOR_SRC := $(wildcard $(MEDNAFEN_DIR)/tremor/*.c)
+TRIO_SRC := $(wildcard $(MEDNAFEN_DIR)/trio/*.c)
 
 SOURCES_C := $(MPC_SRC) \
 	$(TREMOR_SRC) \
+	$(TRIO_SRC) \
 	$(MEDNAFEN_DIR)/string/world_strtod.c \
-	$(MEDNAFEN_DIR)/compress/blz.c \
-        $(ZLIB_SRC) \
-	$(MEDNAFEN_DIR)/compress/minilzo.c \
-	$(MEDNAFEN_DIR)/compress/quicklz.c \
-	$(MEDNAFEN_DIR)/compress/ioapi.c
+        $(ZLIB_SRC)
 
 SOURCES_C += $(HW_CPU_SOURCES_C)
 
-LIBRETRO_SOURCES := libretro.cpp thread.cpp mednafen_libretro.cpp
+LIBRETRO_SOURCES := $(LIBRETRO_DIR)/libretro.cpp $(LIBRETRO_DIR)/thread.cpp
 
-SOURCES := $(LIBRETRO_SOURCES) $(HW_CPU_SOURCES) $(HW_MISC_SOURCES) $(HW_SOUND_SOURCES) $(HW_VIDEO_SOURCES) $(PCE_SOURCES) $(MEDNAFEN_SOURCES)
+SOURCES := $(LIBRETRO_SOURCES) $(HW_CPU_SOURCES) $(HW_MISC_SOURCES) $(HW_SOUND_SOURCES) $(HW_VIDEO_SOURCES) $(PCE_CORE_SOURCES) $(MEDNAFEN_SOURCES)
 OBJECTS := $(SOURCES:.cpp=.o) $(SOURCES_C:.c=.o)
 
 all: $(TARGET)
 
 FLAGS += -ffast-math  -funroll-loops
-FLAGS += -I. -Imednafen -Imednafen/include -Imednafen/intl -Imednafen/hw_cpu -Imednafen/hw_misc -Imednafen/hw_sound -Imednafen/hw_video -Imednafen/compress -Ilibretro-mednafen/includes $(EXTRA_INCLUDES)
+FLAGS += -I. -I$(MEDNAFEN_DIR) -I$(MEDNAFEN_DIR)/include -I$(MEDNAFEN_DIR)/intl -I$(MEDNAFEN_DIR)/hw_cpu -I$(MEDNAFEN_DIR)/hw_misc -I$(MEDNAFEN_DIR)/hw_sound -I$(MEDNAFEN_DIR)/hw_video -I$(MEDNAFEN_DIR)/compress $(EXTRA_INCLUDES)
 
-FLAGS += $(ENDIANNESS_DEFINES) -DHAVE_MKDIR -DSIZEOF_DOUBLE=8 $(WARNINGS) -DMEDNAFEN_VERSION=\"0.9.22\" -DMEDNAFEN_VERSION_NUMERIC=922 -DPSS_STYLE=1 -DMPC_FIXED_POINT -DWANT_PCE_EMU -DSTDC_HEADERS -D__LIBRETRO__
+FLAGS += $(ENDIANNESS_DEFINES) -DHAVE_MKDIR -DSIZEOF_DOUBLE=8 $(WARNINGS) -DMEDNAFEN_VERSION=\"0.9.24\" -DMEDNAFEN_VERSION_NUMERIC=924 -DPSS_STYLE=1 -DMPC_FIXED_POINT -DWANT_PCE_EMU -DSTDC_HEADERS -D__LIBRETRO__ -D__STDC_LIMIT_MACROS -D_LOW_ACCURACY_
 
 CXXFLAGS += $(FLAGS) $(fpic)
 CFLAGS += $(FLAGS) $(fpic) -std=gnu99

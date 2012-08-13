@@ -24,7 +24,7 @@
 
 Stream::Stream()
 {
- line_read_skip = 256;
+// line_read_skip = 256;
 }
 
 Stream::~Stream()
@@ -32,6 +32,7 @@ Stream::~Stream()
 
 }
 
+#if 0
 int Stream::scanf(const char *format, ...)
 {
 
@@ -41,20 +42,6 @@ int Stream::scanf(const char *format, ...)
 void Stream::printf(const char *format, ...)
 {
 
-}
-
-uint8 Stream::get_u8(void)
-{
- uint8 ret;
-
- read(&ret, sizeof(ret));
-
- return ret;
-}
-
-void Stream::put_u8(uint8 c)
-{
- write(&c, sizeof(c));
 }
 
 void Stream::put_string(const char *str)
@@ -97,7 +84,7 @@ bool Stream::get_line(std::string &str)
 
  return false;
 }
-
+#endif
 
 StreamFilter::StreamFilter()
 {

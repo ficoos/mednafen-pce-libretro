@@ -1,7 +1,7 @@
 #ifndef __PCE_VDC_H
 #define __PCE_VDC_H
 
-#include "../../lepacker.h"
+#include "mednafen/lepacker.h"
 
 #define VDC_PIXEL_OUT_MASK	0x01FF
 
@@ -51,6 +51,19 @@ class VDC
 	// The VRAM size is specified in 16-bit words.
 	VDC(bool nospritelimit, uint32 par_VRAM_Size);
 	~VDC();
+
+#if 0
+	void *operator new(size_t bcount)
+	{
+	 void *ret = calloc(1, bcount);
+ 	 return(ret);
+	}
+
+	void operator delete(void *ptr)
+	{
+	 free(ptr);
+	}
+#endif
 
 	int32 Reset(void) MDFN_WARN_UNUSED_RESULT;
 
@@ -237,6 +250,11 @@ class VDC
 	// register.  Otherwise, pass a buffer of at least 256 bytes in size.
 	uint32 GetRegister(const unsigned int id, char *special, const uint32 special_len);
 	void SetRegister(const unsigned int id, const uint32 value);
+
+	#ifdef WANT_DEBUGGER
+        bool DoGfxDecode(uint32 *target, const uint32 *color_table, const uint32 TransparentColor, bool DecodeSprites,
+	        int32 w, int32 h, int32 scroll);
+	#endif
 
 	INLINE bool PeekIRQ(void)
 	{

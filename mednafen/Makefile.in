@@ -126,7 +126,7 @@ am__mednafen_SOURCES_DIST = debug.cpp error.cpp mempatcher.cpp \
 	settings.cpp endian.cpp mednafen.cpp file.cpp general.cpp \
 	md5.cpp memory.cpp netplay.cpp state.cpp movie.cpp player.cpp \
 	PSFLoader.cpp tests.cpp qtrecord.cpp cdplay.cpp okiadpcm.cpp \
-	math_ops.cpp FileWrapper.cpp Stream.cpp dis6280.cpp \
+	FileWrapper.cpp Stream.cpp MemoryStream.cpp dis6280.cpp \
 	dis6502.cpp cdrom/audioreader.cpp cdrom/cdromif.cpp \
 	cdrom/scsicd.cpp cdrom/pcecd.cpp cdrom/CDUtility.cpp \
 	cdrom/crc32.cpp cdrom/galois.cpp cdrom/l-ec.cpp \
@@ -153,8 +153,8 @@ am_mednafen_OBJECTS = debug.$(OBJEXT) error.$(OBJEXT) \
 	md5.$(OBJEXT) memory.$(OBJEXT) netplay.$(OBJEXT) \
 	state.$(OBJEXT) movie.$(OBJEXT) player.$(OBJEXT) \
 	PSFLoader.$(OBJEXT) tests.$(OBJEXT) qtrecord.$(OBJEXT) \
-	cdplay.$(OBJEXT) okiadpcm.$(OBJEXT) math_ops.$(OBJEXT) \
-	FileWrapper.$(OBJEXT) Stream.$(OBJEXT) $(am__objects_1) \
+	cdplay.$(OBJEXT) okiadpcm.$(OBJEXT) FileWrapper.$(OBJEXT) \
+	Stream.$(OBJEXT) MemoryStream.$(OBJEXT) $(am__objects_1) \
 	cdrom/audioreader.$(OBJEXT) cdrom/cdromif.$(OBJEXT) \
 	cdrom/scsicd.$(OBJEXT) cdrom/pcecd.$(OBJEXT) \
 	cdrom/CDUtility.$(OBJEXT) cdrom/crc32.$(OBJEXT) \
@@ -268,6 +268,8 @@ ALLOCA = @ALLOCA@
 ALSA_CFLAGS = @ALSA_CFLAGS@
 ALSA_LIBS = @ALSA_LIBS@
 AMTAR = @AMTAR@
+AM_CFLAGS = @AM_CFLAGS@
+AM_CXXFLAGS = @AM_CXXFLAGS@
 AM_DEFAULT_VERBOSITY = @AM_DEFAULT_VERBOSITY@
 AR = @AR@
 AUTOCONF = @AUTOCONF@
@@ -386,6 +388,8 @@ SET_MAKE = @SET_MAKE@
 SHELL = @SHELL@
 SNDFILE_CFLAGS = @SNDFILE_CFLAGS@
 SNDFILE_LIBS = @SNDFILE_LIBS@
+SNES_EXTRA_CXXFLAGS = @SNES_EXTRA_CXXFLAGS@
+SNES_EXTRA_FLAGS = @SNES_EXTRA_FLAGS@
 SSE2_CFLAGS = @SSE2_CFLAGS@
 SSE3_CFLAGS = @SSE3_CFLAGS@
 SSE_CFLAGS = @SSE_CFLAGS@
@@ -394,6 +398,7 @@ TRIO_CFLAGS = @TRIO_CFLAGS@
 USE_INCLUDED_LIBINTL = @USE_INCLUDED_LIBINTL@
 USE_NLS = @USE_NLS@
 VERSION = @VERSION@
+WARNING_FLAGS = @WARNING_FLAGS@
 WINDRES = @WINDRES@
 WOE32 = @WOE32@
 WOE32DLL = @WOE32DLL@
@@ -471,7 +476,7 @@ mednafen_SOURCES = debug.cpp error.cpp mempatcher.cpp settings.cpp \
 	endian.cpp mednafen.cpp file.cpp general.cpp md5.cpp \
 	memory.cpp netplay.cpp state.cpp movie.cpp player.cpp \
 	PSFLoader.cpp tests.cpp qtrecord.cpp cdplay.cpp okiadpcm.cpp \
-	math_ops.cpp FileWrapper.cpp Stream.cpp $(am__append_1) \
+	FileWrapper.cpp Stream.cpp MemoryStream.cpp $(am__append_1) \
 	cdrom/audioreader.cpp cdrom/cdromif.cpp cdrom/scsicd.cpp \
 	cdrom/pcecd.cpp cdrom/CDUtility.cpp cdrom/crc32.cpp \
 	cdrom/galois.cpp cdrom/l-ec.cpp cdrom/recover-raw.cpp \
@@ -740,6 +745,7 @@ distclean-compile:
 	-rm -f *.tab.c
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/FileWrapper.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/MemoryStream.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/PSFLoader.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/Stream.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/cdplay.Po@am__quote@
@@ -750,7 +756,6 @@ distclean-compile:
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/error.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/file.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/general.Po@am__quote@
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/math_ops.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/md5.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/mednafen.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/memory.Po@am__quote@
