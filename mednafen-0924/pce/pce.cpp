@@ -327,7 +327,7 @@ static void LoadCommonPre(void);
 
 static bool TestMagic(const char *name, MDFNFILE *fp)
 {
- if(memcmp(fp->data, "HESM", 4) && strcasecmp(fp->ext, "pce") && strcasecmp(fp->ext, "sgx"))
+ if(memcmp(fp->f_data, "HESM", 4) && strcasecmp(fp->f_ext, "pce") && strcasecmp(fp->f_ext, "sgx"))
   return(FALSE);
 
  return(TRUE);
@@ -381,21 +381,21 @@ static int Load(const char *name, MDFNFILE *fp)
  LoadCommonPre();
 
  {
-  if(fp->size & 0x200) // 512 byte header!
+  if(fp->f_size & 0x200) // 512 byte header!
    headerlen = 512;
  }
 
- r_size = fp->size - headerlen;
+ r_size = fp->f_size - headerlen;
  if(r_size > 4096 * 1024) r_size = 4096 * 1024;
 
- uint32 crc = crc32(0, fp->data + headerlen, fp->size - headerlen);
+ uint32 crc = crc32(0, fp->f_data + headerlen, fp->f_size - headerlen);
 
 
- HuCLoad(fp->data + headerlen, fp->size - headerlen, crc, MDFN_GetSettingB("pce.disable_bram_hucard"));
- if(!strcasecmp(fp->ext, "sgx"))
+ HuCLoad(fp->f_data + headerlen, fp->f_size - headerlen, crc, MDFN_GetSettingB("pce.disable_bram_hucard"));
+ if(!strcasecmp(fp->f_ext, "sgx"))
   IsSGX = TRUE;
 
- if(fp->size >= 8192 && !memcmp(fp->data + headerlen, "DARIUS Version 1.11b", strlen("DARIUS VERSION 1.11b")))
+ if(fp->f_size >= 8192 && !memcmp(fp->f_data + headerlen, "DARIUS Version 1.11b", strlen("DARIUS VERSION 1.11b")))
  {
   MDFN_printf("SuperGfx:  Darius Plus\n");
   IsSGX = 1;
