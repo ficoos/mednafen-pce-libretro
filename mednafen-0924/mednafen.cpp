@@ -142,7 +142,6 @@ void MDFNI_CloseGame(void)
   MDFNMP_Kill();
 
   MDFNGameInfo = NULL;
-  MDFN_StateEvilEnd();
 
   for(unsigned i = 0; i < CDInterfaces.size(); i++)
    delete CDInterfaces[i];
@@ -470,9 +469,6 @@ MDFNGI *MDFNI_LoadCD(const char *force_module, const char *devicename)
 
  MDFN_ResetMessages();   // Save state, status messages, etc.
 
- MDFN_StateEvilBegin();
-
-
  if(MDFNGameInfo->GameType != GMT_PLAYER)
  {
   MDFN_LoadGameCheats(NULL);
@@ -689,9 +685,6 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
          if((tmp = strrchr((char *)MDFNGameInfo->name, '.')))
           *tmp = 0;
         }
-
-        MDFN_StateEvilBegin();
-
 
         last_sound_rate = -1;
         memset(&last_pixel_format, 0, sizeof(MDFN_PixelFormat));

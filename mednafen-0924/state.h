@@ -138,10 +138,4 @@ class SSDescriptor
 int MDFNSS_StateAction(StateMem *st, int load, int data_only, std::vector <SSDescriptor> &sections);
 int MDFNSS_StateAction(StateMem *st, int load, int data_only, SFORMAT *sf, const char *name, bool optional = 0);
 
-void MDFN_StateEvilFlushMovieLove(void);
-bool MDFN_StateEvilIsRunning(void);
-void MDFN_StateEvilBegin(void);
-void MDFN_StateEvilEnd(void);
-int MDFN_StateEvil(int);
-
 #endif
