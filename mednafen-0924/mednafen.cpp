@@ -34,7 +34,6 @@
 #include	"file.h"
 #include	"cdrom/cdromif.h"
 #include	"mempatcher.h"
-#include	"compress/minilzo.h"
 #include	"tests.h"
 #include	"md5.h"
 #include	"clamp.h"
@@ -48,22 +47,10 @@
 static const char *CSD_forcemono = gettext_noop("Force monophonic sound output.");
 static const char *CSD_enable = gettext_noop("Enable (automatic) usage of this module.");
 
-static MDFNSetting_EnumList CompressorList[] =
-{
- // TODO: Actual associated numerical values are not currently used.
- { "minilzo", -1, "MiniLZO" },
- { "quicklz", -1, "QuickLZ" },
- { "blz", -1, "BLZ" },
-
- { NULL, 0 },
-};
-
 static const char *fname_extra = gettext_noop("See fname_format.txt for more information.  Edit at your own risk.");
 
 static MDFNSetting MednafenSettings[] =
 {
-  { "srwcompressor", MDFNSF_NOFLAGS, gettext_noop("Compressor to use with state rewinding"), NULL, MDFNST_ENUM, "quicklz", NULL, NULL, NULL, NULL, CompressorList },
-
   { "srwframes", MDFNSF_NOFLAGS, gettext_noop("Number of frames to keep states for when state rewinding is enabled."), 
 	gettext_noop("WARNING: Setting this to a large value may cause excessive RAM usage in some circumstances, such as with games that stream large volumes of data off of CDs."), MDFNST_UINT, "600", "10", "99999" },
 
@@ -876,15 +863,6 @@ bool MDFNI_InitializeModules(const std::vector<MDFNGI *> &ExternalSystems)
 
  MDFNSystemsPrio.sort(MDFNSystemsPrio_CompareFunc);
 
- #if 0
- std::string a_modules;
-
- std::list<MDFNGI *>:iterator it;
-
- for(it = MDFNSystemsPrio.
- f
- #endif
-
  CDUtility::CDUtility_Init();
 
  return(1);
@@ -903,8 +881,6 @@ int MDFNI_Initialize(const char *basedir, const std::vector<MDFNSetting> &Driver
 	memset(PortDataCache, 0, sizeof(PortDataCache));
 	memset(PortDataLenCache, 0, sizeof(PortDataLenCache));
 	memset(PortDeviceCache, 0, sizeof(PortDeviceCache));
-
-	lzo_init();
 
 	MDFNI_SetBaseDirectory(basedir);
 

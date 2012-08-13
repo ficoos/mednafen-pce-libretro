@@ -105,8 +105,6 @@ HW_VIDEO_SOURCES := $(MEDNAFEN_DIR)/hw_video/huc6270/vdc.cpp
 ifeq ($(HAVE_RZLIB), 1)
 CFLAGS += -DHAVE_RZLIB=1
 CXXFLAGS += -DHAVE_RZLIB=1
-else
-ZLIB_SRC = $(MEDNAFEN_DIR)/compress/unzip.c
 endif
 
 PCE_SOURCES := $(PCE_DIR)/vce.cpp \
@@ -164,11 +162,7 @@ SOURCES_C := $(MPC_SRC) \
 	$(TREMOR_SRC) \
 	$(TRIO_SRC) \
 	$(MEDNAFEN_DIR)/string/world_strtod.c \
-	$(MEDNAFEN_DIR)/compress/blz.c \
-        $(ZLIB_SRC) \
-	$(MEDNAFEN_DIR)/compress/minilzo.c \
-	$(MEDNAFEN_DIR)/compress/quicklz.c \
-	$(MEDNAFEN_DIR)/compress/ioapi.c
+        $(ZLIB_SRC)
 
 SOURCES_C += $(HW_CPU_SOURCES_C)
 
