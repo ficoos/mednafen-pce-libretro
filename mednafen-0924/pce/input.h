@@ -28,8 +28,6 @@ int INPUT_StateAction(StateMem *sm, int load, int data_only);
 extern InputInfoStruct PCEInputInfo;
 void INPUT_FixTS(int32 timestamp);
 
-uint16 INPUT_HESHack(void);
-
 };
 
 #endif

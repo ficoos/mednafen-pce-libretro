@@ -89,19 +89,23 @@ HuC6280::readfunc NonCheatPCERead[0x100];
 
 static DECLFR(PCEBusRead)
 {
+#if 0
  if(!PCE_InDebug)
  {
   PCE_DEBUG("Unmapped Read: %02x %04x\n", A >> 13, A);
  }
+#endif
  return(0xFF);
 }
 
 static DECLFW(PCENullWrite)
 {
+#if 0
  if(!PCE_InDebug)
  {
   PCE_DEBUG("Unmapped Write: %02x, %08x %02x\n", A >> 13, A, V);
  }
+#endif
 }
 
 static DECLFR(BaseRAMReadSGX)
@@ -198,10 +202,12 @@ static DECLFR(IORead)
 	       break; // Expansion
  }
 
+#if 0
  if(!PCE_InDebug)
  {
   PCE_DEBUG("I/O Unmapped Read: %04x\n", A);
  }
+#endif
 
  return(0xFF);
 }
@@ -239,10 +245,12 @@ static DECLFW(IOWrite)
 
 	       if(!PCE_IsCD)
 	       {
+#if 0
 		if(!PCE_InDebug)
 		{
 		 PCE_DEBUG("I/O Unmapped Write: %04x %02x\n", A, V);
 		}
+#endif
 		break;
 	       }
 
@@ -260,10 +268,7 @@ static DECLFW(IOWrite)
 
 	       break;
 
-  case 0x1C00:  //if(!PCE_InDebug)
-		//{
-		// PCE_DEBUG("I/O Unmapped Write: %04x %02x\n", A, V);
-		//}
+  case 0x1C00:
 		SubHW_WriteIOPage(A, V);
 		break;
  }
@@ -518,23 +523,6 @@ static int LoadCommon(void)
 
  PCE_Power();
 
- //
- // REMOVE ME, debugging stuff
- //
- #if 0
- {
-  uint8 er[8] = { 0x47, 0x6E, 0x31, 0x14, 0xB3, 0xEB, 0xEC, 0x2B };
-
-  for(int i = 0; i < 8; i++)
-   SubHW_WriteIOPage(0x1C00, er[i]);
-
-  SubHW_WriteIOPage(0x1FF7, 0x80);
- }
- #endif
- //
- //
- //
-
  MDFNGameInfo->LayerNames = IsSGX ? "BG0\0SPR0\0BG1\0SPR1\0" : "Background\0Sprites\0";
  MDFNGameInfo->fps = (uint32)((double)7159090.90909090 / 455 / 263 * 65536 * 256);
 
@@ -589,7 +577,6 @@ static bool DetectGECD(CDIF *cdiface)	// Very half-assed detection until(if) we 
      };
      uint32 zecrc = crc32(0, sector_buffer, 2048);
 
-     //printf("%04x\n", zecrc);
      for(unsigned int i = 0; i < sizeof(known_crcs) / sizeof(uint32); i++)
       if(known_crcs[i] == zecrc)
        return(true);
@@ -679,12 +666,6 @@ static int LoadCD(std::vector<CDIF *> *CDInterfaces)
  if(fp.Size() & 0x200)
   headerlen = 512;
 
-
- //md5.starts();
- //md5.update(fp.Data(), fp.Size());
- //md5.update(MDFNGameInfo->MD5, 16);
- //md5.finish(MDFNGameInfo->MD5);
-
  bool disable_bram_cd = MDFN_GetSettingB("pce.disable_bram_cd");
 
  if(disable_bram_cd)
@@ -766,13 +747,11 @@ static void Emulate(EmulateSpecStruct *espec)
  vce->StartFrame(espec->surface, &espec->DisplayRect, espec->LineWidths, espec->skip);
 
  // Begin loop here:
- //for(int i = 0; i < 2; i++)
  bool rp_rv;
  do
  {
   INPUT_Frame();
 
-  //vce->RunFrame(espec->surface, &espec->DisplayRect, espec->LineWidths, IsHES ? 1 : espec->skip);
   rp_rv = vce->RunPartial();
 
   INPUT_FixTS(HuCPU->Timestamp());
@@ -782,8 +761,6 @@ static void Emulate(EmulateSpecStruct *espec)
   psg->EndFrame(HuCPU->Timestamp() / 3);
 
   HuC_EndFrame(HuCPU->Timestamp());
-
-  //assert(!(HuCPU->Timestamp() % 3));
 
   if(espec->SoundBuf)
   {
@@ -821,9 +798,6 @@ static void Emulate(EmulateSpecStruct *espec)
    MDFN_MidSync(espec);
   }
  } while(!rp_rv);
-
- // End loop here.
- //printf("%d\n", vce->GetScanlineNo());
 }
 
 void PCE_MidSync(void)
@@ -831,8 +805,6 @@ void PCE_MidSync(void)
  INPUT_Frame();
 
  es->MasterCycles = HuCPU->Timestamp();
-
- //MDFN_MidSync(es);
 }
 
 static int StateAction(StateMem *sm, int load, int data_only)

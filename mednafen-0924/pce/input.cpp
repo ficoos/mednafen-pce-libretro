@@ -144,18 +144,6 @@ void PCEINPUT_SetInput(int port, const char *type, void *ptr)
  RemakeDevices(port);
 }
 
-uint16 INPUT_HESHack(void)
-{
- uint16 ret = 0;
-
- switch(InputTypes[0])
- {
-  case PCEINPUT_GAMEPAD: ret = MDFN_de16lsb(data_ptr[0]);
-			 break;
- }
- return(ret);
-}
-
 void INPUT_Frame(void)
 {
  for(int i = 0; i < 5; i++)
