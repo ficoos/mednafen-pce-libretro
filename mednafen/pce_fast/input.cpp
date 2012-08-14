@@ -23,6 +23,12 @@
 #include "input/mouse.h"
 #include "input/tsushinkb.h"
 
+#include "../include/trio/trio.h"
+
+#ifdef _WIN32
+#include "../libretro/msvc_compat.h"
+#endif
+
 namespace PCE_Fast
 {
 
@@ -276,7 +282,7 @@ int INPUT_StateAction(StateMem *sm, int load, int data_only)
   if(devices[i])
   {
    char sn[8];
-   snprintf(sn, 8, "INP%d", i);
+   trio_snprintf(sn, 8, "INP%d", i);
    ret &= devices[i]->StateAction(sm, load, data_only, sn);
   }
  }

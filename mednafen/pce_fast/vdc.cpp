@@ -33,6 +33,10 @@ The spectrum peaked at 15734 Hz.  21477272.727272... / 3 / 15734 = 455.00(CPU cy
 #include "../include/trio/trio.h"
 #include <math.h>
 
+#ifdef _WIN32
+#include "../libretro/msvc_compat.h"
+#endif
+
 namespace PCE_Fast
 {
 
@@ -252,7 +256,7 @@ void VDC_SetPixelFormat(const MDFN_PixelFormat &format)
   {
    double y;
 
-   y = round(0.300 * r + 0.589 * g + 0.111 * b);
+   y = roundf(0.300 * r + 0.589 * g + 0.111 * b);
 
    if(y < 0)
     y = 0;

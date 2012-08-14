@@ -28,6 +28,10 @@
 #include "../mempatcher.h"
 #include "../cdrom/cdromif.h"
 
+#ifdef _WIN32
+#include "../libretro/msvc_compat.h"
+#endif
+
 namespace PCE_Fast
 {
 

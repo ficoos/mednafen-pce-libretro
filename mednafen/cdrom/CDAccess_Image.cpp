@@ -36,8 +36,10 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#ifdef __CELLOS_LV2__
+#if defined(__CELLOS_LV2__)
 #include <unistd.h>
+#elif defined(_WIN32)
+#include "../libretro/msvc_compat.h"
 #endif
 
 #include <string.h>
