@@ -254,15 +254,6 @@
     <ClCompile Include="..\..\mednafen\tests.cpp">
       <Filter>Source Files\mednafen</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\mednafen\debug.cpp">
-      <Filter>Source Files\mednafen</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\mednafen\dis6280.cpp">
-      <Filter>Source Files\mednafen</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\mednafen\dis6502.cpp">
-      <Filter>Source Files\mednafen</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\mednafen\endian.cpp">
       <Filter>Source Files\mednafen</Filter>
     </ClCompile>
