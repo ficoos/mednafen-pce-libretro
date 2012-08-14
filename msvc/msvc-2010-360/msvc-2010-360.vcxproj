@@ -188,12 +188,12 @@
       <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_LTCG|Xbox 360'">true</ExcludedFromBuild>
     </ClCompile>
     <ClCompile Include="..\..\mednafen\pce_fast\huc.cpp" />
-    <ClCompile Include="..\..\mednafen\pce_fast\huc6280.cpp" />
     <ClCompile Include="..\..\mednafen\pce_fast\input.cpp" />
     <ClCompile Include="..\..\mednafen\pce_fast\input\gamepad.cpp" />
     <ClCompile Include="..\..\mednafen\pce_fast\input\mouse.cpp" />
     <ClCompile Include="..\..\mednafen\pce_fast\input\tsushinkb.cpp" />
     <ClCompile Include="..\..\mednafen\pce_fast\pce.cpp" />
+    <ClCompile Include="..\..\mednafen\pce_fast\pce_huc6280.cpp" />
     <ClCompile Include="..\..\mednafen\pce_fast\tsushin.cpp" />
     <ClCompile Include="..\..\mednafen\pce_fast\vdc.cpp" />
     <ClCompile Include="..\..\mednafen\resampler\resample.c">
@@ -356,9 +356,6 @@
     </ClCompile>
     <ClCompile Include="..\..\mednafen\video\surface.cpp" />
     <ClCompile Include="..\..\mednafen\video\video.cpp" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{FF00CD40-4F7A-47EA-B1E1-DFFB1EF73807}</ProjectGuid>

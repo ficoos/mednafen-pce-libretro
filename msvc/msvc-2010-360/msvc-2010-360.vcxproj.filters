@@ -170,9 +170,6 @@
     <ClCompile Include="..\..\mednafen\pce_fast\vdc.cpp">
       <Filter>Source Files\mednafen\pce</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\mednafen\pce_fast\huc6280.cpp">
-      <Filter>Source Files\mednafen\pce</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\mednafen\pce_fast\huc.cpp">
       <Filter>Source Files\mednafen\pce</Filter>
     </ClCompile>
@@ -320,8 +317,8 @@
     <ClCompile Include="..\..\mednafen\Stream.cpp">
       <Filter>Source Files\mednafen</Filter>
     </ClCompile>
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="ClassDiagram1.cd" />
+    <ClCompile Include="..\..\mednafen\pce_fast\pce_huc6280.cpp">
+      <Filter>Source Files\mednafen\pce</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>
