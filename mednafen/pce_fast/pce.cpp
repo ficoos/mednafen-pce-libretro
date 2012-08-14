@@ -32,9 +32,6 @@
 #include "../libretro/msvc_compat.h"
 #endif
 
-namespace PCE_Fast
-{
-
 static PCE_PSG *psg = NULL;
 extern ArcadeCard *arcade_card; // Bah, lousy globals.
 
@@ -602,8 +599,6 @@ static const FileExtensionSpecStruct KnownExtensions[] =
  { ".hes", gettext_noop("PC Engine Music Rip") },
  { ".sgx", gettext_noop("SuperGrafx ROM Image") },
  { NULL, NULL }
-};
-
 };
 
 MDFNGI EmulatedPCE_Fast =

@@ -29,9 +29,6 @@
 #include "../libretro/msvc_compat.h"
 #endif
 
-namespace PCE_Fast
-{
-
 enum
 {
  PCEINPUT_NONE = 0,
@@ -384,5 +381,3 @@ static void SyncSettings(void)
  InputDeviceInfo[1].IDII = MDFN_GetSettingB("pce_fast.disable_softreset") ? PCE_GamepadIDII_DSR : PCE_GamepadIDII;
  MultiTapEnabled = MDFN_GetSettingB("pce_fast.input.multitap");
 }
-
-};

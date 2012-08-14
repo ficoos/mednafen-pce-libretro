@@ -19,9 +19,6 @@
 #include "../input.h"
 #include "tsushinkb.h"
 
-namespace PCE_Fast
-{
-
 class PCE_Input_TsushinKB : public PCE_Input_Device
 {
  public:
@@ -300,5 +297,3 @@ PCE_Input_Device *PCEINPUT_MakeTsushinKB(void)
 {
  return(new PCE_Input_TsushinKB());
 }
-
-};

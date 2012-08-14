@@ -19,9 +19,6 @@
 #include "../input.h"
 #include "mouse.h"
 
-namespace PCE_Fast
-{
-
 class PCE_Input_Mouse : public PCE_Input_Device
 {
  public:
@@ -167,5 +164,3 @@ PCE_Input_Device *PCEINPUT_MakeMouse(void)
 {
  return(new PCE_Input_Mouse());
 }
-
-};

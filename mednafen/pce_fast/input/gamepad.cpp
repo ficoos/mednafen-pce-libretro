@@ -19,9 +19,6 @@
 #include "../input.h"
 #include "gamepad.h"
 
-namespace PCE_Fast
-{
-
 class PCE_Input_Gamepad : public PCE_Input_Device
 {
  public:
@@ -158,5 +155,3 @@ PCE_Input_Device *PCEINPUT_MakeGamepad(int which)
 {
  return(new PCE_Input_Gamepad(which));
 }
-
-};

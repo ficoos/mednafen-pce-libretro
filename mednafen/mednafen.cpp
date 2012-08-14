@@ -47,8 +47,6 @@
 #include "FileWrapper.h"
 #include	"include/Fir_Resampler.h"
 
-#include	"string/escape.h"
-
 #include	"cdrom/CDUtility.h"
 
 static const char *CSD_forcemono = gettext_noop("Force monophonic sound output.");
@@ -678,81 +676,6 @@ static void BuildDynamicSetting(MDFNSetting *setting, const char *system_name, c
  setting->validate_func = validate_func;
  setting->ChangeNotification = ChangeNotification;
 }
-
-std::vector<std::string> string_to_vecstrlist(const std::string &str_str)
-{
- std::vector<std::string> ret;
- const char *str = str_str.c_str();
-
- bool in_quote = FALSE;
- const char *quote_begin = NULL;
- char last_char = 0;
-
- while(*str || in_quote)
- {
-  char c;
-
-  if(*str)
-   c = *str;
-  else		// If the string has ended and we're still in a quote, get out of it!
-  {
-   c = '"';
-   last_char = 0;
-  }
-
-  if(last_char != '\\')
-  {
-   if(c == '"')
-   {
-    if(in_quote)
-    {
-     int64 str_length = str - quote_begin;
-     char tmp_str[512];
-
-     memcpy(tmp_str, quote_begin, str_length);
-  
-     ret.push_back(std::string(tmp_str));
-
-     quote_begin = NULL;
-     in_quote = FALSE;
-    }
-    else
-    {
-     in_quote = TRUE;
-     quote_begin = str + 1;
-    }
-   }
-  }
-
-  last_char = c;
-
-  if(*str)
-   str++;
- }
-
-
- return(ret);
-}
-
-std::string vecstrlist_to_string(const std::vector<std::string> &vslist)
-{
- std::string ret;
-
- for(uint32 i = 0; i < vslist.size(); i++)
- {
-  char *tmp_str = escape_string(vslist[i].c_str());
-
-  ret += "\"";
- 
-  ret += std::string(tmp_str);
- 
-  ret += "\" ";
-
-  free(tmp_str);
- }
- return(ret);
-}
-
 
 bool MDFNI_InitializeModules(const std::vector<MDFNGI *> &ExternalSystems)
 {

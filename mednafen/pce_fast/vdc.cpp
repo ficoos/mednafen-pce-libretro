@@ -37,9 +37,6 @@ The spectrum peaked at 15734 Hz.  21477272.727272... / 3 / 15734 = 455.00(CPU cy
 #include "../libretro/msvc_compat.h"
 #endif
 
-namespace PCE_Fast
-{
-
 static uint8 *CustomColorMap = NULL; // 1024 * 3
 static uint32 CustomColorMapLen;      // 512 or 1024
 static uint32 systemColorMap32[512], bw_systemColorMap32[512];
@@ -1746,5 +1743,3 @@ int VDC_StateAction(StateMem *sm, int load, int data_only)
 
  return(ret);
 }
-
-};

@@ -25,7 +25,6 @@
 #include <list>
 #include "settings.h"
 #include "md5.h"
-#include "string/escape.h"
 #include "FileWrapper.h"
 
 #ifdef _WIN32

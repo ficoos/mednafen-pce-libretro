@@ -1,9 +1,6 @@
 #ifndef __PCE_INPUT_H
 #define __PCE_INPUT_H
 
-namespace PCE_Fast
-{
-
 class PCE_Input_Device
 {
  public:
@@ -27,7 +24,5 @@ void INPUT_Frame(void);
 int INPUT_StateAction(StateMem *sm, int load, int data_only);
 extern InputInfoStruct PCEInputInfo;
 void INPUT_FixTS(int32 timestamp);
-
-};
 
 #endif

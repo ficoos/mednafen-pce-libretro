@@ -18,9 +18,6 @@
 
 #include "pce.h"
 
-namespace PCE_Fast
-{
-
 /*
   Startup:
 	0x80 -> $1830
@@ -49,5 +46,3 @@ DECLFW(PCE_TsushinWrite)
 {
  printf("Write: %04x %02x\n", A, V);
 }
-
-};

@@ -26,9 +26,6 @@
 #include "../cdrom/cdromif.h"
 #include "../mempatcher.h"
 
-namespace PCE_Fast
-{
-
 static const char BRAM_Init_String[8] = { 'H', 'U', 'B', 'M', 0x00, 0x88, 0x10, 0x80 }; //"HUBM\x00\x88\x10\x80";
 
 ArcadeCard *arcade_card = NULL;
@@ -443,5 +440,3 @@ void HuC_Power(void)
  if(arcade_card)
   arcade_card->Power();
 }
-
-};
