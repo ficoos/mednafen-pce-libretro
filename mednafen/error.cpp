@@ -19,7 +19,7 @@
 #include "error.h"
 #include <string.h>
 #include <stdarg.h>
-#include <trio/trio.h>
+#include "include/trio/trio.h"
 
 MDFN_Error::MDFN_Error() throw()
 {

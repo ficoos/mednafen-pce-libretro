@@ -275,5 +275,65 @@
     <ClCompile Include="..\..\mednafen\trio\trionan.c">
       <Filter>Source Files\mednafen\trio</Filter>
     </ClCompile>
+    <ClCompile Include="..\..\mednafen\string\world_strtod.c">
+      <Filter>Source Files\mednafen\string</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mednafen\tests.cpp">
+      <Filter>Source Files\mednafen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mednafen\debug.cpp">
+      <Filter>Source Files\mednafen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mednafen\dis6280.cpp">
+      <Filter>Source Files\mednafen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mednafen\dis6502.cpp">
+      <Filter>Source Files\mednafen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mednafen\endian.cpp">
+      <Filter>Source Files\mednafen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mednafen\error.cpp">
+      <Filter>Source Files\mednafen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mednafen\file.cpp">
+      <Filter>Source Files\mednafen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mednafen\FileWrapper.cpp">
+      <Filter>Source Files\mednafen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mednafen\general.cpp">
+      <Filter>Source Files\mednafen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mednafen\md5.cpp">
+      <Filter>Source Files\mednafen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mednafen\mednafen.cpp">
+      <Filter>Source Files\mednafen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mednafen\memory.cpp">
+      <Filter>Source Files\mednafen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mednafen\MemoryStream.cpp">
+      <Filter>Source Files\mednafen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mednafen\mempatcher.cpp">
+      <Filter>Source Files\mednafen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mednafen\okiadpcm.cpp">
+      <Filter>Source Files\mednafen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mednafen\okiadpcm_generate.cpp">
+      <Filter>Source Files\mednafen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mednafen\settings.cpp">
+      <Filter>Source Files\mednafen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mednafen\state.cpp">
+      <Filter>Source Files\mednafen</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\mednafen\Stream.cpp">
+      <Filter>Source Files\mednafen</Filter>
+    </ClCompile>
   </ItemGroup>
 </Project>

@@ -18,12 +18,16 @@
 #include "mednafen.h"
 #include "FileWrapper.h"
 
-#include <trio/trio.h>
+#include "include/trio/trio.h"
 #include <stdarg.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+
+#ifndef _WIN32
 #include <unistd.h>
+#endif
+
 #include <string.h>
 
 // Some really bad preprocessor abuse follows to handle platforms that don't have fseeko and ftello...and of course

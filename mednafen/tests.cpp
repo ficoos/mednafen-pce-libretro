@@ -100,28 +100,24 @@ static bool DoSizeofTests(void)
  return(1);
 }
 
-static void AntiNSOBugTest_Sub1_a(int *array) NO_INLINE;
 static void AntiNSOBugTest_Sub1_a(int *array)
 {
  for(int value = 0; value < 127; value++)
   array[value] += (int8)value * 15;
 }
 
-static void AntiNSOBugTest_Sub1_b(int *array) NO_INLINE;
 static void AntiNSOBugTest_Sub1_b(int *array)
 {
  for(int value = 127; value < 256; value++)
   array[value] += (int8)value * 15;
 }
 
-static void AntiNSOBugTest_Sub2(int *array) NO_INLINE;
 static void AntiNSOBugTest_Sub2(int *array)
 {
  for(int value = 0; value < 256; value++)
   array[value] += (int8)value * 15;
 }
 
-static void AntiNSOBugTest_Sub3(int *array) NO_INLINE;
 static void AntiNSOBugTest_Sub3(int *array)
 {
  for(int value = 0; value < 256; value++)

@@ -22,11 +22,14 @@
 
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#ifndef _WIN32
 #include <unistd.h>
+#endif
 
 #include <string>
 #include <map>
-#include <trio/trio.h>
+#include "include/trio/trio.h"
 
 #include "general.h"
 #include "state.h"
@@ -325,7 +328,7 @@ std::string MDFN_MakeFName(MakeFName_Type type, int id1, const char *cd1)
 
 		      if(type != MDFNMKF_SAV)
 		      {
-                       snprintf(numtmp, sizeof(numtmp), "%d", id1);
+                       trio_snprintf(numtmp, sizeof(numtmp), "%d", id1);
                        fmap['p'] = std::string(numtmp);
 	              }
 
@@ -360,7 +363,7 @@ std::string MDFN_MakeFName(MakeFName_Type type, int id1, const char *cd1)
 		     std::string fstring = MDFN_GetSettingS("filesys.fname_snap");
 		     std::string fpath;
 
-		     snprintf(numtmp, sizeof(numtmp), "%04d", id1);
+		     trio_snprintf(numtmp, sizeof(numtmp), "%04d", id1);
 
 		     fmap['p'] = std::string(numtmp);
 
@@ -500,7 +503,7 @@ void GetFileBase(const char *f)
      }
      else
      {
-      char tmpfn[tp1 - f + 1];
+      char tmpfn[256];
 
       memcpy(tmpfn,f,tp1-f);
       tmpfn[tp1-f]=0;
@@ -511,7 +514,7 @@ void GetFileBase(const char *f)
 
      if(((tp3=strrchr(f,'.'))!=NULL) && (tp3>tp1))
      {
-      char tmpbase[tp3 - tp1 + 1];
+      char tmpbase[256];
 
       memcpy(tmpbase,tp1,tp3-tp1);
       tmpbase[tp3-tp1]=0;

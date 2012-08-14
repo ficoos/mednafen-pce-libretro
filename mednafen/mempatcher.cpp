@@ -19,13 +19,17 @@
 
 #include <string.h>
 #include <ctype.h>
-#include <trio/trio.h>
+#include "include/trio/trio.h"
 #include <errno.h>
 #include <vector>
 
 #include "general.h"
 #include "md5.h"
 #include "mempatcher.h"
+
+#ifdef _WIN32
+#include "libretro/msvc_compat.h"
+#endif
 
 static uint8 **RAMPtrs = NULL;
 static uint32 PageSize;

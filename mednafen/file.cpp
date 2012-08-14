@@ -20,9 +20,13 @@
 #include <string.h>
 #include <sys/types.h>
 #include <sys/stat.h>
+
+#ifndef _WIN32
 #include <unistd.h>
+#endif
+
 #include <errno.h>
-#include <trio/trio.h>
+#include "include/trio/trio.h"
 
 #ifdef HAVE_MMAP
 #include <sys/mman.h>

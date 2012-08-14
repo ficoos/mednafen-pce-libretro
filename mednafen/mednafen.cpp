@@ -22,8 +22,15 @@
 #include	<errno.h>
 #include	<sys/types.h>
 #include	<sys/stat.h>
+
+#ifdef _WIN32
+#include "libretro/msvc_compat.h"
+#else
 #include	<unistd.h>
-#include	<trio/trio.h>
+#endif
+
+#include	"include/trio/trio.h"
+
 #include	<list>
 #include	<algorithm>
 
@@ -38,7 +45,7 @@
 #include	"md5.h"
 #include	"clamp.h"
 #include "FileWrapper.h"
-#include	"Fir_Resampler.h"
+#include	"include/Fir_Resampler.h"
 
 #include	"string/escape.h"
 
@@ -700,7 +707,7 @@ std::vector<std::string> string_to_vecstrlist(const std::string &str_str)
     if(in_quote)
     {
      int64 str_length = str - quote_begin;
-     char tmp_str[str_length];
+     char tmp_str[512];
 
      memcpy(tmp_str, quote_begin, str_length);
   

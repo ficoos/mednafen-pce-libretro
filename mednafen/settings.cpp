@@ -20,7 +20,7 @@
 #include <string.h>
 #include <vector>
 #include <string>
-#include <trio/trio.h>
+#include "include/trio/trio.h"
 #include <map>
 #include <list>
 #include "settings.h"
@@ -28,6 +28,10 @@
 #include "string/world_strtod.h"
 #include "string/escape.h"
 #include "FileWrapper.h"
+
+#ifdef _WIN32
+#include "libretro/msvc_compat.h"
+#endif
 
 typedef struct
 {
