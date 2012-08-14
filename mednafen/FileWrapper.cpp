@@ -66,42 +66,6 @@
 
 #endif
 
-// For special uses, IE in classes that take a path or a FileWrapper & in the constructor, and the FileWrapper non-pointer member
-// is in the initialization list for the path constructor but not the constructor with FileWrapper&
-#if 0
-FileWrapper::FileWrapper()
-{
- fp = NULL;
-}
-#endif
-
-#if 0
-FileWrapper::FileWrapper(FileWrapper &original) : OpenedMode(original.OpenedMode)
-{
- int fd;
- int duped_fd;
-
- path_save = original.path_save;
-
- original.flush();
-
- fd = fileno(original.fp);
- if(-1 == (duped_fd = dup(fd)))
- {
-  ErrnoHolder ene(errno);
-
-  throw(MDFN_Error(ene.Errno(), _("Error duping file descriptor: %s"), ene.StrError()));
- }
-
- if(!(fp = fdopen(duped_fd, (OpenedMode == MODE_READ) ? "rb" : "wb")))
- {
-  ErrnoHolder ene(errno);
-
-  throw(MDFN_Error(ene.Errno(), _("Error during fdopen(): %s"), ene.StrError()));
- }
-}
-#endif
-
 FileWrapper::FileWrapper(const char *path, const int mode, const char *purpose) : OpenedMode(mode)
 {
  path_save = std::string(path);
@@ -219,32 +183,6 @@ void FileWrapper::write(const void *data, uint64 count)
  }
 }
 
-int FileWrapper::scanf(const char *format, ...)
-{
- va_list ap;
- int ret;
-
- clearerr(fp);
-
- va_start(ap, format);
-
- ret = trio_vfscanf(fp, format, ap);
-
- va_end(ap);
-
- if(ferror(fp))
- {
-  ErrnoHolder ene(errno);
-
-  throw(MDFN_Error(ene.Errno(), _("Error reading from opened file \"%s\": %s"), path_save.c_str(), ene.StrError()));
- }
-
- //if(ret < 0 || ret == EOF)
- // throw(MDFN_Error(0, _("%s error on format string \"%s\""), "trio_vfscanf()", format));
-
- return(ret);
-}
-
 void FileWrapper::printf(const char *format, ...)
 {
  va_list ap;
@@ -273,18 +211,6 @@ void FileWrapper::put_char(int c)
 
   throw(MDFN_Error(ene.Errno(), _("Error writing to opened file \"%s\": %s"), path_save.c_str(), ene.StrError()));
  }
-}
-
-void FileWrapper::put_string(const char *str)
-{
- write(str, strlen(str));
-}
-
-// We need to decide whether to prohibit NULL characters in output and input strings via std::string.
-// Yes for correctness, no for potential security issues(though unlikely in context all things considered).
-void FileWrapper::put_string(const std::string &str)
-{
- write(str.data(), str.size());
 }
 
 char *FileWrapper::get_line(char *buf_s, int buf_size)

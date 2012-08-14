@@ -146,16 +146,6 @@ class Stream
   return put_RE<T>(c);
   #endif
  }
-
-
-#if 0
- int scanf(const char *format, ...) MDFN_FORMATSTR(scanf, 2, 3);
- void printf(const char *format, ...) MDFN_FORMATSTR(printf, 2, 3);
- void put_string(const char *str);
- void put_string(const std::string &str);
- bool get_line(std::string &str);
- unsigned int line_read_skip;
-#endif
 };
 
 // StreamFilter takes ownership of the Stream pointer passed, and will delete it in its destructor.

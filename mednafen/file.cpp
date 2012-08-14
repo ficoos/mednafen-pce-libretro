@@ -321,13 +321,13 @@ bool MDFNFILE::Open(const char *path, const FileExtensionSpecStruct *known_ext, 
    return(0);
   }
 
-  uint32 gzmagic;
+  uint32 magic;
 
-  gzmagic = ::fgetc(fp);
-  gzmagic |= ::fgetc(fp) << 8;
-  gzmagic |= ::fgetc(fp) << 16;
+  magic = ::fgetc(fp);
+  magic |= ::fgetc(fp) << 8;
+  magic |= ::fgetc(fp) << 16;
 
-  if(gzmagic != 0x088b1f)   /* Not gzip... */
+  if(magic != 0x088b1f)   /* Not gzip... */
   {
    ::fseek(fp, 0, SEEK_SET);
 

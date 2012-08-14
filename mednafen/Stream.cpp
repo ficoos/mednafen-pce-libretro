@@ -32,60 +32,6 @@ Stream::~Stream()
 
 }
 
-#if 0
-int Stream::scanf(const char *format, ...)
-{
-
-
-}
-
-void Stream::printf(const char *format, ...)
-{
-
-}
-
-void Stream::put_string(const char *str)
-{
- write(str, strlen(str));
-}
-
-void Stream::put_string(const std::string &str)
-{
- write(str.data(), str.size());
-}
-
-bool Stream::get_line(std::string &str)
-{
- uint8 c;
-
- str.clear();
-
- while(read(&c, sizeof(c), false) > 0)
- {
-  if(c == line_read_skip)
-  {
-   if(read(&c, sizeof(c), false) == 0)
-    return false;
-   line_read_skip = 256;
-  }
-
-  if(c == '\r' || c == '\n' || c == 0)
-  {
-   if(c == '\r')
-    line_read_skip = '\n';
-   else if(c == '\n')
-    line_read_skip = '\r';
-
-   return true;
-  }
-
-  str.append(1, c);
- }
-
- return false;
-}
-#endif
-
 StreamFilter::StreamFilter()
 {
  target_stream = NULL;
