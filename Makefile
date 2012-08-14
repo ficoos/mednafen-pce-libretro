@@ -95,8 +95,6 @@ LIBRETRO_DIR := $(MEDNAFEN_DIR)/libretro
 PCE_DIR := $(MEDNAFEN_DIR)/pce
 PCE_FAST_DIR := $(MEDNAFEN_DIR)/pce_fast
 
-HW_CPU_SOURCES_C := $(MEDNAFEN_DIR)/hw_cpu/c68k/c68k.c \
-	$(MEDNAFEN_DIR)/hw_cpu/c68k/c68kexec.c
 
 HW_CPU_SOURCES := $(MEDNAFEN_DIR)/hw_cpu/huc6280/huc6280.cpp
 
@@ -138,6 +136,8 @@ PCE_CORE_DEFINES := -DWANT_PCE_FAST_EMU
 else
 PCE_CORE_SOURCES := $(PCE_SOURCES)
 PCE_CORE_DEFINES := -DWANT_PCE_EMU
+HW_CPU_SOURCES_C := $(MEDNAFEN_DIR)/hw_cpu/c68k/c68k.c \
+	$(MEDNAFEN_DIR)/hw_cpu/c68k/c68kexec.c
 endif
 
 MEDNAFEN_SOURCES := $(MEDNAFEN_DIR)/settings.cpp \
