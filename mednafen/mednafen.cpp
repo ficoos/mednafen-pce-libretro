@@ -146,14 +146,6 @@ bool MDFNSystemsPrio_CompareFunc(MDFNGI *first, MDFNGI *second)
  return(false);
 }
 
-static void AddSystem(MDFNGI *system)
-{
- MDFNSystems.push_back(system);
-}
-
-
-bool CDIF_DumpCD(const char *fn);
-
 void MDFNI_DumpModulesDef(const char *fn)
 {
  FILE *fp = fopen(fn, "wb");
@@ -165,7 +157,6 @@ void MDFNI_DumpModulesDef(const char *fn)
   fprintf(fp, "%d\n", MDFNSystems[i]->nominal_width);
   fprintf(fp, "%d\n", MDFNSystems[i]->nominal_height);
  }
-
 
  fclose(fp);
 }
@@ -203,8 +194,6 @@ static void ReadM3U(std::vector<std::string> &file_list, std::string path, unsig
    file_list.push_back(efp);
  }
 }
-
-// TODO: LoadCommon()
 
 MDFNGI *MDFNI_LoadCD(const char *force_module, const char *devicename)
 {
@@ -380,40 +369,6 @@ MDFNGI *MDFNI_LoadCD(const char *force_module, const char *devicename)
  return(MDFNGameInfo);
 }
 
-// Return FALSE on fatal error(IPS file found but couldn't be applied),
-// or TRUE on success(IPS patching succeeded, or IPS file not found).
-static bool LoadIPS(MDFNFILE &GameFile, const char *path)
-{
- FILE *IPSFile;
-
- MDFN_printf(_("Applying IPS file \"%s\"...\n"), path);
-
- IPSFile = fopen(path, "rb");
- if(!IPSFile)
- {
-  ErrnoHolder ene(errno);
-
-  MDFN_printf(_("Failed: %s\n"), ene.StrError());
-
-  if(ene.Errno() == ENOENT)
-   return(1);
-  else
-  {
-   MDFN_PrintError(_("Error opening IPS file: %s\n"), ene.StrError());
-   return(0);
-  }  
- }
-
- if(!GameFile.ApplyIPS(IPSFile))
- {
-  fclose(IPSFile);
-  return(0);
- }
- fclose(IPSFile);
-
- return(1);
-}
-
 MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
 {
         MDFNFILE GameFile;
@@ -462,13 +417,6 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
         {
 	 MDFNGameInfo = NULL;
 	 return 0;
-	}
-
-	if(!LoadIPS(GameFile, MDFN_MakeFName(MDFNMKF_IPS, 0, 0).c_str()))
-	{
-	 MDFNGameInfo = NULL;
-         GameFile.Close();
-         return(0);
 	}
 
 	MDFNGameInfo = NULL;
@@ -531,8 +479,6 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
 
 	MDFN_printf(_("Using module: %s(%s)\n\n"), MDFNGameInfo->shortname, MDFNGameInfo->fullname);
 	MDFN_indent(1);
-
-	assert(MDFNGameInfo->soundchan != 0);
 
         MDFNGameInfo->soundrate = 0;
         MDFNGameInfo->name = NULL;
@@ -641,7 +587,7 @@ bool MDFNI_InitializeModules(const std::vector<MDFNGI *> &ExternalSystems)
 
  for(unsigned int i = 0; i < sizeof(InternalSystems) / sizeof(MDFNGI *); i++)
  {
-  AddSystem(InternalSystems[i]);
+  MDFNSystems.push_back(InternalSystems[i]);
   if(i)
    i_modules_string += " ";
   i_modules_string += std::string(InternalSystems[i]->shortname);
@@ -649,7 +595,7 @@ bool MDFNI_InitializeModules(const std::vector<MDFNGI *> &ExternalSystems)
 
  for(unsigned int i = 0; i < ExternalSystems.size(); i++)
  {
-  AddSystem(ExternalSystems[i]);
+  MDFNSystems.push_back(ExternalSystems[i]);
   if(i)
    i_modules_string += " ";
   e_modules_string += std::string(ExternalSystems[i]->shortname);
@@ -669,14 +615,10 @@ bool MDFNI_InitializeModules(const std::vector<MDFNGI *> &ExternalSystems)
  return(1);
 }
 
-static bool first_init = true;
-
 int MDFNI_Initialize(const char *basedir)
 {
 	if(!MDFN_RunMathTests())
-	{
 	 return(0);
-	}
 
 	MDFNI_SetBaseDirectory(basedir);
 
@@ -714,15 +656,11 @@ static void ProcessAudio(EmulateSpecStruct *espec)
   {
     if(MDFNGameInfo->soundchan == 2)
     {
-     assert(ff_resampler.max_write() >= SoundBufSize * 2);
-
      for(int i = 0; i < SoundBufSize * 2; i++)
       ff_resampler.buffer()[i] = SoundBuf[i];
     }
     else
     {
-     assert(ff_resampler.max_write() >= SoundBufSize * 2);
-
      for(int i = 0; i < SoundBufSize; i++)
      {
       ff_resampler.buffer()[i * 2] = SoundBuf[i];
@@ -809,8 +747,6 @@ void MDFNI_Emulate(EmulateSpecStruct *espec)
  espec->DisplayRect.w = 0;
  espec->DisplayRect.y = 0;
  espec->DisplayRect.h = 0;
-
- assert((bool)(espec->SoundBuf != NULL) == (bool)espec->SoundRate && (bool)espec->SoundRate == (bool)espec->SoundBufMaxSize);
 
  espec->SoundBufSize = 0;
 
@@ -952,26 +888,18 @@ void MDFN_QSimpleCommand(int cmd)
 
 void MDFNI_Reset(void)
 {
- assert(MDFNGameInfo);
-
  MDFN_QSimpleCommand(MDFN_MSC_RESET);
 }
 
 void MDFNI_SetLayerEnableMask(uint64 mask)
 {
  if(MDFNGameInfo && MDFNGameInfo->SetLayerEnableMask)
- {
   MDFNGameInfo->SetLayerEnableMask(mask);
- }
 }
 
 void MDFNI_SetInput(int port, const char *type, void *ptr, uint32 ptr_len_thingy)
 {
  if(MDFNGameInfo)
- {
-  assert(port < 16);
-
   MDFNGameInfo->SetInput(port, type, ptr);
- }
 }
 
