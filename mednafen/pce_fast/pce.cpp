@@ -27,7 +27,7 @@
 #include "../hw_misc/arcade_card/arcade_card.h"
 #include "../mempatcher.h"
 #include "../cdrom/cdromif.h"
-#include "huc6280.h"
+#include "pce_huc6280.h"
 
 #ifdef _WIN32
 #include "../libretro/msvc_compat.h"

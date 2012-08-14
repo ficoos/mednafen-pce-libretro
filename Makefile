@@ -123,7 +123,7 @@ PCE_SOURCES := $(PCE_DIR)/vce.cpp \
 	$(PCE_DIR)/mcgenjin.cpp
 
 PCE_FAST_SOURCES := $(PCE_FAST_DIR)/huc.cpp \
-	$(PCE_FAST_DIR)/huc6280.cpp \
+	$(PCE_FAST_DIR)/pce_huc6280.cpp \
 	$(PCE_FAST_DIR)/input.cpp \
 	$(PCE_FAST_DIR)/pce.cpp \
 	$(PCE_FAST_DIR)/tsushin.cpp \

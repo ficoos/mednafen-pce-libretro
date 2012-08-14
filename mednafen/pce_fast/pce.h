@@ -20,7 +20,7 @@ extern uint8 PCEIODataBuffer;
 
 bool PCE_InitCD(void);
 
-#include "huc6280.h"
+#include "pce_huc6280.h"
 
 extern bool PCE_ACEnabled; // Arcade Card emulation enabled?
 void PCE_Power(void);
