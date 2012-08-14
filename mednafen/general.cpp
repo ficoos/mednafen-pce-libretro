@@ -250,47 +250,20 @@ static void CreateMissingDirs(const char *path)
 }
 #endif
 
+extern char g_rom_dir[1024];
+extern char g_basename[1024];
+
 std::string MDFN_MakeFName(MakeFName_Type type, int id1, const char *cd1)
 {
  char tmp_path[4096];
  char numtmp[64];
  struct stat tmpstat;
- string eff_dir;
- FSMap fmap;
 
- fmap['b'] = BaseDirectory;
- fmap['z'] = std::string(PSS);
-
- if(MDFNGameInfo)
- {
-  fmap['d'] = FileBaseDirectory;
-  fmap['f'] = FileBase;
-  fmap['F'] = FileBase;		// If game is a CD, and the CD is recognized as being part of a multi-CD set, then this
-				// will be replaced with MDFNGameInfo->shortname
-
-  fmap['m'] = md5_context::asciistr(MDFNGameInfo->MD5, 0); // MD5 hash of the currently loaded game ONLY.
-
-  fmap['M'] = "";		// One with this empty, if file not found, then fill with MD5 hash of the currently loaded game,
-				// or the MD5 gameset hash for certain CD games, followed by a period and go with that result.
-				// Note: The MD5-less result is skipped if the CD is part of a recognized multi-CD set.
-  fmap['e'] = FileExt;
-  fmap['s'] = MDFNGameInfo->shortname;
-
-  fmap['p'] = "";
-
-
-  fmap['x'] = "";		// Default extension(without period)
-  fmap['X'] = "";		// A merging of x and p
-
-  if(MDFNGameInfo->GameSetMD5Valid)
-  {
-   fmap['M'] = md5_context::asciistr(MDFNGameInfo->GameSetMD5, 0) + std::string(".");
-   fmap['F'] = MDFNGameInfo->shortname;
-  }
- }
-
-
-
+#ifdef _WIN32
+ const char *slash = "\\";
+#else
+ const char *slash= "/";
+#endif
 
  //printf("%s\n", EvalPathFS(std::string("%f.%m.sav"), fmap).c_str());
 
@@ -299,106 +272,13 @@ std::string MDFN_MakeFName(MakeFName_Type type, int id1, const char *cd1)
   default: tmp_path[0] = 0;
 	   break;
 
-  case MDFNMKF_MOVIE:
   case MDFNMKF_STATE:
   case MDFNMKF_SAV:
 		     {
-		      std::string dir, fstring, fpath;
-
-                      if(type == MDFNMKF_MOVIE)
-                      {
-		       dir = MDFN_GetSettingS("filesys.path_movie");
-		       fstring = MDFN_GetSettingS("filesys.fname_movie");
-		       fmap['x'] = "mcm";
-                      }
-                      else if(type == MDFNMKF_STATE)
-                      {
-		       dir = MDFN_GetSettingS("filesys.path_state");
-                       fstring = MDFN_GetSettingS("filesys.fname_state");
-		       fmap['x'] = "mcs";
-                      }
-                      else if(type == MDFNMKF_SAV)
-                      {
-		       dir = MDFN_GetSettingS("filesys.path_sav");
-                       fstring = MDFN_GetSettingS("filesys.fname_sav");
-		       fmap['x'] = std::string(cd1);
-                      }
-
-		      fmap['X'] = fmap['x'];
-
-		      if(type != MDFNMKF_SAV)
-		      {
-                       trio_snprintf(numtmp, sizeof(numtmp), "%d", id1);
-                       fmap['p'] = std::string(numtmp);
-	              }
-
-		      if(fmap['X'].size() > 1 && fmap['p'].size())
-		       fmap['X'] = fmap['X'].erase(fmap['X'].size() - 1) + fmap['p'];
-
-		      for(int i = 0; i < 2; i++)
-		      {
-                       fpath = EvalPathFS(fstring, fmap);
-
-		       if(!IsAbsolutePath(fpath))
-		       {
-		        if(!IsAbsolutePath(dir))
-		         dir = BaseDirectory + std::string(PSS) + dir;
-
- 			fpath = dir + std::string(PSS) + fpath;
-		       }
-
-                       if(stat(fpath.c_str(), &tmpstat) == -1)
-                        fmap['M'] = md5_context::asciistr(MDFNGameInfo->MD5, 0) + std::string(".");
-		       else
-		        break;
-                      }
-
-                      return(fpath);
+                      trio_snprintf(tmp_path, sizeof(tmp_path), "%s%s%s.sav", g_rom_dir, slash, g_basename);
+                      fprintf(stderr, "Savestate name: %s\n", tmp_path);
+                      return tmp_path;
 	             }
-
-  case MDFNMKF_SNAP_DAT:
-  case MDFNMKF_SNAP:
-	            {
-		     std::string dir = MDFN_GetSettingS("filesys.path_snap");
-		     std::string fstring = MDFN_GetSettingS("filesys.fname_snap");
-		     std::string fpath;
-
-		     trio_snprintf(numtmp, sizeof(numtmp), "%04d", id1);
-
-		     fmap['p'] = std::string(numtmp);
-
-		     if(cd1)
-		      fmap['x'] = std::string(cd1);
-
-		     if(type == MDFNMKF_SNAP_DAT)
-		     {
-		      fmap['p'] = std::string("counter");
-		      fmap['x'] = std::string("txt");
-		     }
-                     fpath = EvalPathFS(fstring, fmap);
-                     if(!IsAbsolutePath(fpath))
-                     {
-                      if(!IsAbsolutePath(dir))
-                       dir = BaseDirectory + std::string(PSS) + dir;
-
-                      fpath = dir + std::string(PSS) + fpath;
-                     }
-		     return(fpath);
-		    }
-                    break;
-
-  case MDFNMKF_CHEAT_TMP:
-  case MDFNMKF_CHEAT:
-		    {
-		     std::string overpath = MDFN_GetSettingS("filesys.path_cheat");
-
-		     if(IsAbsolutePath(overpath))
-                      trio_snprintf(tmp_path, 4096, "%s"PSS"%s.%scht",overpath.c_str(), MDFNGameInfo->shortname, (type == MDFNMKF_CHEAT_TMP) ? "tmp" : "");
-                     else
-                      trio_snprintf(tmp_path, 4096, "%s"PSS"%s"PSS"%s.%scht", BaseDirectory.c_str(), overpath.c_str(), MDFNGameInfo->shortname, (type == MDFNMKF_CHEAT_TMP) ? "tmp" : "");
-		    }
-                    break;
-
   case MDFNMKF_AUX: if(IsAbsolutePath(cd1))
 		     trio_snprintf(tmp_path, 4096, "%s", (char *)cd1);
 		    else
@@ -434,22 +314,9 @@ std::string MDFN_MakeFName(MakeFName_Type type, int id1, const char *cd1)
 
   case MDFNMKF_PALETTE:
 		      {
-		       std::string overpath = MDFN_GetSettingS("filesys.path_palette");
-
-		       if(IsAbsolutePath(overpath))
-		        eff_dir = overpath;
-		       else
-			eff_dir = std::string(BaseDirectory) + std::string(PSS) + overpath;
-
-                       trio_snprintf(tmp_path, 4096, "%s"PSS"%s.pal", eff_dir.c_str(), FileBase.c_str());
-
-                       if(stat(tmp_path,&tmpstat) == -1 && errno == ENOENT)
-		       {
-                        trio_snprintf(tmp_path, 4096, "%s"PSS"%s.%s.pal", eff_dir.c_str(), FileBase.c_str(), md5_context::asciistr(MDFNGameInfo->MD5, 0).c_str());
-
-		        if(stat(tmp_path, &tmpstat) == -1 && errno == ENOENT)
-			 trio_snprintf(tmp_path, 4096, "%s"PSS"%s.pal", eff_dir.c_str(), cd1 ? cd1 : MDFNGameInfo->shortname);
-		       }
+                      char tmp_path[4096];
+                      trio_snprintf(tmp_path, sizeof(tmp_path), "%s%s%s.pal", g_rom_dir, slash, g_basename);
+                      return tmp_path;
 		      }
                       break;
  }
