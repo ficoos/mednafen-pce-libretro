@@ -19,20 +19,6 @@ void MDFN_PrintError(const char *format, ...) throw() MDFN_FORMATSTR(printf, 1, 
 void MDFN_printf(const char *format, ...) throw() MDFN_FORMATSTR(printf, 1, 2);
 void MDFN_DispMessage(const char *format, ...) throw() MDFN_FORMATSTR(printf, 1, 2);
 
-class MDFNException
-{
-	public:
-
-	MDFNException();
-	~MDFNException();
-
-	char TheMessage[1024];
-
-	void AddPre(const char *format, ...);
-	void AddPost(const char *format, ...);
-};
-
-
 void MDFN_LoadGameCheats(FILE *override);
 void MDFN_FlushGameCheats(int nosave);
 void MDFN_DoSimpleCommand(int cmd);

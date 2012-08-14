@@ -162,7 +162,6 @@ MEDNAFEN_SOURCES := $(MEDNAFEN_DIR)/settings.cpp \
 	$(MEDNAFEN_DIR)/sound/Blip_Buffer.cpp \
 	$(MEDNAFEN_DIR)/sound/Fir_Resampler.cpp \
 	$(MEDNAFEN_DIR)/mednafen.cpp \
-	$(MEDNAFEN_DIR)/memory.cpp \
 	$(MEDNAFEN_DIR)/video/video.cpp \
 	$(MEDNAFEN_DIR)/state.cpp \
 	$(MEDNAFEN_DIR)/file.cpp \

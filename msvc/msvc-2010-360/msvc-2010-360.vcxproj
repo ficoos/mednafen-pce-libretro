@@ -68,7 +68,6 @@
     <ClCompile Include="..\..\mednafen\libretro\thread.cpp" />
     <ClCompile Include="..\..\mednafen\md5.cpp" />
     <ClCompile Include="..\..\mednafen\mednafen.cpp" />
-    <ClCompile Include="..\..\mednafen\memory.cpp" />
     <ClCompile Include="..\..\mednafen\mempatcher.cpp" />
     <ClCompile Include="..\..\mednafen\mpcdec\fastmath.c">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='CodeAnalysis|Xbox 360'">CompileAsC</CompileAs>

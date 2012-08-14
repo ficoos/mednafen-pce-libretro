@@ -49,55 +49,6 @@
 
 #include	"cdrom/CDUtility.h"
 
-static const char *CSD_forcemono = gettext_noop("Force monophonic sound output.");
-static const char *CSD_enable = gettext_noop("Enable (automatic) usage of this module.");
-
-static const char *fname_extra = gettext_noop("See fname_format.txt for more information.  Edit at your own risk.");
-
-static MDFNSetting MednafenSettings[] =
-{
-  { "filesys.untrusted_fip_check", MDFNSF_NOFLAGS, gettext_noop("Enable untrusted file-inclusion path security check."),
-	gettext_noop("When this setting is set to \"1\", the default, paths to files referenced from files like CUE sheets and PSF rips are checked for certain characters that can be used in directory traversal, and if found, loading is aborted.  Set it to \"0\" if you want to allow constructs like absolute paths in CUE sheets, but only if you understand the security implications of doing so(see \"Security Issues\" section in the documentation)."), MDFNST_BOOL, "1" },
-
-  { "filesys.path_snap", MDFNSF_NOFLAGS, gettext_noop("Path to directory for screen snapshots."), NULL, MDFNST_STRING, "snaps" },
-  { "filesys.path_sav", MDFNSF_NOFLAGS, gettext_noop("Path to directory for save games and nonvolatile memory."), gettext_noop("WARNING: Do not set this path to a directory that contains Famicom Disk System disk images, or you will corrupt them when you load an FDS game and exit Mednafen."), MDFNST_STRING, "sav" },
-  { "filesys.path_state", MDFNSF_NOFLAGS, gettext_noop("Path to directory for save states."), NULL, MDFNST_STRING, "mcs" },
-  { "filesys.path_movie", MDFNSF_NOFLAGS, gettext_noop("Path to directory for movies."), NULL, MDFNST_STRING, "mcm" },
-  { "filesys.path_cheat", MDFNSF_NOFLAGS, gettext_noop("Path to directory for cheats."), NULL, MDFNST_STRING, "cheats" },
-  { "filesys.path_palette", MDFNSF_NOFLAGS, gettext_noop("Path to directory for custom palettes."), NULL, MDFNST_STRING, "palettes" },
-  { "filesys.path_firmware", MDFNSF_NOFLAGS, gettext_noop("Path to directory for firmware."), NULL, MDFNST_STRING, "firmware" },
-
-  { "filesys.fname_movie", MDFNSF_NOFLAGS, gettext_noop("Format string for movie filename."), fname_extra, MDFNST_STRING, "%f.%M%p.%x" },
-  { "filesys.fname_state", MDFNSF_NOFLAGS, gettext_noop("Format string for state filename."), fname_extra, MDFNST_STRING, "%f.%M%X" /*"%F.%M%p.%x"*/ },
-  { "filesys.fname_sav", MDFNSF_NOFLAGS, gettext_noop("Format string for save games filename."), gettext_noop("WARNING: %x should always be included, otherwise you run the risk of overwriting save data for games that create multiple save data files.\n\nSee fname_format.txt for more information.  Edit at your own risk."), MDFNST_STRING, "%F.%M%x" },
-  { "filesys.fname_snap", MDFNSF_NOFLAGS, gettext_noop("Format string for screen snapshot filenames."), gettext_noop("WARNING: %x or %p should always be included, otherwise there will be a conflict between the numeric counter text file and the image data file.\n\nSee fname_format.txt for more information.  Edit at your own risk."), MDFNST_STRING, "%f-%p.%x" },
-  { NULL }
-};
-
-static MDFNSetting RenamedSettings[] =
-{
- { "path_snap", MDFNSF_NOFLAGS, NULL, NULL, MDFNST_ALIAS  , 	"filesys.path_snap"	},
- { "path_sav", MDFNSF_NOFLAGS, NULL, NULL, MDFNST_ALIAS  , 	"filesys.path_sav"	},
- { "path_state", MDFNSF_NOFLAGS, NULL, NULL, MDFNST_ALIAS  ,	"filesys.path_state"	},
- { "path_movie", MDFNSF_NOFLAGS, NULL, NULL, MDFNST_ALIAS  , 	"filesys.path_movie"	},
- { "path_cheat", MDFNSF_NOFLAGS, NULL, NULL, MDFNST_ALIAS  , 	"filesys.path_cheat"	},
- { "path_palette", MDFNSF_NOFLAGS, NULL, NULL, MDFNST_ALIAS  , 	"filesys.path_palette"	},
- { "path_firmware", MDFNSF_NOFLAGS, NULL, NULL, MDFNST_ALIAS  , "filesys.path_firmware"	},
-
- { "sounddriver", MDFNSF_NOFLAGS, NULL, NULL, MDFNST_ALIAS  , "sound.driver"      },
- { "sounddevice", MDFNSF_NOFLAGS, NULL, NULL, MDFNST_ALIAS  , "sound.device"      },
- { "soundrate", MDFNSF_NOFLAGS, NULL, NULL, MDFNST_ALIAS    , "sound.rate"        },
- { "soundvol", MDFNSF_NOFLAGS, NULL, NULL, MDFNST_ALIAS     , "sound.volume"      },
- { "soundbufsize", MDFNSF_NOFLAGS, NULL, NULL, MDFNST_ALIAS , "sound.buffer_time" },
-
- { "frameskip", MDFNSF_NOFLAGS, NULL, NULL, MDFNST_ALIAS       , "video.frameskip" },
- { "vdriver", MDFNSF_NOFLAGS, NULL, NULL, MDFNST_ALIAS         , "video.driver" },
- { "glvsync", MDFNSF_NOFLAGS, NULL, NULL, MDFNST_ALIAS         , "video.glvsync" },
- { "fs", MDFNSF_NOFLAGS, NULL, NULL, MDFNST_ALIAS              , "video.fs" },
-
- { NULL }
-};
-
 MDFNGI *MDFNGameInfo = NULL;
 
 static Fir_Resampler<16> ff_resampler;
@@ -112,8 +63,6 @@ void MDFNI_CloseGame(void)
 {
  if(MDFNGameInfo)
  {
-   MDFN_FlushGameCheats(0);
-
   MDFNGameInfo->CloseGame();
   if(MDFNGameInfo->name)
   {
@@ -323,10 +272,6 @@ MDFNGI *MDFNI_LoadCD(const char *force_module, const char *devicename)
   MDFN_printf("\n");
  }
  MDFN_indent(-1);
- //
- //
-
-
 
  // Calculate layout MD5.  The system emulation LoadCD() code is free to ignore this value and calculate
  // its own, or to use it to look up a game in its database.
@@ -357,7 +302,7 @@ MDFNGI *MDFNI_LoadCD(const char *force_module, const char *devicename)
 
 	MDFNGameInfo = NULL;
 
-        for(std::list<MDFNGI *>::iterator it = MDFNSystemsPrio.begin(); it != MDFNSystemsPrio.end(); it++)  //_unsigned int x = 0; x < MDFNSystems.size(); x++)
+        for(std::list<MDFNGI *>::iterator it = MDFNSystemsPrio.begin(); it != MDFNSystemsPrio.end(); it++)
         {
          char tmpstr[256];
          trio_snprintf(tmpstr, 256, "%s.enable", (*it)->shortname);
@@ -428,12 +373,6 @@ MDFNGI *MDFNI_LoadCD(const char *force_module, const char *devicename)
  MDFNSS_CheckStates();
 
  MDFN_ResetMessages();   // Save state, status messages, etc.
-
- if(MDFNGameInfo->GameType != GMT_PLAYER)
- {
-  MDFN_LoadGameCheats(NULL);
-  MDFNMP_InstallReadPatches();
- }
 
   last_sound_rate = -1;
   memset(&last_pixel_format, 0, sizeof(MDFN_PixelFormat));
@@ -534,7 +473,7 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
 
 	MDFNGameInfo = NULL;
 
-	for(std::list<MDFNGI *>::iterator it = MDFNSystemsPrio.begin(); it != MDFNSystemsPrio.end(); it++)  //_unsigned int x = 0; x < MDFNSystems.size(); x++)
+	for(std::list<MDFNGI *>::iterator it = MDFNSystemsPrio.begin(); it != MDFNSystemsPrio.end(); it++)
 	{
 	 char tmpstr[256];
 	 trio_snprintf(tmpstr, 256, "%s.enable", (*it)->shortname);
@@ -607,12 +546,6 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
          return(0);
         }
 
-        if(MDFNGameInfo->GameType != GMT_PLAYER)
-	{
-	 MDFN_LoadGameCheats(NULL);
-	 MDFNMP_InstallReadPatches();
-	}
-
 	MDFNI_SetLayerEnableMask(~0ULL);
 
 	MDFNSS_CheckStates();
@@ -641,27 +574,6 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
         memset(&last_pixel_format, 0, sizeof(MDFN_PixelFormat));
 
         return(MDFNGameInfo);
-}
-
-static void BuildDynamicSetting(MDFNSetting *setting, const char *system_name, const char *name, uint32 flags, const char *description, MDFNSettingType type,
-        const char *default_value, const char *minimum = NULL, const char *maximum = NULL,
-        bool (*validate_func)(const char *name, const char *value) = NULL, void (*ChangeNotification)(const char *name) = NULL)
-{
- char setting_name[256];
-
- memset(setting, 0, sizeof(MDFNSetting));
-
- trio_snprintf(setting_name, 256, "%s.%s", system_name, name);
-
- setting->name = strdup(setting_name);
- setting->description = description;
- setting->type = type;
- setting->flags = flags;
- setting->default_value = default_value;
- setting->minimum = minimum;
- setting->maximum = maximum;
- setting->validate_func = validate_func;
- setting->ChangeNotification = ChangeNotification;
 }
 
 bool MDFNI_InitializeModules(const std::vector<MDFNGI *> &ExternalSystems)
@@ -1038,68 +950,11 @@ void MDFN_QSimpleCommand(int cmd)
    MDFN_DoSimpleCommand(cmd);
 }
 
-void MDFNI_Power(void)
-{
- assert(MDFNGameInfo);
-
- MDFN_QSimpleCommand(MDFN_MSC_POWER);
-}
-
 void MDFNI_Reset(void)
 {
  assert(MDFNGameInfo);
 
  MDFN_QSimpleCommand(MDFN_MSC_RESET);
-}
-
-// Arcade-support functions
-void MDFNI_ToggleDIPView(void)
-{
-
-}
-
-void MDFNI_ToggleDIP(int which)
-{
- assert(MDFNGameInfo);
- assert(which >= 0);
-
- MDFN_QSimpleCommand(MDFN_MSC_TOGGLE_DIP0 + which);
-}
-
-void MDFNI_InsertCoin(void)
-{
- assert(MDFNGameInfo);
- 
- MDFN_QSimpleCommand(MDFN_MSC_INSERT_COIN);
-}
-
-// Disk/Disc-based system support functions
-void MDFNI_DiskInsert(int which)
-{
- assert(MDFNGameInfo);
-
- MDFN_QSimpleCommand(MDFN_MSC_INSERT_DISK0 + which);
-}
-
-void MDFNI_DiskSelect()
-{
- assert(MDFNGameInfo);
-
- MDFN_QSimpleCommand(MDFN_MSC_SELECT_DISK);
-}
-
-void MDFNI_DiskInsert()
-{
- assert(MDFNGameInfo);
-
- MDFN_QSimpleCommand(MDFN_MSC_INSERT_DISK);
-}
-
-void MDFNI_DiskEject()
-{
- assert(MDFNGameInfo);
-
- MDFN_QSimpleCommand(MDFN_MSC_EJECT_DISK);
 }
 
 void MDFNI_SetLayerEnableMask(uint64 mask)

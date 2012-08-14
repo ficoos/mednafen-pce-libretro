@@ -55,10 +55,6 @@ int MDFND_UnlockMutex(MDFN_Mutex *mutex);
 /* End threading support. */
 
 void MDFNI_Reset(void);
-void MDFNI_Power(void);
-
-/* Called from the physical CD disc reading code. */
-bool MDFND_ExitBlockingLoop(void);
 
 /* path = path of game/file to load.  returns NULL on failure. */
 MDFNGI *MDFNI_LoadGame(const char *force_module, const char *path);
@@ -76,9 +72,6 @@ int MDFNI_Initialize(const char *basedir);
    below this directory. */
 void MDFNI_SetBaseDirectory(const char *dir);
 
-/* Call only when a game is loaded. */
-int MDFNI_NetplayStart(uint32 local_players, const std::string &nickname, const std::string &game_key, const std::string &connect_password);
-
 /* Emulates a frame. */
 void MDFNI_Emulate(EmulateSpecStruct *espec);
 
@@ -91,29 +84,9 @@ void MDFNI_Kill(void);
 void MDFN_DispMessage(const char *format, ...) throw() MDFN_FORMATSTR(printf, 1, 2);
 #define MDFNI_DispMessage MDFN_DispMessage
 
-uint32 MDFNI_CRC32(uint32 crc, uint8 *buf, uint32 len);
-
-// NES hackish function.  Should abstract in the future.
-int MDFNI_DatachSet(const uint8 *rcode);
-
-void MDFNI_DoRewind(void);
-
 void MDFNI_SetLayerEnableMask(uint64 mask);
 
 void MDFNI_SetInput(int port, const char *type, void *ptr, uint32 dsize);
-
-// Arcade-support functions
-// We really need to reexamine how we should abstract this, considering the initial state of the DIP switches,
-// and moving the DIP switch drawing code to the driver side.
-void MDFNI_ToggleDIP(int which);
-void MDFNI_InsertCoin(void);
-void MDFNI_ToggleDIPView(void);
-
-// Disk/Disc-based system support functions
-void MDFNI_DiskSelect(int which);
-void MDFNI_DiskSelect();
-void MDFNI_DiskInsert();
-void MDFNI_DiskEject();
 
 void MDFNI_DumpModulesDef(const char *fn);
 
