@@ -35,11 +35,6 @@ class LEPacker : public std::vector<uint8>
   randomize_read_mode = new_randomize_read_mode;
  }
 
- inline void reset_read_pos(void)
- {
-  read_pos = 0;
- }
-
  void operator^(LEPackable &o)
  {
   o.pack(*this);

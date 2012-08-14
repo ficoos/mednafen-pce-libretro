@@ -112,7 +112,6 @@ void MDFNI_CloseGame(void)
 {
  if(MDFNGameInfo)
  {
-  if(MDFNGameInfo->GameType != GMT_PLAYER)
    MDFN_FlushGameCheats(0);
 
   MDFNGameInfo->CloseGame();
@@ -129,10 +128,6 @@ void MDFNI_CloseGame(void)
    delete CDInterfaces[i];
   CDInterfaces.clear();
  }
-
- #ifdef WANT_DEBUGGER
- MDFNDBG_Kill();
- #endif
 }
 
 #ifdef WANT_NES_EMU
@@ -430,10 +425,6 @@ MDFNGI *MDFNI_LoadCD(const char *force_module, const char *devicename)
 
  MDFNI_SetLayerEnableMask(~0ULL);
 
- #ifdef WANT_DEBUGGER
- MDFNDBG_PostGameLoad(); 
- #endif
-
  MDFNSS_CheckStates();
 
  MDFN_ResetMessages();   // Save state, status messages, etc.
@@ -624,10 +615,6 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
 
 	MDFNI_SetLayerEnableMask(~0ULL);
 
-	#ifdef WANT_DEBUGGER
-	MDFNDBG_PostGameLoad();
-	#endif
-
 	MDFNSS_CheckStates();
 
 	MDFN_ResetMessages();	// Save state, status messages, etc.
@@ -780,10 +767,6 @@ int MDFNI_Initialize(const char *basedir)
 	}
 
 	MDFNI_SetBaseDirectory(basedir);
-
-	#ifdef WANT_DEBUGGER
-	MDFNDBG_Init();
-	#endif
 
         return(1);
 }
@@ -1040,21 +1023,6 @@ void MDFN_PrintError(const char *format, ...) throw()
 
  temp = trio_vaprintf(format, ap);
  MDFND_PrintError(temp);
- free(temp);
-
- va_end(ap);
-}
-
-void MDFN_DebugPrintReal(const char *file, const int line, const char *format, ...)
-{
- char *temp;
-
- va_list ap;
-
- va_start(ap, format);
-
- temp = trio_vaprintf(format, ap);
- printf("%s:%d  %s\n", file, line, temp);
  free(temp);
 
  va_end(ap);

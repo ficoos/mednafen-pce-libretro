@@ -179,77 +179,6 @@ std::string MDFN_EvalFIP(const std::string &dir_path, const std::string &rel_pat
  }
 }
 
-
-typedef std::map<char, std::string> FSMap;
-
-static std::string EvalPathFS(const std::string &fstring, /*const (won't work because entry created if char doesn't exist) */ FSMap &fmap)
-{
- std::string ret = "";
- const char *str = fstring.c_str();
- bool in_spec = false;
-
- while(*str)
- {
-  int c = *str;
-
-  if(!in_spec && c == '%')
-   in_spec = true;
-  else if(in_spec == true)
-  {
-   if(c == '%')
-    ret = ret + std::string("%");
-   else
-    ret = ret + fmap[(char)c];
-   in_spec = false;
-  }
-  else
-  {
-   char ct[2];
-   ct[0] = c;
-   ct[1] = 0;
-   ret += std::string(ct);
-  }
-
-  str++;
- }
-
- return(ret);
-}
-
-#if 0
-static void CreateMissingDirs(const char *path)
-{
- const char *s = path;
- bool first_psep = true;
- char last_char = 0;
- const char char_test1 = '/', char_test2 = '/';
-
-
- while(*s)
- {
-  if(*s == char_test1 || *s == char_test2)
-  {
-   if(last_char != *s)	//char_test1 && last_char != char_test2)
-   {
-    if(!first_psep)
-    {
-     char tmpbuf[(s - path) + 1];
-     tmpbuf[s - path] = 0;
-     strncpy(tmpbuf, path, s - path);
-
-     puts(tmpbuf);
-     //MDFN_mkdir(tmpbuf, S_IRWXU);
-    }
-   }
-
-   first_psep = false;
-  }
-  last_char = *s;
-  s++;
- }
-}
-#endif
-
 extern char g_rom_dir[1024];
 extern char g_basename[1024];
 
@@ -264,8 +193,6 @@ std::string MDFN_MakeFName(MakeFName_Type type, int id1, const char *cd1)
 #else
  const char *slash= "/";
 #endif
-
- //printf("%s\n", EvalPathFS(std::string("%f.%m.sav"), fmap).c_str());
 
  switch(type)
  {
@@ -393,18 +320,6 @@ void GetFileBase(const char *f)
       FileBase = string(tp1);
       FileExt = "";
      }
-}
-
-char *MDFN_RemoveControlChars(char *str)
-{
- char *orig = str;
- if(str)
-  while(*str)
-  {
-   if(*str < 0x20) *str = 0x20;
-   str++;
-  }
- return(orig);
 }
 
 // Remove whitespace from beginning of string

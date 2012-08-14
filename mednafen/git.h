@@ -65,8 +65,6 @@ typedef enum
  IDIT_BUTTON_ANALOG, // 32-bits, 0 - 32767
 } InputDeviceInputType;
 
-#include "git-virtb.h"
-
 typedef struct
 {
 	const char *SettingName;	// No spaces, shouldbe all a-z0-9 and _. Definitely no ~!
