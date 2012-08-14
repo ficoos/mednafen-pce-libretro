@@ -167,8 +167,6 @@ MEDNAFEN_SOURCES := $(MEDNAFEN_DIR)/settings.cpp \
 	$(MEDNAFEN_DIR)/state.cpp \
 	$(MEDNAFEN_DIR)/file.cpp \
 	$(MEDNAFEN_DIR)/okiadpcm.cpp \
-	$(MEDNAFEN_DIR)/Stream.cpp \
-	$(MEDNAFEN_DIR)/MemoryStream.cpp \
 	$(MEDNAFEN_DIR)/tests.cpp \
 	$(MEDNAFEN_DIR)/md5.cpp
 
