@@ -110,50 +110,45 @@ if(!strcmp("cheats", name))
 
 std::string MDFN_GetSettingS(const char *name)
 {
-#ifdef _WIN32
-const char *slash = "\\";
-#else
-const char *slash = "/";
-#endif
 	if(!strcmp(PCE_MODULE".cdbios", name))
         {
-                //fprintf(stderr, "%s.cdbios: %s\n", PCE_MODULE, std::string("syscard3.pce").c_str());
+                fprintf(stderr, "%s.cdbios: %s\n", PCE_MODULE, std::string("syscard3.pce").c_str());
 		return std::string("syscard3.pce");
         }
 	if(!strcmp("filesys.path_firmware", name))
         {
-                //fprintf(stderr, "filesys.path_firmware: %s\n", std::string(g_rom_dir).c_str());
+                fprintf(stderr, "filesys.path_firmware: %s\n", std::string(g_rom_dir).c_str());
 		return std::string(g_rom_dir);
         }
 	if(!strcmp("filesys.path_palette", name))
         {
-                //fprintf(stderr, "filesys.path_palette: %s\n", std::string(g_rom_dir).c_str());
+                fprintf(stderr, "filesys.path_palette: %s\n", std::string(g_rom_dir).c_str());
 		return std::string(g_rom_dir);
         }
 	if(!strcmp("filesys.path_sav", name))
         {
-                //fprintf(stderr, "filesys.path_sav: %s\n", std::string(g_rom_dir).c_str());
+                fprintf(stderr, "filesys.path_sav: %s\n", std::string(g_rom_dir).c_str());
 		return std::string(g_rom_dir);
         }
 	if(!strcmp("filesys.path_state", name))
         {
-                //fprintf(stderr, "filesys.path_state: %s\n", std::string(g_rom_dir).c_str());
+                fprintf(stderr, "filesys.path_state: %s\n", std::string(g_rom_dir).c_str());
 		return std::string(g_rom_dir);
         }
 	if(!strcmp("filesys.path_cheat", name))
         {
-                //fprintf(stderr, "filesys.path_cheat: %s\n", std::string(g_rom_dir).c_str());
+                fprintf(stderr, "filesys.path_cheat: %s\n", std::string(g_rom_dir).c_str());
 		return std::string(g_rom_dir);
         }
 	if(!strcmp("filesys.fname_state", name))
         {
-                //fprintf(stderr, "filesys.fname_state: %s%s%s%s\n", std::string(g_rom_dir).c_str(), slash, std::string(g_basename).c_str(), std::string(".sav").c_str());
-		return std::string(g_rom_dir) + std::string(slash) + std::string(g_basename) + std::string(".sav");
+                fprintf(stderr, "filesys.fname_state: %s%s\n", std::string(g_basename).c_str(), std::string(".sav").c_str());
+		return std::string(g_basename) + std::string(".sav");
         }
 	if(!strcmp("filesys.fname_sav", name))
         {
-                //fprintf(stderr, "filesys.fname_sav: %s%s%s%s\n", std::string(g_rom_dir).c_str(), slash, std::string(g_basename).c_str(), std::string(".bsv").c_str());
-		return std::string(g_rom_dir) + std::string(slash) + std::string(g_basename) + std::string(".bsv");
+                fprintf(stderr, "filesys.fname_sav: %s%s\n", std::string(g_basename).c_str(), std::string(".bsv").c_str());
+		return std::string(g_basename) + std::string(".bsv");
         }
 	fprintf(stderr, "unhandled setting S: %s\n", name);
 	assert(0);
