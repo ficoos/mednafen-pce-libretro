@@ -24,7 +24,9 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 
-#ifndef _WIN32
+#ifdef _WIN32
+#include "libretro/msvc_compat.h"
+#else
 #include <unistd.h>
 #endif
 
@@ -120,7 +122,7 @@ FileWrapper::FileWrapper(const char *path, const int mode, const char *purpose) 
 
   #if defined(S_IRGRP) && defined(S_IROTH) 
   int tmpfd = open(path, open_flags, S_IRUSR | S_IWUSR | S_IRGRP | S_IROTH);
-  #else
+#else
   int tmpfd = open(path, open_flags, S_IRUSR | S_IWUSR);
   #endif
   if(tmpfd == -1)

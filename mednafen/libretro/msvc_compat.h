@@ -39,6 +39,9 @@ typedef int ssize_t;
 #define strcasecmp _stricmp
 #define lseek _lseek
 
+# define S_IRUSR  S_IREAD                      /* read, user */
+# define S_IWUSR  S_IWRITE                     /* write, user */
+
 // Disable some of the annoying warnings.
 #pragma warning(disable : 4800)
 #pragma warning(disable : 4244)
