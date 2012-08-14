@@ -42,7 +42,7 @@
 #include "huffman.h"
 #include "mpc_bits_reader.h"
 
-#include "crc32.c"
+#include "crc32.h"
 
 static const char na[] = "n.a.";
 static char const * const versionNames[] = {

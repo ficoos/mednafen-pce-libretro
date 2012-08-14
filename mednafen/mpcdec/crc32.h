@@ -50,7 +50,7 @@ static unsigned long update_crc(unsigned long crc, unsigned char *buf, int len)
 }
 
 /* Return the CRC of the bytes buf[0..len-1]. */
-unsigned long mpc_crc32(unsigned char *buf, int len)
+static unsigned long mpc_crc32(unsigned char *buf, int len)
 {
 	return update_crc(0xffffffffL, buf, len) ^ 0xffffffffL;
 }

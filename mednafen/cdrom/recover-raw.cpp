@@ -21,6 +21,8 @@
 
 #include "dvdisaster.h"
 
+#include "crc32.cpp"
+
 static GaloisTables *gt = NULL;		/* for L-EC Reed-Solomon */
 static ReedSolomonTables *rt = NULL;
 

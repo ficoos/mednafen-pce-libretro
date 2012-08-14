@@ -119,7 +119,7 @@ unsigned long  edctable[256] =
  * CDROM EDC calculation
  */
 
-uint32 EDCCrc32(const unsigned char *data, int len)
+static uint32 EDCCrc32(const unsigned char *data, int len)
 {  
  uint32 crc = 0;
 
