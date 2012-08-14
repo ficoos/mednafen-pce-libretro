@@ -21,7 +21,9 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#ifndef _WIN32
+#ifdef _WIN32
+#include "../libretro/msvc_compat.h"
+#else
 #include <unistd.h>
 #endif
 

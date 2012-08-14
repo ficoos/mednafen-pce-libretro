@@ -209,9 +209,6 @@
     <ClCompile Include="..\..\mednafen\sound\Blip_Buffer.cpp">
       <Filter>Source Files\mednafen\sound</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\mednafen\string\world_strtod.c">
-      <Filter>Source Files\mednafen\string</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\mednafen\string\ConvertUTF.cpp">
       <Filter>Source Files\mednafen\string</Filter>
     </ClCompile>

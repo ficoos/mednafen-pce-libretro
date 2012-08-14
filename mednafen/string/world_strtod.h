@@ -5,8 +5,6 @@
 extern "C" {
 #endif
 
-double world_strtod (const char *nptr, char **endptr);
-
 #ifdef __cplusplus
 }
 #endif

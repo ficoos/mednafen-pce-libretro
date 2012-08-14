@@ -34,8 +34,8 @@
 /*************************************************************************
  * Include files
  */
-#include <trio/triodef.h>
-#include <trio/trionan.h>
+#include "../include/trio/triodef.h"
+#include "../include/trio/trionan.h"
 
 #include <math.h>
 #include <string.h>

@@ -20,6 +20,7 @@
 
 #undef UNICODE // Do not bother with UNICODE at this time.
 #include <stddef.h>
+#include <io.h>
 #include <math.h>
 
 // Python headers defines ssize_t and sets HAVE_SSIZE_T. Cannot duplicate these efforts.
@@ -36,6 +37,7 @@ typedef int ssize_t;
 #define strtoull _strtoui64
 #undef strcasecmp
 #define strcasecmp _stricmp
+#define lseek _lseek
 
 // Disable some of the annoying warnings.
 #pragma warning(disable : 4800)

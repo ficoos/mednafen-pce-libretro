@@ -33,7 +33,7 @@
 #endif
 
 #define C68K_FASTCALL
-#include <inttypes.h>
+#include <stdint.h>
 
 typedef int64_t s64;
 typedef uint64_t u64;
@@ -216,7 +216,7 @@ void    C68k_Set_MSP(c68k_struc *cpu, u32 val);
 
 #include <string.h>
 
-static inline void C68k_Copy_State(const c68k_struc *source, c68k_struc *dest)
+static INLINE void C68k_Copy_State(const c68k_struc *source, c68k_struc *dest)
 {
  memcpy(&dest->D[0], &source->D[0], (&(source->dirty1)) - (&(source->D[0])));
 }

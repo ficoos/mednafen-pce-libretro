@@ -25,8 +25,10 @@
 #include <stdio.h>
 #include "mpc_types.h"
 
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(_XBOX)
 # include <windows.h>
+#elif defined(_XBOX)
+#include <xtl.h>
 #endif
 
 #ifdef _MSC_VER
@@ -682,7 +684,7 @@ addtag ( const char*           key,             // the item key
     unsigned char*  q;
     char   ch;
     size_t          i;
-#ifdef _WIN32
+#if defined(_WIN32) && !defined(_XBOX)
     const unsigned short*  CP_ptr;
     unsigned int           Codepage;
 
@@ -771,7 +773,7 @@ addtag ( const char*           key,             // the item key
         case 1:                         // 1: translate from console charset to UTF-8 (currently ISO-8859-1 for non-Windows and non-DOS OS)
 #if defined __TURBOC__
             q = utf8char ( q, CP_850 [ch] );
-#elif defined _WIN32
+#elif defined(_WIN32) && !defined(_XBOX)
             // fprintf ( stderr, "%c  %02X  U+%04X\n", ch, ch, CP_ptr [ch] );
             q = utf8char ( q, CP_ptr [ch] );
 #elif defined USE_WIDECHAR
