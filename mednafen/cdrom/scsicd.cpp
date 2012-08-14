@@ -18,7 +18,7 @@
 #include "../mednafen.h"
 #include "../clamp.h"
 #include <math.h>
-#include <trio/trio.h>
+#include "../include/trio/trio.h"
 #include "scsicd.h"
 #include "cdromif.h"
 #include "SimpleFIFO.h"

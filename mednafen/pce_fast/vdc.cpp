@@ -30,7 +30,7 @@ The spectrum peaked at 15734 Hz.  21477272.727272... / 3 / 15734 = 455.00(CPU cy
 #include "vdc.h"
 #include "huc.h"
 #include "../cdrom/pcecd.h"
-#include <trio/trio.h>
+#include "../include/trio/trio.h"
 #include <math.h>
 
 namespace PCE_Fast
@@ -554,7 +554,6 @@ static const uint64 cblock_exlut[16] =  {
                                         CB_EXL(8ULL), CB_EXL(9ULL), CB_EXL(10ULL), CB_EXL(11ULL), CB_EXL(12ULL), CB_EXL(13ULL), CB_EXL(14ULL), CB_EXL(15ULL)
                                    };
 
-static void DrawBG(const vdc_t *vdc, const uint32 count, uint8 *target) NO_INLINE;
 static void DrawBG(const vdc_t *vdc, const uint32 count, uint8 *target)
 {
  int bat_width = bat_width_tab[(vdc->MWR >> 4) & 3];
@@ -696,7 +695,6 @@ typedef struct
 static const unsigned int spr_hpmask = 0x8000;	// High priority bit mask
 
 // DrawSprites will write up to 0x20 units before the start of the pointer it's passed.
-static void DrawSprites(vdc_t *vdc, const int32 end, uint16 *spr_linebuf) NO_INLINE;
 static void DrawSprites(vdc_t *vdc, const int32 end, uint16 *spr_linebuf)
 {
  int active_sprites = 0;

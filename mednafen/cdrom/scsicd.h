@@ -1,7 +1,7 @@
 #ifndef __PCFX_SCSICD_H
 #define __PCFX_SCSICD_H
 
-#include <blip/Blip_Buffer.h>
+#include "../include/blip/Blip_Buffer.h"
 
 typedef int32 scsicd_timestamp_t;
 

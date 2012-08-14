@@ -121,8 +121,6 @@ class MDFN_Surface //typedef struct
 
  INLINE void DecodeColor(uint32 value, int &r, int &g, int &b) const
  {
-  int dummy_a;
-
   r = ((value & 0x1f) << 10) & 0x7fff;
   g = (((value & 0x3e0) << 5) <<5) & 0x7fff;
   b = (((value & 0x7c00) >> 10)) & 0x7fff;

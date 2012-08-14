@@ -21,7 +21,7 @@
 #include "../../../video.h"
 #include "../../../lepacker.h"
 
-#include <trio/trio.h>
+#include "../../../include/trio/trio.h"
 #include <math.h>
 #include "vdc.h"
 

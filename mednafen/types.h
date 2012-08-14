@@ -13,7 +13,7 @@
 #endif
 
 #include <assert.h>
-#include <inttypes.h>
+#include <stdint.h>
 
 typedef int8_t int8;
 typedef int16_t int16;
@@ -69,8 +69,8 @@ struct mtuarray
 
 #elif defined(_MSC_VER)
 
-  #warning "Compiling with MSVC, untested"
-  #define INLINE inline __forceinline
+  //#warning "Compiling with MSVC, untested"
+  //#define INLINE inline __forceinline
   #define NO_INLINE __declspec(noinline)
 
   #define MDFN_FASTCALL __fastcall

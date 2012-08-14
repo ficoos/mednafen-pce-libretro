@@ -1,6 +1,6 @@
 // Game_Music_Emu 0.5.2. http://www.slack.net/~ant/
 
-#include "Fir_Resampler.h"
+#include "../include/Fir_Resampler.h"
 
 #include <string.h>
 #include <stdlib.h>
@@ -18,7 +18,7 @@ details. You should have received a copy of the GNU Lesser General Public
 License along with this module; if not, write to the Free Software Foundation,
 Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA */
 
-#include "blargg_source.h"
+#include "../include/blargg_source.h"
 
 #undef PI
 #define PI 3.1415926535897932384626433832795029

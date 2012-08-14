@@ -16,15 +16,15 @@
  */
 
 #include "pce.h"
-#include <zlib.h>
+#include "../zlib.h"
 #include "vdc.h"
-#include "pce_psg/pce_psg.h"
+#include "../hw_sound/pce_psg/pce_psg.h"
 #include "input.h"
 #include "huc.h"
 #include "../cdrom/pcecd.h"
 #include "../cdrom/scsicd.h"
 #include "tsushin.h"
-#include "arcade_card/arcade_card.h"
+#include "../hw_misc/arcade_card/arcade_card.h"
 #include "../mempatcher.h"
 #include "../cdrom/cdromif.h"
 
