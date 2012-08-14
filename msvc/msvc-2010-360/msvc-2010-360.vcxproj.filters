@@ -51,9 +51,6 @@
     <Filter Include="Source Files\mednafen\hw_cpu\huc6280">
       <UniqueIdentifier>{3659d8e0-b177-4d5b-910e-67808c4cfebe}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\mednafen\hw_cpu\c68k">
-      <UniqueIdentifier>{4b2c1646-923f-4ed1-a7e9-0ebd43f05907}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\mednafen\resampler">
       <UniqueIdentifier>{1b32ac54-d1d3-4f2d-9793-76978ec626eb}</UniqueIdentifier>
     </Filter>
@@ -118,12 +115,6 @@
     </ClCompile>
     <ClCompile Include="..\..\mednafen\hw_misc\arcade_card\arcade_card.cpp">
       <Filter>Source Files\mednafen\hw_misc</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\mednafen\hw_cpu\c68k\c68kexec.c">
-      <Filter>Source Files\mednafen\hw_cpu\c68k</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\mednafen\hw_cpu\c68k\c68k.c">
-      <Filter>Source Files\mednafen\hw_cpu\c68k</Filter>
     </ClCompile>
     <ClCompile Include="..\..\mednafen\hw_cpu\huc6280\huc6280.cpp">
       <Filter>Source Files\mednafen\hw_cpu\huc6280</Filter>
