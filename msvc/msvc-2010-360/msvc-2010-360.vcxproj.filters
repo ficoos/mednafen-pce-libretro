@@ -24,9 +24,6 @@
     <Filter Include="Source Files\mednafen\sound">
       <UniqueIdentifier>{e853b062-ece6-4eb7-98a0-794ed8f61f40}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\mednafen\string">
-      <UniqueIdentifier>{6c753c50-925b-4125-ad6c-14bc9db73c81}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\mednafen\tremor">
       <UniqueIdentifier>{9777d1f6-48fa-45da-b9b9-5fe47a3d8795}</UniqueIdentifier>
     </Filter>
@@ -140,9 +137,6 @@
     <ClCompile Include="..\..\mednafen\mpcdec\tags.c">
       <Filter>Source Files\mednafen\mpcdec</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\mednafen\mpcdec\crc32.c">
-      <Filter>Source Files\mednafen\mpcdec</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\mednafen\mpcdec\fastmath.c">
       <Filter>Source Files\mednafen\mpcdec</Filter>
     </ClCompile>
@@ -209,12 +203,6 @@
     <ClCompile Include="..\..\mednafen\sound\Blip_Buffer.cpp">
       <Filter>Source Files\mednafen\sound</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\mednafen\string\ConvertUTF.cpp">
-      <Filter>Source Files\mednafen\string</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\mednafen\string\escape.cpp">
-      <Filter>Source Files\mednafen\string</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\mednafen\tremor\window.c">
       <Filter>Source Files\mednafen\tremor</Filter>
     </ClCompile>
@@ -275,9 +263,6 @@
     <ClCompile Include="..\..\mednafen\trio\trionan.c">
       <Filter>Source Files\mednafen\trio</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\mednafen\string\world_strtod.c">
-      <Filter>Source Files\mednafen\string</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\mednafen\tests.cpp">
       <Filter>Source Files\mednafen</Filter>
     </ClCompile>
@@ -335,5 +320,8 @@
     <ClCompile Include="..\..\mednafen\Stream.cpp">
       <Filter>Source Files\mednafen</Filter>
     </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
 </Project>

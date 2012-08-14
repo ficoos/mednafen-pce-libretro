@@ -83,14 +83,6 @@
     <ClCompile Include="..\..\mednafen\memory.cpp" />
     <ClCompile Include="..\..\mednafen\MemoryStream.cpp" />
     <ClCompile Include="..\..\mednafen\mempatcher.cpp" />
-    <ClCompile Include="..\..\mednafen\mpcdec\crc32.c">
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='CodeAnalysis|Xbox 360'">CompileAsC</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Xbox 360'">CompileAsC</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Profile|Xbox 360'">CompileAsC</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Profile_FastCap|Xbox 360'">CompileAsC</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Xbox 360'">CompileAsC</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release_LTCG|Xbox 360'">CompileAsC</CompileAs>
-    </ClCompile>
     <ClCompile Include="..\..\mednafen\mpcdec\fastmath.c">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='CodeAnalysis|Xbox 360'">CompileAsC</CompileAs>
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Xbox 360'">CompileAsC</CompileAs>
@@ -180,7 +172,14 @@
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release_LTCG|Xbox 360'">CompileAsC</CompileAs>
     </ClCompile>
     <ClCompile Include="..\..\mednafen\okiadpcm.cpp" />
-    <ClCompile Include="..\..\mednafen\okiadpcm_generate.cpp" />
+    <ClCompile Include="..\..\mednafen\okiadpcm_generate.cpp">
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='CodeAnalysis|Xbox 360'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Debug|Xbox 360'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile|Xbox 360'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Profile_FastCap|Xbox 360'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release|Xbox 360'">true</ExcludedFromBuild>
+      <ExcludedFromBuild Condition="'$(Configuration)|$(Platform)'=='Release_LTCG|Xbox 360'">true</ExcludedFromBuild>
+    </ClCompile>
     <ClCompile Include="..\..\mednafen\pce_fast\huc.cpp" />
     <ClCompile Include="..\..\mednafen\pce_fast\huc6280.cpp" />
     <ClCompile Include="..\..\mednafen\pce_fast\input.cpp" />
@@ -203,16 +202,6 @@
     <ClCompile Include="..\..\mednafen\sound\Fir_Resampler.cpp" />
     <ClCompile Include="..\..\mednafen\state.cpp" />
     <ClCompile Include="..\..\mednafen\Stream.cpp" />
-    <ClCompile Include="..\..\mednafen\string\ConvertUTF.cpp" />
-    <ClCompile Include="..\..\mednafen\string\escape.cpp" />
-    <ClCompile Include="..\..\mednafen\string\world_strtod.c">
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='CodeAnalysis|Xbox 360'">CompileAsC</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Debug|Xbox 360'">CompileAsC</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Profile|Xbox 360'">CompileAsC</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Profile_FastCap|Xbox 360'">CompileAsC</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release|Xbox 360'">CompileAsC</CompileAs>
-      <CompileAs Condition="'$(Configuration)|$(Platform)'=='Release_LTCG|Xbox 360'">CompileAsC</CompileAs>
-    </ClCompile>
     <ClCompile Include="..\..\mednafen\tests.cpp" />
     <ClCompile Include="..\..\mednafen\tremor\bitwise.c">
       <CompileAs Condition="'$(Configuration)|$(Platform)'=='CodeAnalysis|Xbox 360'">CompileAsC</CompileAs>
@@ -360,6 +349,9 @@
     </ClCompile>
     <ClCompile Include="..\..\mednafen\video\surface.cpp" />
     <ClCompile Include="..\..\mednafen\video\video.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="ClassDiagram1.cd" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{FF00CD40-4F7A-47EA-B1E1-DFFB1EF73807}</ProjectGuid>

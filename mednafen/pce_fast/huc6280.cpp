@@ -17,6 +17,7 @@
 
 #include "pce.h"
 #include "vdc.h"
+#include "huc6280.h"
 
 HuC6280 HuCPU;
 uint8 *HuCPUFastMap[0x100];
