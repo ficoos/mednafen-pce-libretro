@@ -23,10 +23,6 @@ class FileWrapper
 
  void write(const void *data, uint64 count);
 
- void printf(const char *format, ...) MDFN_FORMATSTR(printf, 2, 3);
-
- void put_char(int c);
-
  char *get_line(char *s, int size);	// Same semantics as fgets(), for now
 
  void seek(int64 offset, int whence);

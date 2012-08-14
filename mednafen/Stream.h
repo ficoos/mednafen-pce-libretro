@@ -16,7 +16,6 @@ class Stream
   ATTRIBUTE_WRITEABLE,
   ATTRIBUTE_SEEKABLE
  };
- virtual uint64 attributes(void) = 0;
 
  virtual uint8 *map(void) = 0;	// Map the entirety of the stream data into the address space of the process, if possible, and return a pointer.
 				// (the returned pointer must be cached, and returned on any subsequent calls to map() without an unmap()
@@ -163,8 +162,6 @@ class StreamFilter : public Stream
  virtual int64 tell(void) = 0;
  virtual int64 size(void) = 0;
  virtual void close(void) = 0;
-
- virtual Stream *steal(void);
 
  private:
  Stream *target_stream;

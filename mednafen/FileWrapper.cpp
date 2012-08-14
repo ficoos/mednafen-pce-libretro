@@ -183,36 +183,6 @@ void FileWrapper::write(const void *data, uint64 count)
  }
 }
 
-void FileWrapper::printf(const char *format, ...)
-{
- va_list ap;
-
- clearerr(fp);
-
- va_start(ap, format);
-
- trio_vfprintf(fp, format, ap);
-
- va_end(ap);
-
- if(ferror(fp))
- {
-  ErrnoHolder ene(errno);
-
-  throw(MDFN_Error(ene.Errno(), _("Error writing to opened file \"%s\": %s"), path_save.c_str(), ene.StrError()));
- }
-}
-
-void FileWrapper::put_char(int c)
-{
- if(fputc(c, fp) == EOF)
- {
-  ErrnoHolder ene(errno);
-
-  throw(MDFN_Error(ene.Errno(), _("Error writing to opened file \"%s\": %s"), path_save.c_str(), ene.StrError()));
- }
-}
-
 char *FileWrapper::get_line(char *buf_s, int buf_size)
 {
  char *ret;
@@ -251,17 +221,6 @@ int64 FileWrapper::size(void)
  }
 
  return(buf.st_size);
-
-/* TODO for systems without fstat()?
-  int64 orig_pos = tell();
-  int64 ret;
-
-  seek(0, SEEK_END);
-
-  ret = tell();
-
-  seek(orig_pos, SEEK_SET);
- */
 }
 
 int64 FileWrapper::tell(void)

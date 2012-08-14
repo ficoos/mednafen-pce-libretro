@@ -24,7 +24,6 @@
 
 Stream::Stream()
 {
-// line_read_skip = 256;
 }
 
 Stream::~Stream()
@@ -46,11 +45,4 @@ StreamFilter::~StreamFilter()
 {
  if(target_stream)
   delete target_stream;
-}
-
-Stream* StreamFilter::steal(void)
-{
- Stream *ret = target_stream;
- target_stream = NULL;
- return ret;
 }
