@@ -214,9 +214,7 @@ MDFNGI *MDFNI_LoadCD(const char *force_module, const char *devicename)
    ReadM3U(file_list, devicename);
 
    for(unsigned i = 0; i < file_list.size(); i++)
-   {
     CDInterfaces.push_back(new CDIF(file_list[i].c_str()));
-   }
 
    GetFileBase(devicename);
   }
@@ -224,9 +222,7 @@ MDFNGI *MDFNI_LoadCD(const char *force_module, const char *devicename)
   {
    CDInterfaces.push_back(new CDIF(devicename));
    if(CDInterfaces[0]->IsPhysical())
-   {
     GetFileBase("cdrom");
-   }
    else
     GetFileBase(devicename);
   }
@@ -376,9 +372,7 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
 	std::vector<FileExtensionSpecStruct> valid_iae;
 
 	if(strlen(name) > 4 && (!strcasecmp(name + strlen(name) - 4, ".cue") || !strcasecmp(name + strlen(name) - 4, ".toc") || !strcasecmp(name + strlen(name) - 4, ".m3u")))
-	{
 	 return(MDFNI_LoadCD(force_module, name));
-	}
 	
 	MDFNI_CloseGame();
 
@@ -711,6 +705,7 @@ static void ProcessAudio(EmulateSpecStruct *espec)
   }
 
   // TODO: Optimize this.
+  /*
   if(MDFNGameInfo->soundchan == 2 && MDFN_GetSettingB(std::string(std::string(MDFNGameInfo->shortname) + ".forcemono").c_str()))
   {
    for(int i = 0; i < SoundBufSize * MDFNGameInfo->soundchan; i += 2)
@@ -722,6 +717,7 @@ static void ProcessAudio(EmulateSpecStruct *espec)
     SoundBuf[i + 1] = mixed;
    }
   }
+  */
 
   espec->SoundBufSize = espec->SoundBufSizeALMS + SoundBufSize;
  } // end to:  if(espec->SoundBuf && espec->SoundBufSize)
