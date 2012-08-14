@@ -216,7 +216,11 @@ void    C68k_Set_MSP(c68k_struc *cpu, u32 val);
 
 #include <string.h>
 
-static INLINE void C68k_Copy_State(const c68k_struc *source, c68k_struc *dest)
+#ifdef _WIN32
+static _inline void C68k_Copy_State(const c68k_struc *source, c68k_struc *dest)
+#else
+static inline void C68k_Copy_State(const c68k_struc *source, c68k_struc *dest)
+#endif
 {
  memcpy(&dest->D[0], &source->D[0], (&(source->dirty1)) - (&(source->D[0])));
 }
