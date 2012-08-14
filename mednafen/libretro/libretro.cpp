@@ -34,7 +34,8 @@ static retro_input_poll_t input_poll_cb;
 static retro_input_state_t input_state_cb;
 
 static MDFN_Surface *surf;
-static char g_rom_dir[1024];
+char g_rom_dir[1024];
+char g_basename[1024];
 
 #ifdef _MSC_VER
 static unsigned short mednafen_buf[WIDTH * HEIGHT];
@@ -181,9 +182,9 @@ bool retro_load_game_special(unsigned, const struct retro_game_info *, size_t)
 bool retro_load_game(const struct retro_game_info *info)
 {
    extract_directory(g_rom_dir, info->path, sizeof(g_rom_dir));
+   extract_basename(g_basename, info->path, sizeof(g_basename));
 
-   std::vector<MDFNSetting> settings;
-   MDFNI_Initialize(g_rom_dir, settings);
+   MDFNI_Initialize(g_rom_dir);
 
 #ifdef WANT_PCE_FAST_EMU
    game = MDFNI_LoadGame("pce_fast", info->path);

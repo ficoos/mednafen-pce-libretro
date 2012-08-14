@@ -5,11 +5,6 @@
 
 #include "settings-common.h"
 
-bool MFDN_LoadSettings(const char *);
-bool MDFN_MergeSettings(const MDFNSetting *);
-bool MDFN_MergeSettings(const std::vector<MDFNSetting> &);
-bool MDFN_SaveSettings(void);
-
 // This should assert() or something if the setting isn't found, since it would
 // be a totally tubular error!
 uint64 MDFN_GetSettingUI(const char *name);

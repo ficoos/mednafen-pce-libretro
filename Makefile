@@ -182,7 +182,6 @@ TRIO_SRC := $(wildcard $(MEDNAFEN_DIR)/trio/*.c)
 SOURCES_C := $(MPC_SRC) \
 	$(TREMOR_SRC) \
 	$(TRIO_SRC) \
-	$(MEDNAFEN_DIR)/string/world_strtod.c \
         $(ZLIB_SRC)
 
 SOURCES_C += $(HW_CPU_SOURCES_C)

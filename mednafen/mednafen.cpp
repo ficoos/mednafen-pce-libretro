@@ -849,61 +849,14 @@ bool MDFNI_InitializeModules(const std::vector<MDFNGI *> &ExternalSystems)
 
 static bool first_init = true;
 
-int MDFNI_Initialize(const char *basedir, const std::vector<MDFNSetting> &DriverSettings)
+int MDFNI_Initialize(const char *basedir)
 {
-	// FIXME static
-	static std::vector<MDFNSetting> dynamic_settings;
-
 	if(!MDFN_RunMathTests())
 	{
 	 return(0);
 	}
 
 	MDFNI_SetBaseDirectory(basedir);
-
-	// Generate dynamic settings
-	for(unsigned int i = 0; i < MDFNSystems.size(); i++)
-	{
-	 MDFNSetting setting;
-	 const char *sysname;
-
-	 sysname = (const char *)MDFNSystems[i]->shortname;
-
-	 if(!MDFNSystems[i]->soundchan)
-	  printf("0 sound channels for %s????\n", sysname);
-
-	 if(MDFNSystems[i]->soundchan == 2)
-	 {
-	  BuildDynamicSetting(&setting, sysname, "forcemono", MDFNSF_COMMON_TEMPLATE | MDFNSF_CAT_SOUND, CSD_forcemono, MDFNST_BOOL, "0");
-	  dynamic_settings.push_back(setting);
-	 }
-
-	 BuildDynamicSetting(&setting, sysname, "enable", MDFNSF_COMMON_TEMPLATE, CSD_enable, MDFNST_BOOL, "1");
-	 dynamic_settings.push_back(setting);
-	}
-
-	// First merge all settable settings, then load the settings from the SETTINGS FILE OF DOOOOM
-	if(first_init)
-	{
-		MDFN_MergeSettings(MednafenSettings);
-		MDFN_MergeSettings(dynamic_settings);
-		MDFN_MergeSettings(MDFNMP_Settings);
-
-		if(DriverSettings.size())
-			MDFN_MergeSettings(DriverSettings);
-
-		for(unsigned int x = 0; x < MDFNSystems.size(); x++)
-		{
-			if(MDFNSystems[x]->Settings)
-				MDFN_MergeSettings(MDFNSystems[x]->Settings);
-		}
-
-		MDFN_MergeSettings(RenamedSettings);
-		first_init = false;
-	}
-
-        if(!MFDN_LoadSettings(basedir))
-	 return(0);
 
 	#ifdef WANT_DEBUGGER
 	MDFNDBG_Init();
@@ -914,7 +867,6 @@ int MDFNI_Initialize(const char *basedir, const std::vector<MDFNSetting> &Driver
 
 void MDFNI_Kill(void)
 {
- MDFN_SaveSettings();
 }
 
 static double multiplier_save, volume_save;
