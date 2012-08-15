@@ -265,14 +265,12 @@ int HuCLoadCD(const char *bios_path)
 
  MDFNFILE fp;
 
- if(!fp.Open(bios_path, KnownBIOSExtensions, _("CD BIOS")))
- {
+ if(!fp.Open(bios_path))
   return(0);
- }
 
  memset(ROMSpace, 0xFF, 262144);
 
- memcpy(ROMSpace, fp.Data() + (fp.Size() & 512), ((fp.Size() & ~512) > 262144) ? 262144 : (fp.Size() &~ 512) );
+ memcpy(ROMSpace, fp.f_data + (fp.f_size & 512), ((fp.f_size & ~512) > 262144) ? 262144 : (fp.f_size &~ 512) );
 
  fp.Close();
 
@@ -281,38 +279,6 @@ int HuCLoadCD(const char *bios_path)
 
  md5_context md5;
  md5.starts();
-// md5_update(&md5, HuCROM, 262144);
-
-#if 0
- int32 track = CDIF_GetFirstTrack();
- int32 last_track = CDIF_GetLastTrack();
- bool DTFound = 0;
- for(; track <= last_track; track++)
- {
-  CDIF_Track_Format format;
-
-  if(CDIF_GetTrackFormat(track, format) && format == CDIF_FORMAT_MODE1)
-  {
-   DTFound = 1;
-   break;
-  }
- }
- 
- if(DTFound) // Only add the MD5 hash if we were able to find a data track.
- {
-  uint32 start_sector = CDIF_GetTrackStartPositionLBA(track);
-  uint8 sector_buffer[2048];
-
-  for(int x = 0; x < 128; x++)
-  {
-   memset(sector_buffer, 0, 2048);
-   CDIF_ReadSector(sector_buffer, NULL, start_sector + x, 1);
-   md5.update(sector_buffer, 2048);
-  }
- }
- md5.finish(MDFNGameInfo->MD5);
- MDFN_printf(_("CD MD5(first 256KiB):   0x%s\n"), md5_context::asciistr(MDFNGameInfo->MD5, 0).c_str());
- #endif
 
  MDFN_printf(_("Arcade Card Emulation:  %s\n"), PCE_ACEnabled ? _("Enabled") : _("Disabled")); 
  for(int x = 0; x < 0x40; x++)
@@ -339,7 +305,6 @@ int HuCLoadCD(const char *bios_path)
    catch(std::exception &e)
    {
     MDFN_PrintError(_("Error creating %s object: %s"), "ArcadeCard", e.what());
-    //Cleanup();	// TODO
     return(0);
    }
 

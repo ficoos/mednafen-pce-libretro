@@ -12,65 +12,22 @@ class MDFNFILE
 
 	MDFNFILE();
 	// WIP constructors:
-	MDFNFILE(const char *path, const FileExtensionSpecStruct *known_ext, const char *purpose = NULL);
+	MDFNFILE(const char *path);
 
 	~MDFNFILE();
 
-	bool Open(const char *path, const FileExtensionSpecStruct *known_ext, const char *purpose = NULL, const bool suppress_notfound_pe = FALSE);
-	INLINE bool Open(const std::string &path, const FileExtensionSpecStruct *known_ext, const char *purpose = NULL, const bool suppress_notfound_pe = FALSE)
-	{
-	 return(Open(path.c_str(), known_ext, purpose, suppress_notfound_pe));
-	}
-
+	bool Open(const char *path, const bool suppress_notfound_pe = FALSE);
 	bool Close(void);
-
-	const int64 &size;
-	const uint8 * const &data;
-	const char * const &ext;
-
-	inline int64 Size(void)
-	{
-	 return(f_size);
-	}
-
-	inline const uint8 *Data(void)
-	{
-	 return(f_data);
-	}
-	
 	uint64 fread(void *ptr, size_t size, size_t nmemb);
 	int fseek(int64 offset, int whence);
-
-	inline uint64 ftell(void)
-	{
-	 return(location);
-	}
-
-	inline int fgetc(void)
-	{
-	 if(location < f_size)
-	  return f_data[location++];
-
-	 return EOF;
-	}
-
         uint8 *f_data;
         int64 f_size;
         char *f_ext;
-
 	private:
-
-
 	int error_code;
 	int local_errno;
-
         int64 location;
-
-	#ifdef HAVE_MMAP
-	bool is_mmap;
-	#endif
-
-	bool MakeMemWrapAndClose(void *tz, int type);
+	bool MakeMemWrapAndClose(FILE *tz);
 };
 
 class PtrLengthPair

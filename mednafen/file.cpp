@@ -28,19 +28,8 @@
 #include <errno.h>
 #include "include/trio/trio.h"
 
-#ifdef HAVE_MMAP
-#include <sys/mman.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <fcntl.h>
-#endif
-
 #include "file.h"
 #include "general.h"
-
-#ifndef __GNUC__
- #define strcasecmp strcmp
-#endif
 
 static const int64 MaxROMImageSize = (int64)1 << 26; // 2 ^ 26 = 64MiB
 
@@ -53,44 +42,28 @@ enum
 
 // This function should ALWAYS close the system file "descriptor"(gzip library, zip library, or FILE *) it's given,
 // even if it errors out.
-bool MDFNFILE::MakeMemWrapAndClose(void *tz, int type)
+bool MDFNFILE::MakeMemWrapAndClose(FILE *tz)
 {
  bool ret = FALSE;
 
- #ifdef HAVE_MMAP
- is_mmap = FALSE;
- #endif
  location = 0;
 
  {
-  ::fseek((FILE *)tz, 0, SEEK_END);
-  f_size = ::ftell((FILE *)tz);
-  ::fseek((FILE *)tz, 0, SEEK_SET);
+  ::fseek(tz, 0, SEEK_END);
+  f_size = ::ftell(tz);
+  ::fseek(tz, 0, SEEK_SET);
 
-  if(size > MaxROMImageSize)
+  if(f_size > MaxROMImageSize)
   {
    MDFN_PrintError(_("ROM image is too large; maximum size allowed is %llu bytes."), (unsigned long long)MaxROMImageSize);
    goto doret;
   }
 
-  #ifdef HAVE_MMAP
-  if((void *)-1 != (f_data = (uint8 *)mmap(NULL, size, PROT_READ, MAP_SHARED, fileno((FILE *)tz), 0)))
-  {
-   is_mmap = TRUE;
-   #ifdef HAVE_MADVISE
-   if(0 == madvise(f_data, size, MADV_SEQUENTIAL | MADV_WILLNEED))
-   {
-   }
-   #endif
-  }
-  else
-  {
-  #endif
-   if(!(f_data = (uint8*)MDFN_malloc(size, _("file read buffer"))))
+   if(!(f_data = (uint8*)MDFN_malloc(f_size, _("file read buffer"))))
    {
     goto doret;
    }
-   if((int64)::fread(f_data, 1, size, (FILE *)tz) != size)
+   if((int64)::fread(f_data, 1, f_size, tz) != f_size)
    {
     ErrnoHolder ene(errno);
     MDFN_PrintError(_("Error reading file: %s"), ene.StrError());
@@ -98,20 +71,17 @@ bool MDFNFILE::MakeMemWrapAndClose(void *tz, int type)
     free(f_data);
     goto doret;
    }
-  #ifdef HAVE_MMAP
-  }
-  #endif
  }
 
  ret = TRUE;
 
  doret:
-  fclose((FILE *)tz);
+  fclose(tz);
 
  return(ret);
 }
 
-MDFNFILE::MDFNFILE() : size(f_size), data((const uint8* const &)f_data), ext((const char * const &)f_ext)
+MDFNFILE::MDFNFILE()
 {
  f_data = NULL;
  f_size = 0;
@@ -119,14 +89,11 @@ MDFNFILE::MDFNFILE() : size(f_size), data((const uint8* const &)f_data), ext((co
 
  location = 0;
 
- #ifdef HAVE_MMAP
- is_mmap = 0;
- #endif
 }
 
-MDFNFILE::MDFNFILE(const char *path, const FileExtensionSpecStruct *known_ext, const char *purpose) : size(f_size), data((const uint8* const &)f_data), ext((const char * const &)f_ext)
+MDFNFILE::MDFNFILE(const char *path)
 {
- if(!Open(path, known_ext, purpose, false))
+ if(!Open(path, false))
  {
   throw(MDFN_Error(0, "TODO ERROR"));
  }
@@ -139,43 +106,37 @@ MDFNFILE::~MDFNFILE()
 }
 
 
-bool MDFNFILE::Open(const char *path, const FileExtensionSpecStruct *known_ext, const char *purpose, const bool suppress_notfound_pe)
+bool MDFNFILE::Open(const char *path, const bool suppress_notfound_pe)
 {
  local_errno = 0;
  error_code = MDFNFILE_EC_OTHER;	// Set to 0 at the end if the function succeeds.
 
+ FILE *fp;
+
+ if(!(fp = fopen(path, "rb")))
  {
-  FILE *fp;
+  ErrnoHolder ene(errno);
+  local_errno = ene.Errno();
 
-  if(!(fp = fopen(path, "rb")))
+  if(ene.Errno() == ENOENT)
   {
-   ErrnoHolder ene(errno);
    local_errno = ene.Errno();
+   error_code = MDFNFILE_EC_NOTFOUND;
+  }
 
-   if(ene.Errno() == ENOENT)
-   {
-    local_errno = ene.Errno();
-    error_code = MDFNFILE_EC_NOTFOUND;
-   }
+  if(ene.Errno() != ENOENT || !suppress_notfound_pe)
+   MDFN_PrintError(_("Error opening \"%s\": %s"), path, ene.StrError());
 
-   if(ene.Errno() != ENOENT || !suppress_notfound_pe)
-    MDFN_PrintError(_("Error opening \"%s\": %s"), path, ene.StrError());
+  return(0);
+ }
 
+ ::fseek(fp, 0, SEEK_SET);
+
+ if(!MakeMemWrapAndClose(fp))
    return(0);
-  }
 
-  {
-   ::fseek(fp, 0, SEEK_SET);
-
-   if(!MakeMemWrapAndClose(fp, MDFN_FILETYPE_PLAIN))
-    return(0);
-
-   const char *ld = strrchr(path, '.');
-   f_ext = strdup(ld ? ld + 1 : "");
-  }
- } // End normal and gzip file handling else to zip
-
- // FIXME:  Handle extension fixing for cases where loaded filename is like "moo.moo/lalala"
+ const char *ld = strrchr(path, '.');
+ f_ext = strdup(ld ? ld + 1 : "");
 
  error_code = 0;
 
@@ -192,13 +153,8 @@ bool MDFNFILE::Close(void)
 
  if(f_data)
  {
-  #if HAVE_MMAP
-  if(is_mmap) 
-   munmap(f_data, size);
-  else
-  #endif
    free(f_data);
-  f_data = NULL;
+   f_data = NULL;
  }
 
  return(1);

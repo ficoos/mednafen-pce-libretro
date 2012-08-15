@@ -372,7 +372,6 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
 {
         MDFNFILE GameFile;
 	struct stat stat_buf;
-	std::vector<FileExtensionSpecStruct> valid_iae;
 
 	if(strlen(name) > 4 && (!strcasecmp(name + strlen(name) - 4, ".cue") || !strcasecmp(name + strlen(name) - 4, ".toc") || !strcasecmp(name + strlen(name) - 4, ".m3u")))
 	 return(MDFNI_LoadCD(force_module, name));
@@ -392,25 +391,13 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
 	// Construct a NULL-delimited list of known file extensions for MDFN_fopen()
 	for(unsigned int i = 0; i < MDFNSystems.size(); i++)
 	{
-	 const FileExtensionSpecStruct *curexts = MDFNSystems[i]->FileExtensions;
-
 	 // If we're forcing a module, only look for extensions corresponding to that module
 	 if(force_module && strcmp(MDFNSystems[i]->shortname, force_module))
 	  continue;
 
-	 if(curexts)	
- 	  while(curexts->extension && curexts->description)
-	  {
-	   valid_iae.push_back(*curexts);
-           curexts++;
- 	  }
-	}
-	{
-	 FileExtensionSpecStruct tmpext = { NULL, NULL };
-	 valid_iae.push_back(tmpext);
 	}
 
-	if(!GameFile.Open(name, &valid_iae[0], _("game")))
+	if(!GameFile.Open(name))
         {
 	 MDFNGameInfo = NULL;
 	 return 0;
