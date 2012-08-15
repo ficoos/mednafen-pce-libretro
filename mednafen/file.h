@@ -28,15 +28,6 @@ class MDFNFILE
 	const uint8 * const &data;
 	const char * const &ext;
 
-	// Currently, only valid with Open()
-	inline int GetErrorCode(int *get_errno = NULL)
-	{
-	 if(get_errno)
-	  *get_errno = local_errno;
-
-	 return(error_code);
-	}
-
 	inline int64 Size(void)
 	{
 	 return(f_size);
@@ -55,14 +46,6 @@ class MDFNFILE
 	 return(location);
 	}
 
-	inline void rewind(void)
-	{
-	 location = 0;
-	}
-
-	int read32le(uint32 *Bufo);
-	int read16le(uint16 *Bufo);
-
 	inline int fgetc(void)
 	{
 	 if(location < f_size)
@@ -71,12 +54,6 @@ class MDFNFILE
 	 return EOF;
 	}
 
-	inline int fisarchive(void)
-	{
-	 return(0);
-	}
-
-	char *fgets(char *s, int size);
         uint8 *f_data;
         int64 f_size;
         char *f_ext;
@@ -134,6 +111,5 @@ class PtrLengthPair
 // (Note: There is a setting that will force compress to 0 in the internal DumpToFile logic, for hackers who don't want to ungzip save files.)
 
 bool MDFN_DumpToFile(const char *filename, int compress, const void *data, const uint64 length);
-bool MDFN_DumpToFile(const char *filename, int compress, const std::vector<PtrLengthPair> &pearpairs);
 
 #endif

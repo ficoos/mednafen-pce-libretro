@@ -76,12 +76,10 @@ bool MDFNFILE::MakeMemWrapAndClose(void *tz, int type)
   #ifdef HAVE_MMAP
   if((void *)-1 != (f_data = (uint8 *)mmap(NULL, size, PROT_READ, MAP_SHARED, fileno((FILE *)tz), 0)))
   {
-   //puts("mmap'ed");
    is_mmap = TRUE;
    #ifdef HAVE_MADVISE
    if(0 == madvise(f_data, size, MADV_SEQUENTIAL | MADV_WILLNEED))
    {
-    //puts("madvised");
    }
    #endif
   }
@@ -166,13 +164,6 @@ bool MDFNFILE::Open(const char *path, const FileExtensionSpecStruct *known_ext, 
    return(0);
   }
 
-  uint32 magic;
-
-  magic = ::fgetc(fp);
-  magic |= ::fgetc(fp) << 8;
-  magic |= ::fgetc(fp) << 16;
-
-  if(magic != 0x088b1f)   /* Not gzip... */
   {
    ::fseek(fp, 0, SEEK_SET);
 
@@ -258,58 +249,12 @@ int MDFNFILE::fseek(int64 offset, int whence)
   return 0;
 }
 
-int MDFNFILE::read16le(uint16 *val)
+bool MDFN_DumpToFile(const char *filename, int compress, const void *data, uint64 length)
 {
- if((location + 2) > size)
-  return 0;
+ std::vector<PtrLengthPair> pearpairs;
+ pearpairs.push_back(PtrLengthPair(data, length));
 
- *val = MDFN_de16lsb(data + location);
-
- location += 2;
-
- return(1);
-}
-
-int MDFNFILE::read32le(uint32 *val)
-{
- if((location + 4) > size)
-  return 0;
-
- *val = MDFN_de32lsb(data + location);
-
- location += 4;
-
- return(1);
-}
-
-char *MDFNFILE::fgets(char *s, int buffer_size)
-{
- int pos = 0;
-
- if(!buffer_size)
-  return(NULL);
-
- if(location >= buffer_size)
-  return(NULL);
-
- while(pos < (buffer_size - 1) && location < buffer_size)
- {
-  int v = data[location];
-  s[pos] = v;
-  location++;
-  pos++;
-  if(v == '\n') break;
- }
-
- if(buffer_size)
-  s[pos] = 0;
-
- return(s);
-}
-
-static INLINE bool MDFN_DumpToFileReal(const char *filename, int compress, const std::vector<PtrLengthPair> &pearpairs)
-{
-  compress = 0;
+ compress = 0;
 
  {
   FILE *fp = fopen(filename, "wb");
@@ -345,16 +290,4 @@ static INLINE bool MDFN_DumpToFileReal(const char *filename, int compress, const
   }
  }
  return(1);
-}
-
-bool MDFN_DumpToFile(const char *filename, int compress, const std::vector<PtrLengthPair> &pearpairs)
-{
- return(MDFN_DumpToFileReal(filename, compress, pearpairs));
-}
-
-bool MDFN_DumpToFile(const char *filename, int compress, const void *data, uint64 length)
-{
- std::vector<PtrLengthPair> tmp_pairs;
- tmp_pairs.push_back(PtrLengthPair(data, length));
- return(MDFN_DumpToFileReal(filename, compress, tmp_pairs));
 }
