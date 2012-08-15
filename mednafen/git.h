@@ -4,7 +4,6 @@
 #include <string>
 
 #include "video.h"
-#include "sound.h"
 
 typedef struct
 {
