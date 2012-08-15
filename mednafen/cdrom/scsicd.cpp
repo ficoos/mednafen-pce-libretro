@@ -23,7 +23,7 @@
 #include "cdromif.h"
 #include "SimpleFIFO.h"
 
-#define SCSIDBG(format, ...) { printf("SCSI: " format "\n",  ## __VA_ARGS__); }
+//#define SCSIDBG(format, ...) { printf("SCSI: " format "\n",  ## __VA_ARGS__); }
 //#define SCSIDBG(format, ...) { }
 
 using namespace CDUtility;
@@ -306,7 +306,7 @@ static void GenSubQFromSubPW(void)
 
  if(!subq_check_checksum(SubQBuf))
  {
-  SCSIDBG("SubQ checksum error!");
+  //SCSIDBG("SubQ checksum error!");
  }
  else
  {
@@ -1153,7 +1153,7 @@ static void DoMODESENSE6(const uint8 *cdb)
  uint8 PageMatchOR = 0x00;
  bool AnyPageMatch = false;
 
- SCSIDBG("Mode sense 6: %02x %d %d %d\n", PageCode, PC, DBD, AllocSize);
+ //SCSIDBG("Mode sense 6: %02x %d %d %d\n", PageCode, PC, DBD, AllocSize);
 
  if(!AllocSize)
  {
@@ -1256,14 +1256,14 @@ static void DoSTARTSTOPUNIT6(const uint8 *cdb)
  bool LoEj = cdb[4] & 0x02;
  bool Start = cdb[4] & 0x01;
 
- SCSIDBG("Do start stop unit 6: %d %d %d\n", Immed, LoEj, Start);
+ //SCSIDBG("Do start stop unit 6: %d %d %d\n", Immed, LoEj, Start);
 
  SendStatusAndMessage(STATUS_GOOD, 0x00);
 }
 
 static void DoREZEROUNIT(const uint8 *cdb)
 {
- SCSIDBG("Rezero Unit: %02x\n", cdb[5]);
+ //SCSIDBG("Rezero Unit: %02x\n", cdb[5]);
  SendStatusAndMessage(STATUS_GOOD, 0x00);
 }
 
@@ -2185,7 +2185,7 @@ static void DoREAD6(const uint8 *cdb)
  // TODO: confirm real PCE does this(PC-FX does at least).
  if(!sc)
  {
-  SCSIDBG("READ(6) with count == 0.\n");
+  //SCSIDBG("READ(6) with count == 0.\n");
   sc = 256;
  }
 
@@ -2492,7 +2492,7 @@ static void DoNEC_SCAN(const uint8 *cdb)
  switch (cdb[9] & 0xc0)
  {
   default:
-   SCSIDBG("Unknown NECSCAN format");
+   //SCSIDBG("Unknown NECSCAN format");
    break;
 
   case 0x00:
@@ -2892,7 +2892,7 @@ uint32 SCSICD_Run(scsicd_timestamp_t system_timestamp)
       {
        CommandCCError(SENSEKEY_ILLEGAL_REQUEST, NSE_INVALID_COMMAND);
 
-       SCSIDBG("Bad Command: %02x\n", cd.command_buffer[0]);
+       //SCSIDBG("Bad Command: %02x\n", cd.command_buffer[0]);
 
        if(SCSILog)
         SCSILog("SCSI", "Bad Command: %02x", cd.command_buffer[0]);
@@ -2901,10 +2901,11 @@ uint32 SCSICD_Run(scsicd_timestamp_t system_timestamp)
       }
       else
       {
+         /*
        if(cmd_info_ptr->flags & SCF_UNTESTED)
        {
         SCSIDBG("Untested SCSI command: %02x, %s", cd.command_buffer[0], cmd_info_ptr->pretty_name);
-       }
+       }*/
 
        if(cd.TrayOpen && (cmd_info_ptr->flags & SCF_REQUIRES_MEDIUM))
        {
