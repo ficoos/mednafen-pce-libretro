@@ -292,6 +292,7 @@ void retro_get_system_info(struct retro_system_info *info)
    info->library_version  = "v0.9.24";
    info->need_fullpath    = true;
    info->valid_extensions = "pce|PCE|cue|CUE|zip|ZIP";
+   info->nonblock_state   = false;
    info->block_extract    = false;
 }
 
