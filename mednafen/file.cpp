@@ -21,64 +21,42 @@
 #include <sys/types.h>
 #include <sys/stat.h>
 
-#ifndef _WIN32
-#include <unistd.h>
-#endif
-
 #include <errno.h>
 #include "include/trio/trio.h"
 
 #include "file.h"
 #include "general.h"
 
-static const int64 MaxROMImageSize = (int64)1 << 26; // 2 ^ 26 = 64MiB
-
-enum
-{
- MDFN_FILETYPE_PLAIN = 0,
- MDFN_FILETYPE_GZIP = 1,
- MDFN_FILETYPE_ZIP = 2,
-};
-
-// This function should ALWAYS close the system file "descriptor"(gzip library, zip library, or FILE *) it's given,
+// This function should ALWAYS close the system file "descriptor"(FILE *) it's given,
 // even if it errors out.
 bool MDFNFILE::MakeMemWrapAndClose(FILE *tz)
 {
- bool ret = FALSE;
+ bool ret = false;
 
  location = 0;
 
+ fseek(tz, 0, SEEK_END);
+ f_size = ftell(tz);
+ fseek(tz, 0, SEEK_SET);
+
+ if(!(f_data = (uint8*)MDFN_malloc(f_size, _("file read buffer"))))
+  goto doret;
+
+ if((int64)fread(f_data, 1, f_size, tz) != f_size)
  {
-  ::fseek(tz, 0, SEEK_END);
-  f_size = ::ftell(tz);
-  ::fseek(tz, 0, SEEK_SET);
+  ErrnoHolder ene(errno);
+  MDFN_PrintError(_("Error reading file: %s"), ene.StrError());
 
-  if(f_size > MaxROMImageSize)
-  {
-   MDFN_PrintError(_("ROM image is too large; maximum size allowed is %llu bytes."), (unsigned long long)MaxROMImageSize);
-   goto doret;
-  }
-
-   if(!(f_data = (uint8*)MDFN_malloc(f_size, _("file read buffer"))))
-   {
-    goto doret;
-   }
-   if((int64)::fread(f_data, 1, f_size, tz) != f_size)
-   {
-    ErrnoHolder ene(errno);
-    MDFN_PrintError(_("Error reading file: %s"), ene.StrError());
-
-    free(f_data);
-    goto doret;
-   }
+  free(f_data);
+  goto doret;
  }
 
- ret = TRUE;
+ ret = true;
 
  doret:
   fclose(tz);
 
- return(ret);
+ return ret;
 }
 
 MDFNFILE::MDFNFILE()
@@ -93,10 +71,8 @@ MDFNFILE::MDFNFILE()
 
 MDFNFILE::MDFNFILE(const char *path)
 {
- if(!Open(path, false))
- {
+ if(!Open(path))
   throw(MDFN_Error(0, "TODO ERROR"));
- }
 }
 
 
@@ -106,7 +82,7 @@ MDFNFILE::~MDFNFILE()
 }
 
 
-bool MDFNFILE::Open(const char *path, const bool suppress_notfound_pe)
+bool MDFNFILE::Open(const char *path)
 {
  local_errno = 0;
  error_code = MDFNFILE_EC_OTHER;	// Set to 0 at the end if the function succeeds.
@@ -124,23 +100,22 @@ bool MDFNFILE::Open(const char *path, const bool suppress_notfound_pe)
    error_code = MDFNFILE_EC_NOTFOUND;
   }
 
-  if(ene.Errno() != ENOENT || !suppress_notfound_pe)
-   MDFN_PrintError(_("Error opening \"%s\": %s"), path, ene.StrError());
+  MDFN_PrintError(_("Error opening \"%s\": %s"), path, ene.StrError());
 
-  return(0);
+  return 0;
  }
 
- ::fseek(fp, 0, SEEK_SET);
+ fseek(fp, 0, SEEK_SET);
 
  if(!MakeMemWrapAndClose(fp))
-   return(0);
+   return 0;
 
  const char *ld = strrchr(path, '.');
  f_ext = strdup(ld ? ld + 1 : "");
 
  error_code = 0;
 
- return(TRUE);
+ return true;
 }
 
 bool MDFNFILE::Close(void)
@@ -157,53 +132,10 @@ bool MDFNFILE::Close(void)
    f_data = NULL;
  }
 
- return(1);
+ return 1;
 }
 
-uint64 MDFNFILE::fread(void *ptr, size_t element_size, size_t nmemb)
-{
- uint32 total = element_size * nmemb;
-
- if(location >= f_size)
-  return 0;
-
- if((location + total) > f_size)
- {
-  int64 ak = f_size - location;
-
-  memcpy((uint8*)ptr, f_data + location, ak);
-
-  location = f_size;
-
-  return(ak / element_size);
- }
- else
- {
-  memcpy((uint8*)ptr, f_data + location, total);
-
-  location += total;
-
-  return nmemb;
- }
-}
-
-int MDFNFILE::fseek(int64 offset, int whence)
-{
-  switch(whence)
-  {
-   case SEEK_SET:if(offset >= f_size)
-                  return(-1);
-                 location = offset;
-		 break;
-
-   case SEEK_CUR:if((offset + location) > f_size)
-                  return(-1);
-
-                 location += offset;
-                 break;
-  }    
-  return 0;
-}
+#include <vector>
 
 bool MDFN_DumpToFile(const char *filename, int compress, const void *data, uint64 length)
 {
@@ -214,18 +146,19 @@ bool MDFN_DumpToFile(const char *filename, int compress, const void *data, uint6
 
  {
   FILE *fp = fopen(filename, "wb");
+
   if(!fp)
   {
    ErrnoHolder ene(errno);
 
    MDFN_PrintError(_("Error opening \"%s\": %s"), filename, ene.StrError());
-   return(0);
+   return 0;
   }
 
   for(unsigned int i = 0; i < pearpairs.size(); i++)
   {
-   const void *data = pearpairs[i].GetData();
-   const uint64 length = pearpairs[i].GetLength();
+   const void *data = pearpairs[i].data;
+   const uint64 length = pearpairs[i].length;
 
    if(fwrite(data, 1, length, fp) != length)
    {
@@ -233,7 +166,7 @@ bool MDFN_DumpToFile(const char *filename, int compress, const void *data, uint6
 
     MDFN_PrintError(_("Error writing to \"%s\": %s"), filename, ene.StrError());
     fclose(fp);
-    return(0);
+    return 0;
    }
   }
 
@@ -242,8 +175,8 @@ bool MDFN_DumpToFile(const char *filename, int compress, const void *data, uint6
    ErrnoHolder ene(errno);
 
    MDFN_PrintError(_("Error closing \"%s\": %s"), filename, ene.StrError());
-   return(0);
+   return 0;
   }
  }
- return(1);
+ return 1;
 }
