@@ -49,7 +49,6 @@
 
 #include "../general.h"
 #include "../mednafen-endian.h"
-#include "../FileWrapper.h"
 
 #include "CDAccess.h"
 #include "CDAccess_Image.h"
@@ -295,13 +294,15 @@ void CDAccess_Image::ParseTOCFileLineInfo(CDRFILE_TRACK_INFO *track, const int t
 
 void CDAccess_Image::ImageOpen(const char *path)
 {
- FileWrapper fp(path, FileWrapper::MODE_READ);
+ FILE *fp = NULL;
  bool IsTOC = FALSE;
  char linebuf[512];
  int32 active_track = -1;
  int32 AutoTrackInc = 1; // For TOC
  CDRFILE_TRACK_INFO TmpTrack;
  std::string file_base, file_ext;
+
+ fp = fopen(path, "r");
 
  memset(&TmpTrack, 0, sizeof(TmpTrack));
 
@@ -316,7 +317,7 @@ void CDAccess_Image::ImageOpen(const char *path)
  FirstTrack = 99;
  LastTrack = 0;
 
- while(fp.get_line(linebuf, 512) != NULL)
+ while(fgets(linebuf, 512, fp) != NULL)
  {
    char cmdbuf[512], raw_args[512], args[4][512];
    int argcount = 0;
@@ -608,6 +609,8 @@ void CDAccess_Image::ImageOpen(const char *path)
     }
    } // end of CUE sheet handling
  } // end of fgets() loop
+
+ fclose(fp);
 
  if(active_track >= 0)
   memcpy(&Tracks[active_track], &TmpTrack, sizeof(TmpTrack));

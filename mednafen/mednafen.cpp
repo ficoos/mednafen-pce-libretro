@@ -44,7 +44,6 @@
 #include	"tests.h"
 #include	"md5.h"
 #include	"clamp.h"
-#include "FileWrapper.h"
 #include	"include/Fir_Resampler.h"
 
 #include	"cdrom/CDUtility.h"
@@ -164,13 +163,15 @@ void MDFNI_DumpModulesDef(const char *fn)
 static void ReadM3U(std::vector<std::string> &file_list, std::string path, unsigned depth = 0)
 {
  std::vector<std::string> ret;
- FileWrapper m3u_file(path.c_str(), FileWrapper::MODE_READ, _("M3U CD Set"));
+ FILE *m3u_file = NULL;
  std::string dir_path;
  char linebuf[2048];
 
+ m3u_file = fopen(path.c_str(), "r");
+
  MDFN_GetFilePathComponents(path, &dir_path);
 
- while(m3u_file.get_line(linebuf, sizeof(linebuf)))
+ while(fgets(linebuf, sizeof(linebuf), m3u_file))
  {
   std::string efp;
 
@@ -193,6 +194,8 @@ static void ReadM3U(std::vector<std::string> &file_list, std::string path, unsig
   else
    file_list.push_back(efp);
  }
+
+ fclose(m3u_file);
 }
 
 MDFNGI *MDFNI_LoadCD(const char *force_module, const char *devicename)

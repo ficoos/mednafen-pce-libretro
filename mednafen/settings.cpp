@@ -25,7 +25,6 @@
 #include <list>
 #include "settings.h"
 #include "md5.h"
-#include "FileWrapper.h"
 
 #ifdef _WIN32
 #include "libretro/msvc_compat.h"
