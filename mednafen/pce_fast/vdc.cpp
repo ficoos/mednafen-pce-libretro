@@ -516,37 +516,6 @@ static INLINE void CalcStartEnd(const vdc_t *vdc, uint32 &start, uint32 &end)
  // For: alignment space when correct_aspect == 0
  end += 128;
  start += 128;
-
-#if 0
- uint32 display_width;
- display_width = (M_vdc_HDW + 1) * 8;
-
- if(display_width > ClockModeWidths[vce.dot_clock])
-  display_width = ClockModeWidths[vce.dot_clock];
-
- start = (ClockModeWidths[vce.dot_clock] - display_width) / 2;
-
- // For: start - (vdc->BG_XOffset & 7)
- start += 8;
-
- // For: alignment space when correct_aspect == 0
- start += 128;
-
- // Semi-hack for Asuka 120%
- if(vce.dot_clock == 1 && M_vdc_HDS == 5 && M_vdc_HDE == 6 && M_vdc_HDW == 43 && M_vdc_HSW == 2)
-  start += 8;
- else if(vce.dot_clock == 0 && M_vdc_HDS == 2 && M_vdc_HDE == 3 && M_vdc_HDW == 33 && M_vdc_HSW == 2)
-  start += 4;
- // and for Addams Family
- else if(vce.dot_clock == 1 && M_vdc_HDS == 4 && M_vdc_HDE == 4 && M_vdc_HDW == 43 && M_vdc_HSW == 9)
-  start += 4;
-
- //MDFN_DispMessage((UTF8*)"dc: %d, %d %d %d %d; %d %d\n", vce.dot_clock, M_vdc_HDS, M_vdc_HDE, M_vdc_HDW, M_vdc_HSW, start, (M_vdc_HDS + 1) * 8);
-
- end = start + display_width;
- if(end > (ClockModeWidths[vce.dot_clock] + 8 + 128))
-  end = ClockModeWidths[vce.dot_clock] + 8 + 128;
-#endif
 }
 
 #define CB_EXL(n) (((n) << 4) | ((n) << 12) | ((n) << 20) | ((n) << 28) | ((n) << 36) | ((n) << 44) | ((n) << 52) | ((n) << 60))
@@ -855,31 +824,6 @@ void (*MixBGSPR)(const uint32 count, const uint8 *bg_linebuf, const uint16 *spr_
 
 void MixBGSPR_Generic(const uint32 count_in, const uint8 *bg_linebuf_in, const uint16 *spr_linebuf_in, uint32 *target_in)
 {
-#if 0
- #if SIZEOF_VOID_P > 4
- int64 count = 0 - (int64)count_in;
- #else
- int32 count = 0 - (int32)count_in;
- #endif
- const uint8 *bg_linebuf = bg_linebuf_in + count_in;
- const uint16 *spr_linebuf = spr_linebuf_in + count_in;
- uint32 *target = target_in + count_in;
-
- if(!count)
-  return;
-
- do
- {
-  const uint32 bg_pixel = bg_linebuf[count];
-  const uint32 spr_pixel = spr_linebuf[count];
-  uint32 pixel = bg_pixel;
-
-  if(((int16)(spr_pixel | ((bg_pixel & 0x0F) - 1))) < 0)
-   pixel = spr_pixel;
-
-  target[count] = vce.color_table_cache[pixel & 0x1FF];
- } while(++count);
-#else
  for(unsigned int x = 0; x < count_in; x++)
  {
   const uint32 bg_pixel = bg_linebuf_in[x];
@@ -891,7 +835,6 @@ void MixBGSPR_Generic(const uint32 count_in, const uint8 *bg_linebuf_in, const u
 
   target_in[x] = vce.color_table_cache[pixel & 0x1FF];
  }
-#endif
 }
 
 
@@ -1140,27 +1083,6 @@ void VDC_RunFrame(MDFN_Surface *surface, MDFN_Rect *DisplayRect, MDFN_Rect *Line
  vdc_t *vdc = vdc_chips[0];
  int max_dc = 0;
 
- #if 0
- {
-  MDFN_PixelFormat nf;
-
-  nf.bpp = 16;
-  nf.colorspace = MDFN_COLORSPACE_RGB;
-  nf.Rshift = 11;
-  nf.Gshift = 5;
-  nf.Bshift = 0;
-  nf.Ashift = 16;
-  
-  nf.Rprec = 5;
-  nf.Gprec = 6;
-  nf.Bprec = 5;
-  nf.Aprec = 8;
-
-  surface->SetFormat(nf, false);
-  VDC_SetPixelFormat(nf);
- }
- #endif
-
  // x and w should be overwritten in the big loop
 
  if(!skip)
@@ -1198,7 +1120,6 @@ void VDC_RunFrame(MDFN_Surface *surface, MDFN_Rect *DisplayRect, MDFN_Rect *Line
 
   need_vbi[0] = need_vbi[1] = 0;
 
-  #if 1
   line_leadin1 = 0;
 
   magical = M_vdc_HDS + (M_vdc_HDW + 1) + M_vdc_HDE;
@@ -1215,33 +1136,7 @@ void VDC_RunFrame(MDFN_Surface *surface, MDFN_Rect *DisplayRect, MDFN_Rect *Line
 
   if(cyc_tot < 0) cyc_tot = 0;
   line_leadin1 = cyc_tot;
-  #endif
 
-  #if 0
-  {
-   int vdc_to_master = 4;
-
-   line_leadin1 = 1365 - ((M_vdc_HDW + 1) * 8 - 4 + 6) * vdc_to_master;
-
-   if(line_leadin1 < 0)
-   {
-    line_leadin1 = 0;
-    puts("Eep");
-   }
-
-   if(M_vdc_HDS > 2)
-    line_leadin1 += 2;
-
-   line_leadin1 = line_leadin1 / 3;
-  }
-
-  if(line_leadin1 < 0)
-   line_leadin1 = 0;
-  else if(line_leadin1 > 400)
-   line_leadin1 = 400;
-  #endif
-
-  //printf("%d\n", line_leadin1);
   if(max_dc < vce.dot_clock)
    max_dc = vce.dot_clock;
 

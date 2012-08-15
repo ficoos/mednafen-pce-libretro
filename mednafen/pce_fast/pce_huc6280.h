@@ -83,9 +83,6 @@ static INLINE void HuC6280_StealCycle(void)
 
 static INLINE uint8 HuC6280_TimerRead(unsigned int A)
 {
- #if 0
- return(HuCPU.timer_value | (PCEIODataBuffer & 0x80));
- #endif
 
  uint8 tvr = HuCPU.timer_value;
 

@@ -89,23 +89,11 @@ HuC6280::readfunc NonCheatPCERead[0x100];
 
 static DECLFR(PCEBusRead)
 {
-#if 0
- if(!PCE_InDebug)
- {
-  PCE_DEBUG("Unmapped Read: %02x %04x\n", A >> 13, A);
- }
-#endif
  return(0xFF);
 }
 
 static DECLFW(PCENullWrite)
 {
-#if 0
- if(!PCE_InDebug)
- {
-  PCE_DEBUG("Unmapped Write: %02x, %08x %02x\n", A >> 13, A, V);
- }
-#endif
 }
 
 static DECLFR(BaseRAMReadSGX)
@@ -202,13 +190,6 @@ static DECLFR(IORead)
 	       break; // Expansion
  }
 
-#if 0
- if(!PCE_InDebug)
- {
-  PCE_DEBUG("I/O Unmapped Read: %04x\n", A);
- }
-#endif
-
  return(0xFF);
 }
 
@@ -245,12 +226,6 @@ static DECLFW(IOWrite)
 
 	       if(!PCE_IsCD)
 	       {
-#if 0
-		if(!PCE_InDebug)
-		{
-		 PCE_DEBUG("I/O Unmapped Write: %04x %02x\n", A, V);
-		}
-#endif
 		break;
 	       }
 

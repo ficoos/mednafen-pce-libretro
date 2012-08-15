@@ -98,16 +98,6 @@ static void FreeSubHWMem(void)
 }
 
 
-#if 0
-#include <desa68/desa68.h>
-
-static uint16_t dis_callb(uint32_t A, void *private_data)
-{
- //printf("%04x\n", M68K_ReadMemory16(A & 0xFFFFFF));
- return(M68K_ReadMemory16(A & 0xFFFFFF));
-}
-#endif
-
 static void UpdateM68K(const int32 timestamp)
 {
  int32 hucycles = timestamp - lastts;
@@ -126,21 +116,6 @@ static void UpdateM68K(const int32 timestamp)
 
  while(M68K_cycle_counter > 0)
  {
-#if 0
-  char TextBuf[256];
-  DESA68parm_t d;
-  strcpy(TextBuf, "Invalid");
-  memset(&d, 0, sizeof(DESA68parm_t));
-
-  d.mem_callb = dis_callb;
-  d.memmsk = 0xFFFFFF;
-  d.pc = M68K.PC;
-  d.str = TextBuf;
-  d.strmax = 255;        // FIXME, MDFN API change
-
-  desa68(&d);
-  printf("%08x: %s\n", M68K.PC, TextBuf);
-#endif
   //M68K_cycle_counter -= C68k_Exec(&M68K) * 2;
   M68K.timestamp = 0;
   C68k_Exec(&M68K);

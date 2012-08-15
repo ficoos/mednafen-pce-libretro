@@ -357,14 +357,6 @@ void VCE::SetVCECR(uint8 V)
 
  lc263 = (V & 0x04);
 
- #if 0
- int new_dot_clock = V & 1;
- if(V & 2)
-  new_dot_clock = 2;
-
- dot_clock = new_dot_clock;
- #endif
-
  dot_clock = V & 0x3;
  if(dot_clock == 3)	// Remove this once we determine any relevant differences between 2 and 3.
   dot_clock = 2;
@@ -429,31 +421,11 @@ void VCE::SetPixelFormat(const MDFN_PixelFormat &format)
  //
  for(int n = 0; n < 4096; n++)
  {
-#if 0
-  float y = (float)((n >> 8) & 0xF) / 15;
-  float i = (float)((n >> 4) & 0xF) / 16;
-  float q = (float)((n >> 0) & 0xF) / 16;
-  int r, g, b;
-
-  i *= 1.1914;
-  q *= 1.0452;
-
-  i -= 0.5957;
-  q -= 0.5226;
-
-  r = 255 * (y + (0.9563 * i) + (0.6210 * q));
-  g = 255 * (y + (-0.2721 * i) + (-0.6474 * q));
-  b = 255 * (y + (-1.1070 * i) + (1.7046 * q));
-  if(r < 0) r = 0; if(r > 255) r = 255;
-  if(g < 0) g = 0; if(g > 255) g = 255;
-  if(b < 0) b = 0; if(b > 255) b = 255;
-#else
   int r, g, b;
 
   r = ((n >> 8) & 0xF) * 17;
   g = ((n >> 4) & 0xF) * 17;
   b = ((n >> 0) & 0xF) * 17;
-#endif
   SubTLUT[n] = format.MakeColor(r, g, b);
  }
 }

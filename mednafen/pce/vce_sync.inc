@@ -171,10 +171,6 @@
      HuCPU->Exit();
     }
 
-#if 0	// Testing code
-    HuCPU->Exit();
-#endif
-
     //printf("VCE New scanline: %d\n", scanline);
 
     scanline_out_ptr = &fb[scanline * pitch32];
