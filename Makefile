@@ -16,6 +16,17 @@ else ifneq ($(findstring win,$(shell uname -a)),)
 endif
 endif
 
+# system platform
+system_platform = unix
+ifeq ($(shell uname -a),)
+EXE_EXT = .exe
+   system_platform = win
+else ifneq ($(findstring Darwin,$(shell uname -a)),)
+   system_platform = osx
+else ifneq ($(findstring MINGW,$(shell uname -a)),)
+   system_platform = win
+endif
+
 ifeq ($(platform), unix)
    TARGET := libretro.so
    fpic := -fPIC
@@ -48,19 +59,26 @@ else ifeq ($(platform), sncps3)
 
    HAVE_RZLIB := 1
    CXXFLAGS += -Xc+=exceptions
+else ifeq ($(platform), psl1ght)
+   TARGET := libretro_psl1ght.a
+   CC = $(PS3DEV)/ppu/bin/ppu-gcc$(EXE_EXT)
+   CC = $(PS3DEV)/ppu/bin/ppu-g++$(EXE_EXT)
+   AR = $(PS3DEV)/ppu/bin/ppu-ar$(EXE_EXT)
+   ENDIANNESS_DEFINES := -DMSB_FIRST -DBYTE_ORDER=BIG_ENDIAN
+   HAVE_RZLIB := 1
 else ifeq ($(platform), xenon)
    TARGET := libretro_xenon360.a
-   CC = xenon-gcc
-   CXX = xenon-g++
-   AR = xenon-ar
+   CC = xenon-gcc$(EXE_EXT)
+   CXX = xenon-g++$(EXE_EXT)
+   AR = xenon-ar$(EXE_EXT)
    ENDIANNESS_DEFINES += -D__LIBXENON__ -m32 -D__ppc__ -DMSB_FIRST -DBYTE_ORDER=BIG_ENDIAN
 
    LIBS := -pthread -lz
 else ifeq ($(platform), wii)
    TARGET := libretro_wii.a
-   CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc
-   CXX = $(DEVKITPPC)/bin/powerpc-eabi-g++
-   AR = $(DEVKITPPC)/bin/powerpc-eabi-ar
+   CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc$(EXE_EXT)
+   CXX = $(DEVKITPPC)/bin/powerpc-eabi-g++$(EXE_EXT)
+   AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
    ENDIANNESS_DEFINES += -DGEKKO -mrvl -mcpu=750 -meabi -mhard-float -DMSB_FIRST -DBYTE_ORDER=BIG_ENDIAN
 
    HAVE_RZLIB := 1
