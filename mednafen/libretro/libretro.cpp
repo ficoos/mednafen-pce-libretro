@@ -180,35 +180,13 @@ bool retro_load_game_special(unsigned, const struct retro_game_info *, size_t)
    return false;
 }
 
-bool retro_load_game(const struct retro_game_info *info)
-{
-   extract_directory(g_rom_dir, info->path, sizeof(g_rom_dir));
-   extract_basename(g_basename, info->path, sizeof(g_basename));
-
-   MDFNI_Initialize(g_rom_dir);
-
-#ifdef WANT_PCE_FAST_EMU
-   game = MDFNI_LoadGame("pce_fast", info->path);
-#else
-   game = MDFNI_LoadGame("pce", info->path);
-#endif
-   return game;
-}
-
-void retro_unload_game()
-{
-   MDFNI_CloseGame();
-}
-
 // See mednafen/[core]/input/gamepad.cpp
-
-static void update_input (void)
+static void update_input()
 {
-   uint8_t input_buf_p1 = 0;
-   uint8_t input_buf_p2 = 0;
-   uint8_t input_buf_p3 = 0;
-   uint8_t input_buf_p4 = 0;
-   uint8_t input_buf_p5 = 0;
+   static uint16_t input_buf[5];
+
+   for (unsigned i = 0; i < 5; i++)
+      input_buf[i] = 0;
 
    static unsigned map[] = {
       RETRO_DEVICE_ID_JOYPAD_Y,
@@ -226,32 +204,44 @@ static void update_input (void)
       RETRO_DEVICE_ID_JOYPAD_L2
    };
 
-   for (unsigned i = 0; i < 13; i++)
+   if (input_state_cb)
    {
-      input_buf_p1 |= input_state_cb(0, RETRO_DEVICE_JOYPAD, 0, map[i]) ? (1 << i) : 0;
-      input_buf_p2 |= input_state_cb(1, RETRO_DEVICE_JOYPAD, 0, map[i]) ? (1 << i) : 0;
-      input_buf_p3 |= input_state_cb(2, RETRO_DEVICE_JOYPAD, 0, map[i]) ? (1 << i) : 0;
-      input_buf_p4 |= input_state_cb(3, RETRO_DEVICE_JOYPAD, 0, map[i]) ? (1 << i) : 0;
-      input_buf_p5 |= input_state_cb(4, RETRO_DEVICE_JOYPAD, 0, map[i]) ? (1 << i) : 0;
+      for (unsigned i = 0; i < 13; i++)
+         for (unsigned j = 0; j < 5; j++)
+            input_buf[j] |= input_state_cb(j, RETRO_DEVICE_JOYPAD, 0, map[i]) ? (1 << i) : 0;
    }
 
    // Possible endian bug ...
-   if(input_buf_p1 != 0)
-      MDFNI_SetInput(0, "gamepad", &input_buf_p1, 0);
-   if(input_buf_p2 != 0)
-      MDFNI_SetInput(1, "gamepad", &input_buf_p2, 0);
-   if(input_buf_p3 != 0)
-      MDFNI_SetInput(2, "gamepad", &input_buf_p3, 0);
-   if(input_buf_p4 != 0)
-      MDFNI_SetInput(3, "gamepad", &input_buf_p4, 0);
-   if(input_buf_p5 != 0)
-      MDFNI_SetInput(4, "gamepad", &input_buf_p5, 0);
+   for (unsigned i = 0; i < 5; i++)
+      MDFNI_SetInput(i, "gamepad", &input_buf[i], 0);
+}
+
+bool retro_load_game(const struct retro_game_info *info)
+{
+   extract_directory(g_rom_dir, info->path, sizeof(g_rom_dir));
+   extract_basename(g_basename, info->path, sizeof(g_basename));
+
+   MDFNI_Initialize(g_rom_dir);
+
+#ifdef WANT_PCE_FAST_EMU
+   game = MDFNI_LoadGame("pce_fast", info->path);
+#else
+   game = MDFNI_LoadGame("pce", info->path);
+#endif
+
+   update_input();
+
+   return game;
+}
+
+void retro_unload_game()
+{
+   MDFNI_CloseGame();
 }
 
 void retro_run()
 {
    input_poll_cb();
-
    update_input();
 
    static int16_t sound_buf[0x10000];
@@ -356,8 +346,8 @@ void retro_set_video_refresh(retro_video_refresh_t cb)
 static size_t serialize_size;
 size_t retro_serialize_size(void)
 {
-   if (serialize_size)
-      return serialize_size;
+   //if (serialize_size)
+   //   return serialize_size;
 
    if (!game->StateAction)
    {
