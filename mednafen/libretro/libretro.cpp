@@ -1,6 +1,7 @@
 #include "../mednafen.h"
 #include "../git.h"
 #include "../general.h"
+#include "../state.h"
 #include "libretro.h"
 #include <stdarg.h>
 
@@ -354,17 +355,43 @@ void retro_set_video_refresh(retro_video_refresh_t cb)
 
 size_t retro_serialize_size(void)
 {
-   return 0;
+   if (!game->StateAction)
+   {
+      fprintf(stderr, "[mednafen]: Module %s doesn't support save states.\n", game->shortname);
+      return 0;
+   }
+
+   StateMem st;
+   memset(&st, 0, sizeof(st));
+
+   if (!MDFNSS_SaveSM(&st))
+   {
+      fprintf(stderr, "[mednafen]: Module %s doesn't support save states.\n", game->shortname);
+      return 0;
+   }
+
+   free(st.data);
+   return st.len;
 }
 
-bool retro_serialize(void *, size_t)
+bool retro_serialize(void *data, size_t size)
 {
-   return false;
+   StateMem st;
+   memset(&st, 0, sizeof(st));
+   st.data     = (uint8_t*)data;
+   st.malloced = size;
+
+   return MDFNSS_SaveSM(&st);
 }
 
-bool retro_unserialize(const void *, size_t)
+bool retro_unserialize(const void *data, size_t size)
 {
-   return false;
+   StateMem st;
+   memset(&st, 0, sizeof(st));
+   st.data = (uint8_t*)data;
+   st.len  = size;
+
+   return MDFNSS_LoadSM(&st);
 }
 
 void *retro_get_memory_data(unsigned)
@@ -383,7 +410,3 @@ void retro_cheat_reset(void)
 void retro_cheat_set(unsigned, bool, const char *)
 {}
 
-void retro_shutdown(void)
-{
-   environ_cb(RETRO_ENVIRONMENT_SHUTDOWN, NULL);
-}
