@@ -183,10 +183,7 @@ bool retro_load_game_special(unsigned, const struct retro_game_info *, size_t)
 // See mednafen/[core]/input/gamepad.cpp
 static void update_input()
 {
-   static uint16_t input_buf[5];
-
-   for (unsigned i = 0; i < 5; i++)
-      input_buf[i] = 0;
+   static uint8_t input_buf[5][2];
 
    static unsigned map[] = {
       RETRO_DEVICE_ID_JOYPAD_Y,
@@ -206,14 +203,21 @@ static void update_input()
 
    if (input_state_cb)
    {
-      for (unsigned i = 0; i < 13; i++)
-         for (unsigned j = 0; j < 5; j++)
-            input_buf[j] |= input_state_cb(j, RETRO_DEVICE_JOYPAD, 0, map[i]) ? (1 << i) : 0;
+      for (unsigned j = 0; j < 5; j++)
+      {
+         uint16_t input_state = 0;
+         for (unsigned i = 0; i < 13; i++)
+            input_state |= input_state_cb(j, RETRO_DEVICE_JOYPAD, 0, map[i]) ? (1 << i) : 0;
+
+         // Input data must be little endian.
+         input_buf[j][0] = (input_state >> 0) & 0xff;
+         input_buf[j][1] = (input_state >> 8) & 0xff;
+      }
    }
 
    // Possible endian bug ...
    for (unsigned i = 0; i < 5; i++)
-      MDFNI_SetInput(i, "gamepad", &input_buf[i], 0);
+      MDFNI_SetInput(i, "gamepad", &input_buf[i][0], 0);
 }
 
 bool retro_load_game(const struct retro_game_info *info)
