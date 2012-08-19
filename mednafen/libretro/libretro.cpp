@@ -353,8 +353,12 @@ void retro_set_video_refresh(retro_video_refresh_t cb)
    video_cb = cb;
 }
 
+static size_t serialize_size;
 size_t retro_serialize_size(void)
 {
+   if (serialize_size)
+      return serialize_size;
+
    if (!game->StateAction)
    {
       fprintf(stderr, "[mednafen]: Module %s doesn't support save states.\n", game->shortname);
@@ -371,7 +375,7 @@ size_t retro_serialize_size(void)
    }
 
    free(st.data);
-   return st.len;
+   return serialize_size = st.len;
 }
 
 bool retro_serialize(void *data, size_t size)
