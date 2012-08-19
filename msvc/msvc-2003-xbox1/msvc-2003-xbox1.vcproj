@@ -21,7 +21,7 @@
 				Optimization="0"
 				OptimizeForProcessor="2"
 				AdditionalIncludeDirectories="&quot;$(SolutionDir)\msvc-2003-xbox1&quot;;&quot;$(SolutionDir)\..\..\mednafen\include&quot;"
-				PreprocessorDefinitions="_DEBUG;_XBOX;_LIB;_XBOX1;PSS_STYLE=2;INLINE=_inline;__LIBRETRO__;SIZEOF_DOUBLE=8;MEDNAFEN_VERSION=0.9.24;MEDNAFEN_VERSION_NUMERIC=924;MPC_FIXED_POINT;WANT_PCE_FAST_EMU;STDC_HEADERS;LSB_FIRST;BYTE_ORDER=LITTLE_ENDIAN;_LOW_ACCURACY_;ARCH_X86"
+				PreprocessorDefinitions="_DEBUG;_XBOX;_LIB;_XBOX1;PSS_STYLE=2;INLINE=_inline;__LIBRETRO__;SIZEOF_DOUBLE=8;MEDNAFEN_VERSION=0.9.24;MEDNAFEN_VERSION_NUMERIC=924;MPC_FIXED_POINT;WANT_PCE_FAST_EMU;STDC_HEADERS;LSB_FIRST;BYTE_ORDER=LITTLE_ENDIAN;_LOW_ACCURACY_"
 				MinimalRebuild="TRUE"
 				BasicRuntimeChecks="3"
 				RuntimeLibrary="1"
@@ -55,7 +55,7 @@
 				OmitFramePointers="TRUE"
 				OptimizeForProcessor="2"
 				AdditionalIncludeDirectories="&quot;$(SolutionDir)\msvc-2003-xbox1&quot;;&quot;$(SolutionDir)\..\..\mednafen\include&quot;"
-				PreprocessorDefinitions="NDEBUG;_XBOX;PROFILE;_LIB;_XBOX1;PSS_STYLE=2;INLINE=_inline;__LIBRETRO__;SIZEOF_DOUBLE=8;MEDNAFEN_VERSION=0.9.24;MEDNAFEN_VERSION_NUMERIC=924;MPC_FIXED_POINT;WANT_PCE_FAST_EMU;STDC_HEADERS;LSB_FIRST;BYTE_ORDER=LITTLE_ENDIAN;_LOW_ACCURACY_;ARCH_X86"
+				PreprocessorDefinitions="NDEBUG;_XBOX;PROFILE;_LIB;_XBOX1;PSS_STYLE=2;INLINE=_inline;__LIBRETRO__;SIZEOF_DOUBLE=8;MEDNAFEN_VERSION=0.9.24;MEDNAFEN_VERSION_NUMERIC=924;MPC_FIXED_POINT;WANT_PCE_FAST_EMU;STDC_HEADERS;LSB_FIRST;BYTE_ORDER=LITTLE_ENDIAN;_LOW_ACCURACY_"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="TRUE"
@@ -90,7 +90,7 @@
 				OmitFramePointers="TRUE"
 				OptimizeForProcessor="2"
 				AdditionalIncludeDirectories="&quot;$(SolutionDir)\msvc-2003-xbox1&quot;;&quot;$(SolutionDir)\..\..\mednafen\include&quot;"
-				PreprocessorDefinitions="NDEBUG;_XBOX;PROFILE;FASTCAP;_LIB;_XBOX1;PSS_STYLE=2;INLINE=_inline;__LIBRETRO__;SIZEOF_DOUBLE=8;MEDNAFEN_VERSION=0.9.24;MEDNAFEN_VERSION_NUMERIC=924;MPC_FIXED_POINT;WANT_PCE_FAST_EMU;STDC_HEADERS;LSB_FIRST;BYTE_ORDER=LITTLE_ENDIAN;_LOW_ACCURACY_;ARCH_X86"
+				PreprocessorDefinitions="NDEBUG;_XBOX;PROFILE;FASTCAP;_LIB;_XBOX1;PSS_STYLE=2;INLINE=_inline;__LIBRETRO__;SIZEOF_DOUBLE=8;MEDNAFEN_VERSION=0.9.24;MEDNAFEN_VERSION_NUMERIC=924;MPC_FIXED_POINT;WANT_PCE_FAST_EMU;STDC_HEADERS;LSB_FIRST;BYTE_ORDER=LITTLE_ENDIAN;_LOW_ACCURACY_"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="TRUE"
@@ -126,7 +126,7 @@
 				OmitFramePointers="TRUE"
 				OptimizeForProcessor="2"
 				AdditionalIncludeDirectories="&quot;$(SolutionDir)\msvc-2003-xbox1&quot;;&quot;$(SolutionDir)\..\..\mednafen\include&quot;"
-				PreprocessorDefinitions="NDEBUG;_XBOX;_LIB;_XBOX1;PSS_STYLE=2;INLINE=_inline;__LIBRETRO__;SIZEOF_DOUBLE=8;MEDNAFEN_VERSION=0.9.24;MEDNAFEN_VERSION_NUMERIC=924;MPC_FIXED_POINT;WANT_PCE_FAST_EMU;STDC_HEADERS;LSB_FIRST;BYTE_ORDER=LITTLE_ENDIAN;_LOW_ACCURACY_;ARCH_X86"
+				PreprocessorDefinitions="NDEBUG;_XBOX;_LIB;_XBOX1;PSS_STYLE=2;INLINE=_inline;__LIBRETRO__;SIZEOF_DOUBLE=8;MEDNAFEN_VERSION=0.9.24;MEDNAFEN_VERSION_NUMERIC=924;MPC_FIXED_POINT;WANT_PCE_FAST_EMU;STDC_HEADERS;LSB_FIRST;BYTE_ORDER=LITTLE_ENDIAN;_LOW_ACCURACY_"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="TRUE"
@@ -162,7 +162,7 @@
 				OmitFramePointers="TRUE"
 				OptimizeForProcessor="2"
 				AdditionalIncludeDirectories="&quot;$(SolutionDir)\msvc-2003-xbox1&quot;;&quot;$(SolutionDir)\..\..\mednafen\include&quot;"
-				PreprocessorDefinitions="NDEBUG;_XBOX;LTCG;_LIB;_XBOX1;PSS_STYLE=2;INLINE=_inline;__LIBRETRO__;SIZEOF_DOUBLE=8;MEDNAFEN_VERSION=0.9.24;MEDNAFEN_VERSION_NUMERIC=924;MPC_FIXED_POINT;WANT_PCE_FAST_EMU;STDC_HEADERS;LSB_FIRST;BYTE_ORDER=LITTLE_ENDIAN;_LOW_ACCURACY_;ARCH_X86"
+				PreprocessorDefinitions="NDEBUG;_XBOX;LTCG;_LIB;_XBOX1;PSS_STYLE=2;INLINE=_inline;__LIBRETRO__;SIZEOF_DOUBLE=8;MEDNAFEN_VERSION=0.9.24;MEDNAFEN_VERSION_NUMERIC=924;MPC_FIXED_POINT;WANT_PCE_FAST_EMU;STDC_HEADERS;LSB_FIRST;BYTE_ORDER=LITTLE_ENDIAN;_LOW_ACCURACY_"
 				StringPooling="TRUE"
 				RuntimeLibrary="0"
 				BufferSecurityCheck="TRUE"
@@ -1345,6 +1345,12 @@
 					</File>
 					<File
 						RelativePath="..\..\mednafen\pce_fast\input.cpp">
+						<FileConfiguration
+							Name="Release|Xbox">
+							<Tool
+								Name="VCCLCompilerTool"
+								Optimization="0"/>
+						</FileConfiguration>
 					</File>
 					<File
 						RelativePath="..\..\mednafen\pce_fast\pce.cpp">
@@ -1363,6 +1369,12 @@
 						Filter="">
 						<File
 							RelativePath="..\..\mednafen\pce_fast\input\gamepad.cpp">
+							<FileConfiguration
+								Name="Release|Xbox">
+								<Tool
+									Name="VCCLCompilerTool"
+									Optimization="0"/>
+							</FileConfiguration>
 						</File>
 						<File
 							RelativePath="..\..\mednafen\pce_fast\input\mouse.cpp">

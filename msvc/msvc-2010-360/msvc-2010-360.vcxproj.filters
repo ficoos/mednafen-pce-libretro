@@ -51,9 +51,6 @@
     <Filter Include="Source Files\mednafen\hw_cpu\huc6280">
       <UniqueIdentifier>{3659d8e0-b177-4d5b-910e-67808c4cfebe}</UniqueIdentifier>
     </Filter>
-    <Filter Include="Source Files\mednafen\resampler">
-      <UniqueIdentifier>{1b32ac54-d1d3-4f2d-9793-76978ec626eb}</UniqueIdentifier>
-    </Filter>
     <Filter Include="Source Files\mednafen\pce">
       <UniqueIdentifier>{bfc376b9-eaba-482e-b888-b211c48c7b59}</UniqueIdentifier>
     </Filter>
@@ -182,9 +179,6 @@
     <ClCompile Include="..\..\mednafen\pce_fast\input\mouse.cpp">
       <Filter>Source Files\mednafen\pce\input</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\mednafen\resampler\resample.c">
-      <Filter>Source Files\mednafen\resampler</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\mednafen\sound\Fir_Resampler.cpp">
       <Filter>Source Files\mednafen\sound</Filter>
     </ClCompile>
@@ -263,9 +257,6 @@
     <ClCompile Include="..\..\mednafen\file.cpp">
       <Filter>Source Files\mednafen</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\mednafen\FileWrapper.cpp">
-      <Filter>Source Files\mednafen</Filter>
-    </ClCompile>
     <ClCompile Include="..\..\mednafen\general.cpp">
       <Filter>Source Files\mednafen</Filter>
     </ClCompile>
@@ -273,9 +264,6 @@
       <Filter>Source Files\mednafen</Filter>
     </ClCompile>
     <ClCompile Include="..\..\mednafen\mednafen.cpp">
-      <Filter>Source Files\mednafen</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\mednafen\memory.cpp">
       <Filter>Source Files\mednafen</Filter>
     </ClCompile>
     <ClCompile Include="..\..\mednafen\mempatcher.cpp">
