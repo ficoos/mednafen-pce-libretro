@@ -231,6 +231,9 @@ endif
 %.o: %.c
 	$(CC) -c -o $@ $< $(CFLAGS)
 
+clean-objs:
+	rm -f $(OBJECTS)
+
 clean:
 	rm -f $(TARGET) $(OBJECTS)
 
