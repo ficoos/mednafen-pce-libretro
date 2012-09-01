@@ -74,12 +74,22 @@ else ifeq ($(platform), xenon)
    ENDIANNESS_DEFINES += -D__LIBXENON__ -m32 -D__ppc__ -DMSB_FIRST -DBYTE_ORDER=BIG_ENDIAN
 
    LIBS := -pthread -lz
+else ifeq ($(platform), ngc)
+   TARGET := libretro_ngc.a
+   CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc$(EXE_EXT)
+   CXX = $(DEVKITPPC)/bin/powerpc-eabi-g++$(EXE_EXT)
+   AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
+   ENDIANNESS_DEFINES += -DGEKKO -DHW_DOL -mrvl -mcpu=750 -meabi -mhard-float -DMSB_FIRST -DBYTE_ORDER=BIG_ENDIAN
+
+   HAVE_RZLIB := 1
+   EXTRA_INCLUDES := -I$(DEVKITPRO)/libogc/include
+
 else ifeq ($(platform), wii)
    TARGET := libretro_wii.a
    CC = $(DEVKITPPC)/bin/powerpc-eabi-gcc$(EXE_EXT)
    CXX = $(DEVKITPPC)/bin/powerpc-eabi-g++$(EXE_EXT)
    AR = $(DEVKITPPC)/bin/powerpc-eabi-ar$(EXE_EXT)
-   ENDIANNESS_DEFINES += -DGEKKO -mrvl -mcpu=750 -meabi -mhard-float -DMSB_FIRST -DBYTE_ORDER=BIG_ENDIAN
+   ENDIANNESS_DEFINES += -DGEKKO -DHW_RVL -mrvl -mcpu=750 -meabi -mhard-float -DMSB_FIRST -DBYTE_ORDER=BIG_ENDIAN
 
    HAVE_RZLIB := 1
    EXTRA_INCLUDES := -I$(DEVKITPRO)/libogc/include
@@ -218,6 +228,8 @@ ifeq ($(platform), ps3)
 else ifeq ($(platform), sncps3)
 	$(AR) rcs $@ $(OBJECTS)
 else ifeq ($(platform), xenon)
+	$(AR) rcs $@ $(OBJECTS)
+else ifeq ($(platform), ngc)
 	$(AR) rcs $@ $(OBJECTS)
 else ifeq ($(platform), wii)
 	$(AR) rcs $@ $(OBJECTS)
