@@ -81,7 +81,7 @@ bool MDFN_GetSettingB(const char *name)
 if(!strcmp("cheats", name))
 		return 0;
         if(!strcmp(PCE_MODULE".input.multitap", name))
-                return 0;
+                return 1;
 	if(!strcmp("filesys.disablesavegz", name))
 		return 1;
 	if(!strcmp(PCE_MODULE".arcadecard", name))
