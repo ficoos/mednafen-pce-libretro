@@ -170,7 +170,7 @@ endif
 
 MEDNAFEN_SOURCES := $(MEDNAFEN_DIR)/settings.cpp \
 	$(MEDNAFEN_DIR)/general.cpp \
-	$(MEDNAFEN_DIR)/endian.cpp \
+	$(MEDNAFEN_DIR)/mednafen-endian.cpp \
 	$(MEDNAFEN_DIR)/mempatcher.cpp \
         $(MEDNAFEN_DIR)/error.cpp \
 	$(MEDNAFEN_DIR)/cdrom/cdromif.cpp \

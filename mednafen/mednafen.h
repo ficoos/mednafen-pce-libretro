@@ -1,6 +1,6 @@
 #ifndef _MEDNAFEN_H
 
-#include "types.h"
+#include "mednafen-types.h"
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>

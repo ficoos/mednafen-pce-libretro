@@ -1,6 +1,6 @@
 #ifndef _PCE_H
 
-#include "../types.h"
+#include "../mednafen-types.h"
 #include "../mednafen.h"
 #include "../state.h"
 #include "../general.h"
