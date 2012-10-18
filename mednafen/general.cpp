@@ -211,6 +211,7 @@ std::string MDFN_MakeFName(MakeFName_Type type, int id1, const char *cd1)
 
   case MDFNMKF_IPS:  trio_snprintf(tmp_path, 4096, "%s"PSS"%s%s.ips", FileBaseDirectory.c_str(), FileBase.c_str(), FileExt.c_str());
                      break;
+#if 0
   case MDFNMKF_FIRMWARE:
 		    {
 		     std::string overpath = MDFN_GetSettingS("filesys.path_firmware");
@@ -234,6 +235,8 @@ std::string MDFN_MakeFName(MakeFName_Type type, int id1, const char *cd1)
 		     }
 		    }
 		    break;
+#endif
+
   case MDFNMKF_PALETTE:
 		      {
                       char tmp_path[4096];
