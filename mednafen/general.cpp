@@ -20,6 +20,9 @@
 #include <string.h>
 #include <stdarg.h>
 
+#include <sys/types.h>
+#include <sys/stat.h>
+
 #ifndef _WIN32
 #include <unistd.h>
 #endif
@@ -183,7 +186,7 @@ std::string MDFN_MakeFName(MakeFName_Type type, int id1, const char *cd1)
 {
  char tmp_path[4096];
  char numtmp[64];
- //struct stat tmpstat;
+ struct stat tmpstat;
 
 #ifdef _WIN32
  const char *slash = "\\";
@@ -211,7 +214,7 @@ std::string MDFN_MakeFName(MakeFName_Type type, int id1, const char *cd1)
 
   case MDFNMKF_IPS:  trio_snprintf(tmp_path, 4096, "%s"PSS"%s%s.ips", FileBaseDirectory.c_str(), FileBase.c_str(), FileExt.c_str());
                      break;
-#if 0
+
   case MDFNMKF_FIRMWARE:
 		    {
 		     std::string overpath = MDFN_GetSettingS("filesys.path_firmware");
@@ -235,7 +238,6 @@ std::string MDFN_MakeFName(MakeFName_Type type, int id1, const char *cd1)
 		     }
 		    }
 		    break;
-#endif
 
   case MDFNMKF_PALETTE:
 		      {
