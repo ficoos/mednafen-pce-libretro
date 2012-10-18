@@ -17,12 +17,15 @@
 
 #include "../mednafen.h"
 
+#ifdef HAVE_LIBCDIO
 #include <sys/types.h>
 #include <sys/stat.h>
+#endif
 
 #ifndef _WIN32
 #include <unistd.h>
 #endif
+
 
 #include "CDAccess.h"
 #include "CDAccess_Image.h"
@@ -46,9 +49,9 @@ CDAccess::~CDAccess()
 CDAccess *cdaccess_open(const char *path)
 {
  CDAccess *ret;
+ #ifdef HAVE_LIBCDIO
  struct stat stat_buf;
 
- #ifdef HAVE_LIBCDIO
  if(path == NULL || (!stat(path, &stat_buf) && !S_ISREG(stat_buf.st_mode)))
   ret = new CDAccess_Physical(path);
  else
