@@ -168,8 +168,7 @@ HW_CPU_SOURCES_C := $(MEDNAFEN_DIR)/hw_cpu/c68k/c68k.c \
 	$(MEDNAFEN_DIR)/hw_cpu/c68k/c68kexec.c
 endif
 
-MEDNAFEN_SOURCES := $(MEDNAFEN_DIR)/settings.cpp \
-	$(MEDNAFEN_DIR)/general.cpp \
+MEDNAFEN_SOURCES := $(LIBRETRO_DIR)/retrofen.cpp \
 	$(MEDNAFEN_DIR)/endian.cpp \
 	$(MEDNAFEN_DIR)/mempatcher.cpp \
         $(MEDNAFEN_DIR)/error.cpp \
@@ -185,15 +184,9 @@ MEDNAFEN_SOURCES := $(MEDNAFEN_DIR)/settings.cpp \
 	$(MEDNAFEN_DIR)/cdrom/scsicd.cpp \
 	$(MEDNAFEN_DIR)/cdrom/recover-raw.cpp \
 	$(MEDNAFEN_DIR)/cdrom/l-ec.cpp \
-	$(MEDNAFEN_DIR)/video/surface.cpp \
 	$(MEDNAFEN_DIR)/sound/Blip_Buffer.cpp \
 	$(MEDNAFEN_DIR)/sound/Fir_Resampler.cpp \
-	$(MEDNAFEN_DIR)/mednafen.cpp \
-	$(MEDNAFEN_DIR)/video/video.cpp \
-	$(MEDNAFEN_DIR)/state.cpp \
-	$(MEDNAFEN_DIR)/file.cpp \
 	$(MEDNAFEN_DIR)/okiadpcm.cpp \
-	$(MEDNAFEN_DIR)/tests.cpp \
 	$(MEDNAFEN_DIR)/md5.cpp
 
 MPC_SRC := $(wildcard $(MEDNAFEN_DIR)/mpcdec/*.c)
