@@ -159,9 +159,6 @@ void retro_init()
 {
    MDFN_PixelFormat pix_fmt(MDFN_COLORSPACE_RGB, 16, 8, 0, 24);
    surf = new MDFN_Surface(mednafen_buf, WIDTH, HEIGHT, WIDTH, pix_fmt);
-
-   std::vector<MDFNGI*> ext;
-   MDFNI_InitializeModules(ext);
 }
 
 void retro_deinit()

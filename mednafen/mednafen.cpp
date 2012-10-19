@@ -134,28 +134,9 @@ extern MDFNGI EmulatedWSwan;
 extern MDFNGI EmulatedSMS, EmulatedGG;
 #endif
 
-std::vector<MDFNGI *> MDFNSystems;
-static std::list<MDFNGI *> MDFNSystemsPrio;
-
-bool MDFNSystemsPrio_CompareFunc(MDFNGI *first, MDFNGI *second)
-{
- if(first->ModulePriority > second->ModulePriority)
-  return(true);
-
- return(false);
-}
-
 void MDFNI_DumpModulesDef(const char *fn)
 {
  FILE *fp = fopen(fn, "wb");
-
- for(unsigned int i = 0; i < MDFNSystems.size(); i++)
- {
-  fprintf(fp, "%s\n", MDFNSystems[i]->shortname);
-  fprintf(fp, "%s\n", MDFNSystems[i]->fullname);
-  fprintf(fp, "%d\n", MDFNSystems[i]->nominal_width);
-  fprintf(fp, "%d\n", MDFNSystems[i]->nominal_height);
- }
 
  fclose(fp);
 }
@@ -288,59 +269,9 @@ MDFNGI *MDFNI_LoadCD(const char *force_module, const char *devicename)
   layout_md5.finish(LayoutMD5);
  }
 
-	MDFNGameInfo = NULL;
+ MDFNGameInfo = &EmulatedPCE_Fast;
 
-        for(std::list<MDFNGI *>::iterator it = MDFNSystemsPrio.begin(); it != MDFNSystemsPrio.end(); it++)
-        {
-         char tmpstr[256];
-         trio_snprintf(tmpstr, 256, "%s.enable", (*it)->shortname);
-
-         if(force_module)
-         {
-          if(!strcmp(force_module, (*it)->shortname))
-          {
-           MDFNGameInfo = *it;
-           break;
-          }
-         }
-         else
-         {
-          // Is module enabled?
-          if(!MDFN_GetSettingB(tmpstr))
-           continue; 
-
-          if(!(*it)->LoadCD || !(*it)->TestMagicCD)
-           continue;
-
-          if((*it)->TestMagicCD(&CDInterfaces))
-          {
-           MDFNGameInfo = *it;
-           break;
-          }
-         }
-        }
-
-        if(!MDFNGameInfo)
-        {
-	 if(force_module)
-	 {
-	  MDFN_PrintError(_("Unrecognized system \"%s\"!"), force_module);
-	  return(0);
-	 }
-
-	 // This code path should never be taken, thanks to "cdplay"
- 	 MDFN_PrintError(_("Could not find a system that supports this CD."));
-	 return(0);
-        }
-
-	// This if statement will be true if force_module references a system without CDROM support.
-        if(!MDFNGameInfo->LoadCD)
-	{
-         MDFN_PrintError(_("Specified system \"%s\" doesn't support CDs!"), force_module);
-	 return(0);
-	}
-
-        MDFN_printf(_("Using module: %s(%s)\n\n"), MDFNGameInfo->shortname, MDFNGameInfo->fullname);
+ MDFN_printf(_("Using module: %s(%s)\n\n"), MDFNGameInfo->shortname, MDFNGameInfo->fullname);
 
 
  // TODO: include module name in hash
@@ -380,7 +311,7 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
 
 	LastSoundMultiplier = 1;
 
-	MDFNGameInfo = NULL;
+	MDFNGameInfo = &EmulatedPCE_Fast;
 
 	MDFN_printf(_("Loading %s...\n"),name);
 
@@ -388,78 +319,11 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
 
         GetFileBase(name);
 
-	// Construct a NULL-delimited list of known file extensions for MDFN_fopen()
-	for(unsigned int i = 0; i < MDFNSystems.size(); i++)
-	{
-	 // If we're forcing a module, only look for extensions corresponding to that module
-	 if(force_module && strcmp(MDFNSystems[i]->shortname, force_module))
-	  continue;
-
-	}
-
 	if(!GameFile.Open(name))
         {
 	 MDFNGameInfo = NULL;
 	 return 0;
 	}
-
-	MDFNGameInfo = NULL;
-
-	for(std::list<MDFNGI *>::iterator it = MDFNSystemsPrio.begin(); it != MDFNSystemsPrio.end(); it++)
-	{
-	 char tmpstr[256];
-	 trio_snprintf(tmpstr, 256, "%s.enable", (*it)->shortname);
-
-	 if(force_module)
-	 {
-          if(!strcmp(force_module, (*it)->shortname))
-          {
-	   if(!(*it)->Load)
-	   {
-            GameFile.Close();
-
-	    if((*it)->LoadCD)
-             MDFN_PrintError(_("Specified system only supports CD(physical, or image files, such as *.cue and *.toc) loading."));
-	    else
-             MDFN_PrintError(_("Specified system does not support normal file loading."));
-            MDFN_indent(-1);
-            MDFNGameInfo = NULL;
-            return 0;
-	   }
-           MDFNGameInfo = *it;
-           break;
-          }
-	 }
-	 else
-	 {
-	  // Is module enabled?
-	  if(!MDFN_GetSettingB(tmpstr))
-	   continue; 
-
-	  if(!(*it)->Load || !(*it)->TestMagic)
-	   continue;
-
-	  if((*it)->TestMagic(name, &GameFile))
-	  {
-	   MDFNGameInfo = *it;
-	   break;
-	  }
-	 }
-	}
-
-        if(!MDFNGameInfo)
-        {
-	 GameFile.Close();
-
-	 if(force_module)
-          MDFN_PrintError(_("Unrecognized system \"%s\"!"), force_module);
-	 else
-          MDFN_PrintError(_("Unrecognized file format.  Sorry."));
-
-         MDFN_indent(-1);
-         MDFNGameInfo = NULL;
-         return 0;
-        }
 
 	MDFN_printf(_("Using module: %s(%s)\n\n"), MDFNGameInfo->shortname, MDFNGameInfo->fullname);
 	MDFN_indent(1);
@@ -569,30 +433,8 @@ bool MDFNI_InitializeModules(const std::vector<MDFNGI *> &ExternalSystems)
  };
  std::string i_modules_string, e_modules_string;
 
- for(unsigned int i = 0; i < sizeof(InternalSystems) / sizeof(MDFNGI *); i++)
- {
-  MDFNSystems.push_back(InternalSystems[i]);
-  if(i)
-   i_modules_string += " ";
-  i_modules_string += std::string(InternalSystems[i]->shortname);
- }
-
- for(unsigned int i = 0; i < ExternalSystems.size(); i++)
- {
-  MDFNSystems.push_back(ExternalSystems[i]);
-  if(i)
-   i_modules_string += " ";
-  e_modules_string += std::string(ExternalSystems[i]->shortname);
- }
-
  MDFNI_printf(_("Internal emulation modules: %s\n"), i_modules_string.c_str());
  MDFNI_printf(_("External emulation modules: %s\n"), e_modules_string.c_str());
-
-
- for(unsigned int i = 0; i < MDFNSystems.size(); i++)
-  MDFNSystemsPrio.push_back(MDFNSystems[i]);
-
- MDFNSystemsPrio.sort(MDFNSystemsPrio_CompareFunc);
 
  CDUtility::CDUtility_Init();
 
