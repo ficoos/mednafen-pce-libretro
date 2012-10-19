@@ -33,8 +33,6 @@
 #include "state.h"
 #include "video.h"
 
-static int SaveStateStatus[10];
-
 #define RLSB 		MDFNSTATE_RLSB	//0x80000000
 
 static int32 smem_read(StateMem *st, void *buffer, uint32 len)
@@ -409,9 +407,6 @@ static int ReadStateChunk(StateMem *st, SFORMAT *sf, int size, int data_only)
  return 1;
 }
 
-static int CurrentState = 0;
-static int RecentlySavedState = -1;
-
 /* This function is called by the game driver(NES, GB, GBA) to save a state. */
 int MDFNSS_StateAction(StateMem *st, int load, int data_only, std::vector <SSDescriptor> &sections)
 {
@@ -512,50 +507,6 @@ int MDFNSS_SaveSM(StateMem *st)
 	return(1);
 }
 
-static int MDFNSS_Save(const char *fname, const char *suffix)
-{
-	StateMem st;
-
-	memset(&st, 0, sizeof(StateMem));
-
-
-	if(!MDFNGameInfo->StateAction)
-	{
-	 MDFN_DispMessage(_("Module \"%s\" doesn't support save states."), MDFNGameInfo->shortname);
-	 return(0);
-	}
-
-	if(!MDFNSS_SaveSM(&st))
-	{
-	 if(st.data)
-	  free(st.data);
-	 if(!fname && !suffix)
- 	  MDFN_DispMessage(_("State %d save error."), CurrentState);
-	 return(0);
-	}
-
-	if(!MDFN_DumpToFile(fname ? fname : MDFN_MakeFName(MDFNMKF_STATE,CurrentState,suffix).c_str(), 6, st.data, st.len))
-	{
-         SaveStateStatus[CurrentState] = 0;
-	 free(st.data);
-
-         if(!fname && !suffix)
-          MDFN_DispMessage(_("State %d save error."),CurrentState);
-
-	 return(0);
-	}
-
-	free(st.data);
-
-	SaveStateStatus[CurrentState] = 1;
-	RecentlySavedState = CurrentState;
-
-	if(!fname && !suffix)
-	 MDFN_DispMessage(_("State %d saved."),CurrentState);
-
-	return(1);
-}
-
 int MDFNSS_LoadSM(StateMem *st)
 {
  uint8 header[32];
@@ -569,188 +520,4 @@ int MDFNSS_LoadSM(StateMem *st)
  stateversion = MDFN_de32lsb(header + 16);
 
  return(MDFNGameInfo->StateAction(st, stateversion, 0));
-}
-
-static int MDFNSS_LoadFP(gzFile fp)
-{
- uint8 header[32];
- StateMem st;
- 
- memset(&st, 0, sizeof(StateMem));
-
- if(gzread(fp, header, 32) != 32)
- {
-  return(0);
- }
- st.len = MDFN_de32lsb(header + 16 + 4);
-
- if(st.len < 32)
-  return(0);
-
- if(!(st.data = (uint8 *)malloc(st.len)))
-  return(0);
-
- memcpy(st.data, header, 32);
- if(gzread(fp, st.data + 32, st.len - 32) != ((int32)st.len - 32))
- {
-  free(st.data);
-  return(0);
- }
- if(!MDFNSS_LoadSM(&st))
- {
-  free(st.data);
-  return(0);
- }
- free(st.data);
- return(1);
-}
-
-static int MDFNSS_Load(const char *fname, const char *suffix)
-{
-	gzFile st;
-
-        if(!MDFNGameInfo->StateAction)
-        {
-         MDFN_DispMessage(_("Module \"%s\" doesn't support save states."), MDFNGameInfo->shortname);
-         return(0);
-        }
-
-        if(fname)
-         st=gzopen(fname, "rb");
-        else
-        {
-         st=gzopen(MDFN_MakeFName(MDFNMKF_STATE,CurrentState,suffix).c_str(),"rb");
-	}
-
-	if(st == NULL)
-	{
-	 if(!fname && !suffix)
-	 {
-          MDFN_DispMessage(_("State %d load error."),CurrentState);
-          SaveStateStatus[CurrentState]=0;
-	 }
-	 return(0);
-	}
-
-	if(MDFNSS_LoadFP(st))
-	{
-	 if(!fname && !suffix)
-	 {
-          SaveStateStatus[CurrentState]=1;
-          MDFN_DispMessage(_("State %d loaded."),CurrentState);
-          SaveStateStatus[CurrentState]=1;
-	 }
-	 gzclose(st);
-         return(1);
-        }   
-        else
-        {
-         SaveStateStatus[CurrentState]=1;
-         MDFN_DispMessage(_("State %d read error!"),CurrentState);
-	 gzclose(st);
-         return(0);
-        }
-}
-
-void MDFNSS_CheckStates(void)
-{
-	time_t last_time = 0;
-
-        if(!MDFNGameInfo->StateAction) 
-         return;
-
-
-	for(int ssel = 0; ssel < 10; ssel++)
-        {
-	 struct stat stat_buf;
-
-	 SaveStateStatus[ssel] = 0;
-
-	 if(stat(MDFN_MakeFName(MDFNMKF_STATE, ssel, 0).c_str(), &stat_buf) == 0)
-	 {
-	  SaveStateStatus[ssel] = 1;
-	  if(stat_buf.st_mtime > last_time)
-	  {
-	   RecentlySavedState = ssel;
-	   last_time = stat_buf.st_mtime;
- 	  }
-	 }
-        }
-
-	CurrentState = 0;
-	MDFND_SetStateStatus(NULL);
-}
-
-void MDFNSS_GetStateInfo(const char *filename, StateStatusStruct *status)
-{
- gzFile fp;
-
- fp = gzopen(filename, "rb");
- if(fp)
- {
-  uint8 header[32];
-
-  gzread(fp, header, 32);
-
-  gzclose(fp);
- }
- else
- {
- }
-}
-
-void MDFNI_SelectState(int w)
-{
- if(!MDFNGameInfo->StateAction) 
-  return;
-
-
- if(w == -1) 
- {  
-  MDFND_SetStateStatus(NULL);
-  return; 
- }
-
- if(w == 666 + 1)
-  CurrentState = (CurrentState + 1) % 10;
- else if(w == 666 - 1)
- {
-  CurrentState--;
-
-  if(CurrentState < 0 || CurrentState > 9)
-   CurrentState = 9;
- }
- else
-  CurrentState = w;
-
- MDFN_ResetMessages();
-
- StateStatusStruct *status = (StateStatusStruct*)MDFN_calloc(1, sizeof(StateStatusStruct), _("Save state status"));
- 
- memcpy(status->status, SaveStateStatus, 10 * sizeof(int));
-
- status->current = CurrentState;
- status->recently_saved = RecentlySavedState;
-
- MDFNSS_GetStateInfo(MDFN_MakeFName(MDFNMKF_STATE,CurrentState,NULL).c_str(), status);
- MDFND_SetStateStatus(status);
-}  
-
-void MDFNI_SaveState(const char *fname, const char *suffix)
-{
- if(!MDFNGameInfo->StateAction) 
-  return;
-
- MDFND_SetStateStatus(NULL);
- MDFNSS_Save(fname, suffix);
-}
-
-void MDFNI_LoadState(const char *fname, const char *suffix)
-{
- if(!MDFNGameInfo->StateAction) 
-  return;
-
- MDFND_SetStateStatus(NULL);
-
- MDFNSS_Load(fname, suffix);
 }

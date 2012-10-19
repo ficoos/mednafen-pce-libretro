@@ -276,8 +276,6 @@ MDFNGI *MDFNI_LoadCD(const char *force_module, const char *devicename)
 
  MDFNI_SetLayerEnableMask(~0ULL);
 
- MDFNSS_CheckStates();
-
  MDFN_ResetMessages();   // Save state, status messages, etc.
 
   last_sound_rate = -1;
@@ -328,8 +326,6 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
         }
 
 	MDFNI_SetLayerEnableMask(~0ULL);
-
-	MDFNSS_CheckStates();
 
 	MDFN_ResetMessages();	// Save state, status messages, etc.
 
