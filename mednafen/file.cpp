@@ -27,46 +27,11 @@
 #include "file.h"
 #include "general.h"
 
-// This function should ALWAYS close the system file "descriptor"(FILE *) it's given,
-// even if it errors out.
-bool MDFNFILE::MakeMemWrapAndClose(FILE *tz)
-{
- bool ret = false;
-
- location = 0;
-
- fseek(tz, 0, SEEK_END);
- f_size = ftell(tz);
- fseek(tz, 0, SEEK_SET);
-
- if(!(f_data = (uint8*)MDFN_malloc(f_size, _("file read buffer"))))
-  goto doret;
-
- if((int64)fread(f_data, 1, f_size, tz) != f_size)
- {
-  ErrnoHolder ene(errno);
-  MDFN_PrintError(_("Error reading file: %s"), ene.StrError());
-
-  free(f_data);
-  goto doret;
- }
-
- ret = true;
-
- doret:
-  fclose(tz);
-
- return ret;
-}
-
 MDFNFILE::MDFNFILE()
 {
  f_data = NULL;
  f_size = 0;
  f_ext = NULL;
-
- location = 0;
-
 }
 
 MDFNFILE::MDFNFILE(const char *path)
@@ -81,41 +46,36 @@ MDFNFILE::~MDFNFILE()
  Close();
 }
 
-
 bool MDFNFILE::Open(const char *path)
 {
- local_errno = 0;
- error_code = MDFNFILE_EC_OTHER;	// Set to 0 at the end if the function succeeds.
+ const char *ld;
+ FILE *fp = fopen(path, "rb");
 
- FILE *fp;
-
- if(!(fp = fopen(path, "rb")))
- {
-  ErrnoHolder ene(errno);
-  local_errno = ene.Errno();
-
-  if(ene.Errno() == ENOENT)
-  {
-   local_errno = ene.Errno();
-   error_code = MDFNFILE_EC_NOTFOUND;
-  }
-
-  MDFN_PrintError(_("Error opening \"%s\": %s"), path, ene.StrError());
-
-  return 0;
- }
+ if(!fp)
+  goto error;
 
  fseek(fp, 0, SEEK_SET);
+ fseek(fp, 0, SEEK_END);
 
- if(!MakeMemWrapAndClose(fp))
-   return 0;
+ f_size = ftell(fp);
+ fseek(fp, 0, SEEK_SET);
 
- const char *ld = strrchr(path, '.');
+ f_data = (uint8*)malloc(f_size);
+
+ if((int64)fread(f_data, 1, f_size, fp) != f_size)
+  goto error_memwrap;
+
+ ld = strrchr(path, '.');
  f_ext = strdup(ld ? ld + 1 : "");
 
- error_code = 0;
-
  return true;
+
+error_memwrap:
+ free(f_data);
+ fclose(fp);
+error:
+ MDFN_PrintError("Error opening file: %s\n", path);
+ return false;
 }
 
 bool MDFNFILE::Close(void)
@@ -135,48 +95,17 @@ bool MDFNFILE::Close(void)
  return 1;
 }
 
-#include <vector>
-
 bool MDFN_DumpToFile(const char *filename, int compress, const void *data, uint64 length)
 {
- std::vector<PtrLengthPair> pearpairs;
- pearpairs.push_back(PtrLengthPair(data, length));
+	FILE *fp = fopen(filename, "wb");
 
- compress = 0;
+        if(!fp)
+           goto error;
 
- {
-  FILE *fp = fopen(filename, "wb");
+	fwrite(data, 1, length, fp);
+	fclose(fp);
+	return 1;
 
-  if(!fp)
-  {
-   ErrnoHolder ene(errno);
-
-   MDFN_PrintError(_("Error opening \"%s\": %s"), filename, ene.StrError());
-   return 0;
-  }
-
-  for(unsigned int i = 0; i < pearpairs.size(); i++)
-  {
-   const void *data = pearpairs[i].data;
-   const uint64 length = pearpairs[i].length;
-
-   if(fwrite(data, 1, length, fp) != length)
-   {
-    ErrnoHolder ene(errno);
-
-    MDFN_PrintError(_("Error writing to \"%s\": %s"), filename, ene.StrError());
-    fclose(fp);
-    return 0;
-   }
-  }
-
-  if(fclose(fp) == EOF)
-  {
-   ErrnoHolder ene(errno);
-
-   MDFN_PrintError(_("Error closing \"%s\": %s"), filename, ene.StrError());
-   return 0;
-  }
- }
- return 1;
+error:
+        return 0;
 }
