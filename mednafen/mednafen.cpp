@@ -31,9 +31,6 @@
 
 #include	"include/trio/trio.h"
 
-#include	<list>
-#include	<algorithm>
-
 #include	"general.h"
 
 #include	"state.h"
@@ -134,13 +131,6 @@ extern MDFNGI EmulatedWSwan;
 extern MDFNGI EmulatedSMS, EmulatedGG;
 #endif
 
-void MDFNI_DumpModulesDef(const char *fn)
-{
- FILE *fp = fopen(fn, "wb");
-
- fclose(fp);
-}
-
 static void ReadM3U(std::vector<std::string> &file_list, std::string path, unsigned depth = 0)
 {
  std::vector<std::string> ret;
@@ -205,10 +195,7 @@ MDFNGI *MDFNI_LoadCD(const char *force_module, const char *devicename)
   else
   {
    CDInterfaces.push_back(new CDIF(devicename));
-   if(CDInterfaces[0]->IsPhysical())
-    GetFileBase("cdrom");
-   else
-    GetFileBase(devicename);
+   GetFileBase(devicename);
   }
  }
  catch(std::exception &e)
@@ -370,82 +357,8 @@ MDFNGI *MDFNI_LoadGame(const char *force_module, const char *name)
         return(MDFNGameInfo);
 }
 
-bool MDFNI_InitializeModules(const std::vector<MDFNGI *> &ExternalSystems)
-{
- static MDFNGI *InternalSystems[] =
- {
-  #ifdef WANT_NES_EMU
-  &EmulatedNES,
-  #endif
-
-  #ifdef WANT_SNES_EMU
-  &EmulatedSNES,
-  #endif
-
-  #ifdef WANT_GB_EMU
-  &EmulatedGB,
-  #endif
-
-  #ifdef WANT_GBA_EMU
-  &EmulatedGBA,
-  #endif
-
-  #ifdef WANT_PCE_EMU
-  &EmulatedPCE,
-  #endif
-
-  #ifdef WANT_PCE_FAST_EMU
-  &EmulatedPCE_Fast,
-  #endif
-
-  #ifdef WANT_LYNX_EMU
-  &EmulatedLynx,
-  #endif
-
-  #ifdef WANT_MD_EMU
-  &EmulatedMD,
-  #endif
-
-  #ifdef WANT_PCFX_EMU
-  &EmulatedPCFX,
-  #endif
-
-  #ifdef WANT_NGP_EMU
-  &EmulatedNGP,
-  #endif
-
-  #ifdef WANT_PSX_EMU
-  &EmulatedPSX,
-  #endif
-
-  #ifdef WANT_VB_EMU
-  &EmulatedVB,
-  #endif
-
-  #ifdef WANT_WSWAN_EMU
-  &EmulatedWSwan,
-  #endif
-
-  #ifdef WANT_SMS_EMU
-  &EmulatedSMS,
-  &EmulatedGG,
-  #endif
- };
- std::string i_modules_string, e_modules_string;
-
- MDFNI_printf(_("Internal emulation modules: %s\n"), i_modules_string.c_str());
- MDFNI_printf(_("External emulation modules: %s\n"), e_modules_string.c_str());
-
- CDUtility::CDUtility_Init();
-
- return(1);
-}
-
 int MDFNI_Initialize(const char *basedir)
 {
-	if(!MDFN_RunMathTests())
-	 return(0);
-
 	MDFNI_SetBaseDirectory(basedir);
 
         return(1);
@@ -536,21 +449,6 @@ static void ProcessAudio(EmulateSpecStruct *espec)
    }
   }
 
-  // TODO: Optimize this.
-  /*
-  if(MDFNGameInfo->soundchan == 2 && MDFN_GetSettingB(std::string(std::string(MDFNGameInfo->shortname) + ".forcemono").c_str()))
-  {
-   for(int i = 0; i < SoundBufSize * MDFNGameInfo->soundchan; i += 2)
-   {
-    // We should use division instead of arithmetic right shift for correctness(rounding towards 0 instead of negative infinitininintinity), but I like speed.
-    int32 mixed = (SoundBuf[i + 0] + SoundBuf[i + 1]) >> 1;
-
-    SoundBuf[i + 0] =
-    SoundBuf[i + 1] = mixed;
-   }
-  }
-  */
-
   espec->SoundBufSize = espec->SoundBufSizeALMS + SoundBufSize;
  } // end to:  if(espec->SoundBuf && espec->SoundBufSize)
 }
@@ -602,32 +500,6 @@ void MDFNI_Emulate(EmulateSpecStruct *espec)
  MDFNGameInfo->Emulate(espec);
 
  ProcessAudio(espec);
-}
-
-// This function should only be called for state rewinding.
-// FIXME:  Add a macro for SFORMAT structure access instead of direct access
-int MDFN_RawInputStateAction(StateMem *sm, int load, int data_only)
-{
- static const char *stringies[16] = { "RI00", "RI01", "RI02", "RI03", "RI04", "RI05", "RI06", "RI07", "RI08", "RI09", "RI0a", "RI0b", "RI0c", "RI0d", "RI0e", "RI0f" };
- SFORMAT StateRegs[17];
- int x;
-
- for(x = 0; x < 16; x++)
- {
-  StateRegs[x].name = stringies[x];
-  StateRegs[x].flags = 0;
-
-  StateRegs[x].v = NULL;
-  StateRegs[x].size = 0;
- }
-
- StateRegs[x].v = NULL;
- StateRegs[x].size = 0;
- StateRegs[x].name = NULL;
-
- int ret = MDFNSS_StateAction(sm, load, data_only, StateRegs, "rinp");
-
- return(ret);
 }
 
 static int curindent = 0;
