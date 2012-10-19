@@ -169,9 +169,6 @@ HW_CPU_SOURCES_C := $(MEDNAFEN_DIR)/hw_cpu/c68k/c68k.c \
 endif
 
 MEDNAFEN_SOURCES := $(LIBRETRO_DIR)/retrofen.cpp \
-	$(MEDNAFEN_DIR)/endian.cpp \
-	$(MEDNAFEN_DIR)/mempatcher.cpp \
-        $(MEDNAFEN_DIR)/error.cpp \
 	$(MEDNAFEN_DIR)/cdrom/cdromif.cpp \
 	$(MEDNAFEN_DIR)/cdrom/CDAccess.cpp \
 	$(MEDNAFEN_DIR)/cdrom/CDAccess_Image.cpp \
@@ -185,9 +182,7 @@ MEDNAFEN_SOURCES := $(LIBRETRO_DIR)/retrofen.cpp \
 	$(MEDNAFEN_DIR)/cdrom/recover-raw.cpp \
 	$(MEDNAFEN_DIR)/cdrom/l-ec.cpp \
 	$(MEDNAFEN_DIR)/sound/Blip_Buffer.cpp \
-	$(MEDNAFEN_DIR)/sound/Fir_Resampler.cpp \
-	$(MEDNAFEN_DIR)/okiadpcm.cpp \
-	$(MEDNAFEN_DIR)/md5.cpp
+	$(MEDNAFEN_DIR)/sound/Fir_Resampler.cpp
 
 MPC_SRC := $(wildcard $(MEDNAFEN_DIR)/mpcdec/*.c)
 TREMOR_SRC := $(wildcard $(MEDNAFEN_DIR)/tremor/*.c)
@@ -208,7 +203,7 @@ OBJECTS := $(SOURCES:.cpp=.o) $(SOURCES_C:.c=.o)
 all: $(TARGET)
 
 FLAGS += -ffast-math  -funroll-loops -fsigned-char
-FLAGS += -I. -I$(MEDNAFEN_DIR) -I$(MEDNAFEN_DIR)/include -I$(MEDNAFEN_DIR)/intl -I$(MEDNAFEN_DIR)/hw_cpu -I$(MEDNAFEN_DIR)/hw_misc -I$(MEDNAFEN_DIR)/hw_sound -I$(MEDNAFEN_DIR)/hw_video -I$(MEDNAFEN_DIR)/compress $(EXTRA_INCLUDES)
+FLAGS += -I. -I$(MEDNAFEN_DIR) -I$(MEDNAFEN_DIR)/include -I$(MEDNAFEN_DIR)/intl -I$(MEDNAFEN_DIR)/hw_cpu -I$(MEDNAFEN_DIR)/hw_misc -I$(MEDNAFEN_DIR)/hw_sound -I$(MEDNAFEN_DIR)/hw_video $(EXTRA_INCLUDES)
 
 FLAGS += $(ENDIANNESS_DEFINES) -DHAVE_MKDIR -DSIZEOF_DOUBLE=8 $(WARNINGS) -DMEDNAFEN_VERSION=\"0.9.24\" -DMEDNAFEN_VERSION_NUMERIC=924 -DPSS_STYLE=1 -DMPC_FIXED_POINT $(PCE_CORE_DEFINES) -DSTDC_HEADERS -D__LIBRETRO__ -D__STDC_LIMIT_MACROS -D_LOW_ACCURACY_
 

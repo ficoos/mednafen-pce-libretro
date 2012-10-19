@@ -1,4 +1,5 @@
 #include        "mednafen.h"
+#include	"mednafen-endian.h"
 
 #include        <string.h>
 #include	<map>
@@ -16,6 +17,7 @@
 #include	"include/trio/trio.h"
 
 #include	"general.h"
+#include	"okiadpcm.h"
 
 #include	"state.h"
 #include        "video.h"
@@ -1704,3 +1706,1691 @@ void MDFN_DispMessage(const char *format, ...) throw()
 
  fprintf(stderr, "%s\n", msg);
 }
+
+void Endian_A16_Swap(void *src, uint32 nelements)
+{
+ uint32 i;
+ uint8 *nsrc = (uint8 *)src;
+
+ for(i = 0; i < nelements; i++)
+ {
+  uint8 tmp = nsrc[i * 2];
+
+  nsrc[i * 2] = nsrc[i * 2 + 1];
+  nsrc[i * 2 + 1] = tmp;
+ }
+}
+
+void Endian_A32_Swap(void *src, uint32 nelements)
+{
+ uint32 i;
+ uint8 *nsrc = (uint8 *)src;
+
+ for(i = 0; i < nelements; i++)
+ {
+  uint8 tmp1 = nsrc[i * 4];
+  uint8 tmp2 = nsrc[i * 4 + 1];
+
+  nsrc[i * 4] = nsrc[i * 4 + 3];
+  nsrc[i * 4 + 1] = nsrc[i * 4 + 2];
+
+  nsrc[i * 4 + 2] = tmp2;
+  nsrc[i * 4 + 3] = tmp1;
+ }
+}
+
+void Endian_A64_Swap(void *src, uint32 nelements)
+{
+ uint32 i;
+ uint8 *nsrc = (uint8 *)src;
+
+ for(i = 0; i < nelements; i++)
+ {
+  uint8 *base = &nsrc[i * 8];
+
+  for(int z = 0; z < 4; z++)
+  {
+   uint8 tmp = base[z];
+
+   base[z] = base[7 - z];
+   base[7 - z] = tmp;
+  }
+ }
+}
+
+void Endian_A16_NE_to_LE(void *src, uint32 nelements)
+{
+ #ifdef MSB_FIRST
+ Endian_A16_Swap(src, nelements);
+ #endif
+}
+
+void Endian_A32_NE_to_LE(void *src, uint32 nelements)
+{
+ #ifdef MSB_FIRST
+ Endian_A32_Swap(src, nelements);
+ #endif
+}
+
+void Endian_A64_NE_to_LE(void *src, uint32 nelements)
+{
+ #ifdef MSB_FIRST
+ Endian_A64_Swap(src, nelements);
+ #endif
+}
+
+
+void Endian_A16_LE_to_NE(void *src, uint32 nelements)
+{
+ #ifdef MSB_FIRST
+ uint32 i;
+ uint8 *nsrc = (uint8 *)src;
+
+ for(i = 0; i < nelements; i++)
+ {
+  uint8 tmp = nsrc[i * 2];
+
+  nsrc[i * 2] = nsrc[i * 2 + 1];
+  nsrc[i * 2 + 1] = tmp;
+ }
+ #endif
+}
+
+void Endian_A16_BE_to_NE(void *src, uint32 nelements)
+{
+ #ifdef LSB_FIRST
+ uint32 i;
+ uint8 *nsrc = (uint8 *)src;
+
+ for(i = 0; i < nelements; i++)
+ {
+  uint8 tmp = nsrc[i * 2];
+
+  nsrc[i * 2] = nsrc[i * 2 + 1];
+  nsrc[i * 2 + 1] = tmp;
+ }
+ #endif
+}
+
+
+void Endian_A32_LE_to_NE(void *src, uint32 nelements)
+{
+ #ifdef MSB_FIRST
+ uint32 i;
+ uint8 *nsrc = (uint8 *)src;
+
+ for(i = 0; i < nelements; i++)
+ {
+  uint8 tmp1 = nsrc[i * 4];
+  uint8 tmp2 = nsrc[i * 4 + 1];
+
+  nsrc[i * 4] = nsrc[i * 4 + 3];
+  nsrc[i * 4 + 1] = nsrc[i * 4 + 2];
+
+  nsrc[i * 4 + 2] = tmp2;
+  nsrc[i * 4 + 3] = tmp1;
+ }
+ #endif
+}
+
+void Endian_A64_LE_to_NE(void *src, uint32 nelements)
+{
+ #ifdef MSB_FIRST
+ uint32 i;
+ uint8 *nsrc = (uint8 *)src;
+
+ for(i = 0; i < nelements; i++)
+ {
+  uint8 *base = &nsrc[i * 8];
+
+  for(int z = 0; z < 4; z++)
+  {
+   uint8 tmp = base[z];
+
+   base[z] = base[7 - z];
+   base[7 - z] = tmp;
+  }
+ }
+ #endif
+}
+
+void FlipByteOrder(uint8 *src, uint32 count)
+{
+ uint8 *start=src;
+ uint8 *end=src+count-1;
+
+ if((count&1) || !count)        return;         /* This shouldn't happen. */
+
+ count >>= 1;
+
+ while(count--)
+ {
+  uint8 tmp;
+
+  tmp=*end;
+  *end=*start;
+  *start=tmp;
+  end--;
+  start++;
+ }
+}
+
+void Endian_V_LE_to_NE(void *src, uint32 bytesize)
+{
+ #ifdef MSB_FIRST
+ FlipByteOrder((uint8 *)src, bytesize);
+ #endif
+}
+
+void Endian_V_NE_to_LE(void *src, uint32 bytesize)
+{
+ #ifdef MSB_FIRST
+ FlipByteOrder((uint8 *)src, bytesize);
+ #endif
+}
+
+int write16le(uint16 b, FILE *fp)
+{
+ uint8 s[2];
+ s[0]=b;
+ s[1]=b>>8;
+ return((fwrite(s,1,2,fp)<2)?0:2);
+}
+
+int write32le(uint32 b, FILE *fp)
+{
+ uint8 s[4];
+ s[0]=b;
+ s[1]=b>>8;
+ s[2]=b>>16;
+ s[3]=b>>24;
+ return((fwrite(s,1,4,fp)<4)?0:4);
+}
+
+int read32le(uint32 *Bufo, FILE *fp)
+{
+ uint32 buf;
+ if(fread(&buf,1,4,fp)<4)
+  return 0;
+ #ifdef LSB_FIRST
+ *(uint32*)Bufo=buf;
+ #else
+ *(uint32*)Bufo=((buf&0xFF)<<24)|((buf&0xFF00)<<8)|((buf&0xFF0000)>>8)|((buf&0xFF000000)>>24);
+ #endif
+ return 1;
+}
+
+int read16le(char *d, FILE *fp)
+{
+ #ifdef LSB_FIRST
+ return((fread(d,1,2,fp)<2)?0:2);
+ #else
+ int ret;
+ ret=fread(d+1,1,1,fp);
+ ret+=fread(d,1,1,fp);
+ return ret<2?0:2;
+ #endif
+}
+
+static uint8 **RAMPtrs = NULL;
+static uint32 PageSize;
+static uint32 NumPages;
+
+typedef struct
+{
+ bool excluded;
+ uint8 value; 
+} CompareStruct;
+
+typedef struct __CHEATF
+{
+           char *name;
+           char *conditions;
+
+           uint32 addr;
+           uint64 val;
+           uint64 compare;
+
+           unsigned int length;
+           bool bigendian;
+           unsigned int icount; // Instance count
+           char type;   /* 'R' for replace, 'S' for substitute(GG), 'C' for substitute with compare */
+           int status;
+} CHEATF;
+
+static std::vector<CHEATF> cheats;
+static int savecheats;
+static CompareStruct **CheatComp = NULL;
+static uint32 resultsbytelen = 1;
+static bool resultsbigendian = 0;
+static bool CheatsActive = TRUE;
+
+bool SubCheatsOn = 0;
+std::vector<SUBCHEAT> SubCheats[8];
+
+static void RebuildSubCheats(void)
+{
+ std::vector<CHEATF>::iterator chit;
+
+ SubCheatsOn = 0;
+ for(int x = 0; x < 8; x++)
+  SubCheats[x].clear();
+
+ if(!CheatsActive) return;
+
+ for(chit = cheats.begin(); chit != cheats.end(); chit++)
+ {
+  if(chit->status && chit->type != 'R')
+  {
+   for(unsigned int x = 0; x < chit->length; x++)
+   {
+    SUBCHEAT tmpsub;
+    unsigned int shiftie;
+
+    if(chit->bigendian)
+     shiftie = (chit->length - 1 - x) * 8;
+    else
+     shiftie = x * 8;
+    
+    tmpsub.addr = chit->addr + x;
+    tmpsub.value = (chit->val >> shiftie) & 0xFF;
+    if(chit->type == 'C')
+     tmpsub.compare = (chit->compare >> shiftie) & 0xFF;
+    else
+     tmpsub.compare = -1;
+    SubCheats[(chit->addr + x) & 0x7].push_back(tmpsub);
+    SubCheatsOn = 1;
+   }
+  }
+ }
+}
+
+bool MDFNMP_Init(uint32 ps, uint32 numpages)
+{
+ PageSize = ps;
+ NumPages = numpages;
+
+ RAMPtrs = (uint8 **)calloc(numpages, sizeof(uint8 *));
+ CheatComp = (CompareStruct **)calloc(numpages, sizeof(CompareStruct *));
+
+ CheatsActive = MDFN_GetSettingB("cheats");
+ return(1);
+}
+
+void MDFNMP_Kill(void)
+{
+ if(CheatComp)
+ {
+  free(CheatComp);
+  CheatComp = NULL;
+ }
+ if(RAMPtrs)
+ {
+  free(RAMPtrs);
+  RAMPtrs = NULL;
+ }
+}
+
+
+void MDFNMP_AddRAM(uint32 size, uint32 A, uint8 *RAM)
+{
+ uint32 AB = A / PageSize;
+ 
+ size /= PageSize;
+
+ for(unsigned int x = 0; x < size; x++)
+ {
+  RAMPtrs[AB + x] = RAM;
+  if(RAM) // Don't increment the RAM pointer if we're passed a NULL pointer
+   RAM += PageSize;
+ }
+}
+
+void MDFNMP_InstallReadPatches(void)
+{
+ if(!CheatsActive) return;
+
+ std::vector<SUBCHEAT>::iterator chit;
+
+ for(unsigned int x = 0; x < 8; x++)
+  for(chit = SubCheats[x].begin(); chit != SubCheats[x].end(); chit++)
+  {
+   if(MDFNGameInfo->InstallReadPatch)
+    MDFNGameInfo->InstallReadPatch(chit->addr);
+  }
+}
+
+void MDFNMP_RemoveReadPatches(void)
+{
+ if(MDFNGameInfo->RemoveReadPatches)
+  MDFNGameInfo->RemoveReadPatches();
+}
+
+static void CheatMemErr(void)
+{
+ MDFN_PrintError(_("Error allocating memory for cheat data."));
+}
+
+/* This function doesn't allocate any memory for "name" */
+static int AddCheatEntry(char *name, char *conditions, uint32 addr, uint64 val, uint64 compare, int status, char type, unsigned int length, bool bigendian)
+{
+ CHEATF temp;
+
+ memset(&temp, 0, sizeof(CHEATF));
+
+ temp.name=name;
+ temp.conditions = conditions;
+ temp.addr=addr;
+ temp.val=val;
+ temp.status=status;
+ temp.compare=compare;
+ temp.length = length;
+ temp.bigendian = bigendian;
+ temp.type=type;
+
+ cheats.push_back(temp);
+ return(1);
+}
+
+static bool SeekToOurSection(FILE *fp) // Tentacle monster section aisle five, stale eggs and donkeys in aisle 2E.
+{
+ char buf[2048];
+
+ while(fgets(buf,2048,fp) > 0)
+ {
+  if(buf[0] == '[')
+  {
+   if(!strncmp((char *)buf + 1, md5_context::asciistr(MDFNGameInfo->MD5, 0).c_str(), 16))
+    return(1);
+  }
+ }
+ return(0);
+}
+
+void MDFN_LoadGameCheats(FILE *override)
+{
+ char linebuf[2048];
+ FILE *fp;
+
+ unsigned int addr;
+ unsigned long long val;
+ unsigned int status;
+ char type;
+ unsigned long long compare;
+ unsigned int x;
+ unsigned int length;
+ unsigned int icount;
+ bool bigendian;
+
+ int tc=0;
+
+ savecheats=0;
+
+ if(override)
+  fp = override;
+ else
+ {
+  std::string fn = MDFN_MakeFName(MDFNMKF_CHEAT,0,0).c_str();
+
+  MDFN_printf("\n");
+  MDFN_printf(_("Loading cheats from %s...\n"), fn.c_str());
+  MDFN_indent(1);
+
+  if(!(fp = fopen(fn.c_str(),"rb")))
+  {
+   ErrnoHolder ene(errno);
+
+   MDFN_printf(_("Error opening file: %s\n"), ene.StrError());
+   MDFN_indent(-1);
+   return;
+  }
+ }
+
+ if(SeekToOurSection(fp))
+ {
+  while(fgets(linebuf,2048,fp) > 0)
+  { 
+   char namebuf[2048];
+   char *tbuf=linebuf;
+
+   addr=val=compare=status=type=0;
+   bigendian = 0;
+   icount = 0;
+
+   if(tbuf[0] == '[') // No more cheats for this game, so sad :(
+   {
+    break;
+   }
+
+   if(tbuf[0] == '\n' || tbuf[0] == '\r' || tbuf[0] == '\t' || tbuf[0] == ' ') // Don't parse if the line starts(or is just) white space
+    continue;
+
+   if(tbuf[0] != 'R' && tbuf[0] != 'C' && tbuf[0] != 'S')
+   {
+    MDFN_printf(_("Invalid cheat type: %c\n"), tbuf[0]);
+    break;
+   }
+   type = tbuf[0];
+   namebuf[0] = 0;
+
+   char status_tmp, endian_tmp;
+   if(type == 'C')
+    trio_sscanf(tbuf, "%c %c %d %c %d %08x %16llx %16llx %.2047[^\r\n]", &type, &status_tmp, &length, &endian_tmp, &icount, &addr, &val, &compare, namebuf);
+   else
+    trio_sscanf(tbuf, "%c %c %d %c %d %08x %16llx %.2047[^\r\n]", &type, &status_tmp, &length, &endian_tmp, &icount, &addr, &val, namebuf);
+
+   status = (status_tmp == 'A') ? 1 : 0;
+   bigendian = (endian_tmp == 'B') ? 1 : 0;
+
+   for(x=0;x<strlen(namebuf);x++)
+   {
+    if(namebuf[x]==10 || namebuf[x]==13)
+    {
+     namebuf[x]=0;
+    break;
+    }
+    else if(namebuf[x]<0x20) namebuf[x]=' ';
+   }
+
+   // November 9, 2009 return value fix.
+   if(fgets(linebuf, 2048, fp) == NULL)
+    linebuf[0] = 0;
+
+   for(x=0;x<strlen(linebuf);x++)
+   {
+    if(linebuf[x]==10 || linebuf[x]==13)
+    {
+     linebuf[x]=0;
+     break;
+    }
+    else if(linebuf[x]<0x20) linebuf[x]=' ';
+   }
+
+   AddCheatEntry(strdup(namebuf), strdup(linebuf), addr, val, compare, status, type, length, bigendian);
+   tc++;
+  }
+ }
+
+ RebuildSubCheats();
+
+ if(!override)
+ {
+  MDFN_printf(_("%lu cheats loaded.\n"), (unsigned long)cheats.size());
+  MDFN_indent(-1);
+  fclose(fp);
+ }
+}
+
+static void WriteOurCheats(FILE *tmp_fp, bool needheader)
+{
+     if(needheader)
+      trio_fprintf(tmp_fp, "[%s] %s\n", md5_context::asciistr(MDFNGameInfo->MD5, 0).c_str(), MDFNGameInfo->name ? (char *)MDFNGameInfo->name : "");
+
+     std::vector<CHEATF>::iterator next;
+
+     for(next = cheats.begin(); next != cheats.end(); next++)
+     {
+      if(next->type == 'C')
+      {
+       if(next->length == 1)
+        trio_fprintf(tmp_fp, "%c %c %d %c %d %08x %02llx %02llx %s\n", next->type, next->status ? 'A' : 'I', next->length, next->bigendian ? 'B' : 'L', next->icount, next->addr, next->val, next->compare, next->name);
+       else if(next->length == 2)
+        trio_fprintf(tmp_fp, "%c %c %d %c %d %08x %04llx %04llx %s\n", next->type, next->status ? 'A' : 'I', next->length, next->bigendian ? 'B' : 'L', next->icount, next->addr, next->val, next->compare, next->name);
+       else
+        trio_fprintf(tmp_fp, "%c %c %d %c %d %08x %016llx %016llx %s\n", next->type, next->status ? 'A' : 'I', next->length, next->bigendian ? 'B' : 'L', next->icount, next->addr, next->val, next->compare, next->name);
+      }
+      else
+      {
+       if(next->length == 1)
+        trio_fprintf(tmp_fp, "%c %c %d %c %d %08x %02llx %s\n", next->type, next->status ? 'A' : 'I', next->length, next->bigendian ? 'B' : 'L', next->icount, next->addr, next->val, next->name);
+       else if(next->length == 2)
+        trio_fprintf(tmp_fp, "%c %c %d %c %d %08x %04llx %s\n", next->type, next->status ? 'A' : 'I', next->length, next->bigendian ? 'B' : 'L', next->icount, next->addr, next->val, next->name);
+       else
+        trio_fprintf(tmp_fp, "%c %c %d %c %d %08x %016llx %s\n", next->type, next->status ? 'A' : 'I', next->length, next->bigendian ? 'B' : 'L', next->icount, next->addr, next->val, next->name);
+      }
+      trio_fprintf(tmp_fp, "%s\n", next->conditions ? next->conditions : "");
+      free(next->name);
+      if(next->conditions)
+       free(next->conditions);
+     }
+}
+
+void MDFN_FlushGameCheats(int nosave)
+{
+ if(CheatComp)
+ {
+  free(CheatComp);
+  CheatComp = 0;
+ }
+
+ if(!savecheats || nosave)
+ {
+  std::vector<CHEATF>::iterator chit;
+
+  for(chit = cheats.begin(); chit != cheats.end(); chit++)
+  {
+   free(chit->name);
+   if(chit->conditions)
+    free(chit->conditions);
+  }
+  cheats.clear();
+ }
+ else
+ {
+  uint8 linebuf[2048];
+  std::string fn, tmp_fn;
+
+  fn = MDFN_MakeFName(MDFNMKF_CHEAT, 0, 0);
+  tmp_fn = MDFN_MakeFName(MDFNMKF_CHEAT_TMP, 0, 0);
+
+  FILE *fp;
+  int insection = 0;
+
+  if((fp = fopen(fn.c_str(), "rb")))
+  {
+   FILE *tmp_fp = fopen(tmp_fn.c_str(), "wb");
+
+   while(fgets((char*)linebuf, 2048, fp) > 0)
+   {
+    if(linebuf[0] == '[' && !insection)
+    {
+     if(!strncmp((char *)linebuf + 1, md5_context::asciistr(MDFNGameInfo->MD5, 0).c_str(), 16))
+     {
+      insection = 1;
+      if(cheats.size())
+       fputs((char*)linebuf, tmp_fp);
+     }
+     else
+      fputs((char*)linebuf, tmp_fp);
+    }
+    else if(insection == 1)
+    {
+     if(linebuf[0] == '[') 
+     {
+      // Write any of our game cheats here.
+      WriteOurCheats(tmp_fp, 0);
+      insection = 2;     
+      fputs((char*)linebuf, tmp_fp);
+     }
+    }
+    else
+    {
+     fputs((char*)linebuf, tmp_fp);
+    }
+   }
+
+   if(cheats.size())
+   {
+    if(!insection)
+     WriteOurCheats(tmp_fp, 1);
+    else if(insection == 1)
+     WriteOurCheats(tmp_fp, 0);
+   }
+
+   fclose(fp);
+   fclose(tmp_fp);
+
+   #ifdef WIN32
+   unlink(fn.c_str()); // Windows is evil. EVIIILL.  rename() won't overwrite an existing file.  TODO:  Change this to an autoconf define or something
+		      // if we ever come across other platforms with lame rename().
+   #endif
+   rename(tmp_fn.c_str(), fn.c_str());
+  }
+  else if(errno == ENOENT) // Only overwrite the cheats file if it doesn't exist...heh.  Race conditions abound!
+  {
+   fp = fopen(fn.c_str(), "wb");
+   WriteOurCheats(fp, 1);
+   fclose(fp);
+  }
+ }
+ RebuildSubCheats();
+}
+
+int MDFNI_AddCheat(const char *name, uint32 addr, uint64 val, uint64 compare, char type, unsigned int length, bool bigendian)
+{
+ char *t;
+
+ if(!(t = strdup(name)))
+ {
+  CheatMemErr();
+  return(0);
+ }
+
+ if(!AddCheatEntry(t, NULL, addr,val,compare,1,type, length, bigendian))
+ {
+  free(t);
+  return(0);
+ }
+
+ savecheats = 1;
+
+ MDFNMP_RemoveReadPatches();
+ RebuildSubCheats();
+ MDFNMP_InstallReadPatches();
+
+ return(1);
+}
+
+int MDFNI_DelCheat(uint32 which)
+{
+ free(cheats[which].name);
+ cheats.erase(cheats.begin() + which);
+
+ savecheats=1;
+
+ MDFNMP_RemoveReadPatches();
+ RebuildSubCheats();
+ MDFNMP_InstallReadPatches();
+
+ return(1);
+}
+
+/*
+ Condition format(ws = white space):
+ 
+  <variable size><ws><endian><ws><address><ws><operation><ws><value>
+	  [,second condition...etc.]
+
+  Value should be unsigned integer, hex(with a 0x prefix) or
+  base-10.  
+
+  Operations:
+   >=
+   <=
+   >
+   <
+   ==
+   !=
+   &	// Result of AND between two values is nonzero
+   !&   // Result of AND between two values is zero
+   ^    // same, XOR
+   !^
+   |	// same, OR
+   !|
+
+  Full example:
+
+  2 L 0xADDE == 0xDEAD, 1 L 0xC000 == 0xA0
+
+*/
+
+static bool TestConditions(const char *string)
+{
+ char address[64];
+ char operation[64];
+ char value[64];
+ char endian;
+ unsigned int bytelen;
+ bool passed = 1;
+
+ //printf("TR: %s\n", string);
+ while(trio_sscanf(string, "%u %c %.63s %.63s %.63s", &bytelen, &endian, address, operation, value) == 5 && passed)
+ {
+  uint32 v_address;
+  uint64 v_value;
+  uint64 value_at_address;
+
+  if(address[0] == '0' && address[1] == 'x')
+   v_address = strtoul(address + 2, NULL, 16);
+  else
+   v_address = strtoul(address, NULL, 10);
+
+  if(value[0] == '0' && value[1] == 'x')
+   v_value = strtoull(value + 2, NULL, 16);
+  else
+   v_value = strtoull(value, NULL, 0);
+
+  value_at_address = 0;
+  for(unsigned int x = 0; x < bytelen; x++)
+  {
+   unsigned int shiftie;
+
+   if(endian == 'B')
+    shiftie = (bytelen - 1 - x) * 8;
+   else
+    shiftie = x * 8;
+   value_at_address |= MDFNGameInfo->MemRead(v_address + x) << shiftie;
+  }
+
+  //printf("A: %08x, V: %08llx, VA: %08llx, OP: %s\n", v_address, v_value, value_at_address, operation);
+  if(!strcmp(operation, ">="))
+  {
+   if(!(value_at_address >= v_value))
+    passed = 0;
+  }
+  else if(!strcmp(operation, "<="))
+  {
+   if(!(value_at_address <= v_value))
+    passed = 0;
+  }
+  else if(!strcmp(operation, ">"))
+  {
+   if(!(value_at_address > v_value))
+    passed = 0;
+  }
+  else if(!strcmp(operation, "<"))
+  {
+   if(!(value_at_address < v_value))
+    passed = 0;
+  }
+  else if(!strcmp(operation, "==")) 
+  {
+   if(!(value_at_address == v_value))
+    passed = 0;
+  }
+  else if(!strcmp(operation, "!="))
+  {
+   if(!(value_at_address != v_value))
+    passed = 0;
+  }
+  else if(!strcmp(operation, "&"))
+  {
+   if(!(value_at_address & v_value))
+    passed = 0;
+  }
+  else if(!strcmp(operation, "!&"))
+  {
+   if(value_at_address & v_value)
+    passed = 0;
+  }
+  else if(!strcmp(operation, "^"))
+  {
+   if(!(value_at_address ^ v_value))
+    passed = 0;
+  }
+  else if(!strcmp(operation, "!^"))
+  {
+   if(value_at_address ^ v_value)
+    passed = 0;
+  }
+  else if(!strcmp(operation, "|"))
+  {
+   if(!(value_at_address | v_value))
+    passed = 0;
+  }
+  else if(!strcmp(operation, "!|"))
+  {
+   if(value_at_address | v_value)
+    passed = 0;
+  }
+  else
+   puts("Invalid operation");
+  string = strchr(string, ',');
+  if(string == NULL)
+   break;
+  else
+   string++;
+  //printf("Foo: %s\n", string);
+ }
+
+ return(passed);
+}
+
+void MDFNMP_ApplyPeriodicCheats(void)
+{
+ std::vector<CHEATF>::iterator chit;
+
+
+ if(!CheatsActive)
+  return;
+
+ //TestConditions("2 L 0x1F00F5 == 0xDEAD");
+ //if(TestConditions("1 L 0x1F0058 > 0")) //, 1 L 0xC000 == 0x01"));
+ for(chit = cheats.begin(); chit != cheats.end(); chit++)
+ {
+  if(chit->status && chit->type == 'R')
+  {
+   if(!chit->conditions || TestConditions(chit->conditions))
+    for(unsigned int x = 0; x < chit->length; x++)
+    {
+     uint32 page = ((chit->addr + x) / PageSize) % NumPages;
+     if(RAMPtrs[page])
+     {
+      uint64 tmpval = chit->val;
+
+      if(chit->bigendian)
+       tmpval >>= (chit->length - 1 - x) * 8;
+      else
+       tmpval >>= x * 8;
+
+      RAMPtrs[page][(chit->addr + x) % PageSize] = tmpval;
+     }
+   }
+  }
+ }
+}
+
+
+void MDFNI_ListCheats(int (*callb)(char *name, uint32 a, uint64 v, uint64 compare, int s, char type, unsigned int length, bool bigendian, void *data), void *data)
+{
+ std::vector<CHEATF>::iterator chit;
+
+ for(chit = cheats.begin(); chit != cheats.end(); chit++)
+ {
+  if(!callb(chit->name, chit->addr, chit->val, chit->compare, chit->status, chit->type, chit->length, chit->bigendian, data)) break;
+ }
+}
+
+int MDFNI_GetCheat(uint32 which, char **name, uint32 *a, uint64 *v, uint64 *compare, int *s, char *type, unsigned int *length, bool *bigendian)
+{
+ CHEATF *next = &cheats[which];
+
+ if(name)
+  *name=next->name;
+ if(a)
+  *a=next->addr; 
+ if(v)
+  *v=next->val;
+ if(s)
+  *s=next->status;
+ if(compare)
+  *compare=next->compare;
+ if(type)
+  *type=next->type;
+ if(length)
+  *length = next->length;
+ if(bigendian)
+  *bigendian = next->bigendian;
+ return(1);
+}
+
+static uint8 CharToNibble(char thechar)
+{
+ const char lut[16] = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9', 'A', 'B', 'C', 'D', 'E', 'F' };
+
+ thechar = toupper(thechar);
+
+ for(int x = 0; x < 16; x++)
+  if(lut[x] == thechar)
+   return(x);
+
+ return(0xFF);
+}
+
+bool MDFNI_DecodeGBGG(const char *instr, uint32 *a, uint8 *v, uint8 *c, char *type)
+{
+ char str[10];
+ int len;
+
+ for(int x = 0; x < 9; x++)
+ {
+  while(*instr && CharToNibble(*instr) == 255)
+   instr++;
+  if(!(str[x] = *instr)) break;
+  instr++;
+ }
+ str[9] = 0;
+
+ len = strlen(str);
+
+ if(len != 9 && len != 6)
+  return(0);
+
+ uint32 tmp_address;
+ uint8 tmp_value;
+ uint8 tmp_compare = 0;
+
+ tmp_address =  (CharToNibble(str[5]) << 12) | (CharToNibble(str[2]) << 8) | (CharToNibble(str[3]) << 4) | (CharToNibble(str[4]) << 0);
+ tmp_address ^= 0xF000;
+ tmp_value = (CharToNibble(str[0]) << 4) | (CharToNibble(str[1]) << 0);
+
+ if(len == 9)
+ {
+  tmp_compare = (CharToNibble(str[6]) << 4) | (CharToNibble(str[8]) << 0);
+  tmp_compare = (tmp_compare >> 2) | ((tmp_compare << 6) & 0xC0);
+  tmp_compare ^= 0xBA;
+ }
+
+ *a = tmp_address;
+ *v = tmp_value;
+
+ if(len == 9)
+ {
+  *c = tmp_compare;
+  *type = 'C';
+ }
+ else
+ {
+  *c = 0;
+  *type = 'S';
+ }
+
+ return(1);
+}
+
+static int GGtobin(char c)
+{
+ static char lets[16]={'A','P','Z','L','G','I','T','Y','E','O','X','U','K','S','V','N'};
+ int x;
+
+ for(x=0;x<16;x++)
+  if(lets[x] == toupper(c)) return(x);
+ return(0);
+}
+
+/* Returns 1 on success, 0 on failure. Sets *a,*v,*c. */
+int MDFNI_DecodeGG(const char *str, uint32 *a, uint8 *v, uint8 *c, char *type)
+{
+ uint16 A;
+ uint8 V,C;
+ uint8 t;
+ int s;
+
+ A=0x8000;
+ V=0;
+ C=0;
+
+ s=strlen(str);
+ if(s!=6 && s!=8) return(0);
+
+ t=GGtobin(*str++);
+ V|=(t&0x07);
+ V|=(t&0x08)<<4;
+
+ t=GGtobin(*str++);
+ V|=(t&0x07)<<4;
+ A|=(t&0x08)<<4;
+
+ t=GGtobin(*str++);
+ A|=(t&0x07)<<4;
+ //if(t&0x08) return(0);	/* 8-character code?! */
+
+ t=GGtobin(*str++);
+ A|=(t&0x07)<<12;
+ A|=(t&0x08);
+
+ t=GGtobin(*str++);
+ A|=(t&0x07);
+ A|=(t&0x08)<<8;
+
+ if(s==6)
+ {
+  t=GGtobin(*str++);
+  A|=(t&0x07)<<8;
+  V|=(t&0x08);
+
+  *a=A;
+  *v=V;
+  *type = 'S';
+  *c = 0;
+  return(1);
+ }
+ else
+ {
+  t=GGtobin(*str++);
+  A|=(t&0x07)<<8;
+  C|=(t&0x08);
+
+  t=GGtobin(*str++);
+  C|=(t&0x07);
+  C|=(t&0x08)<<4;
+  
+  t=GGtobin(*str++);
+  C|=(t&0x07)<<4;
+  V|=(t&0x08);
+  *a=A;
+  *v=V;
+  *c=C;
+  *type = 'C';
+  return(1);
+ }
+ return(0);
+}
+
+int MDFNI_DecodePAR(const char *str, uint32 *a, uint8 *v, uint8 *c, char *type)
+{
+ int boo[4];
+ if(strlen(str)!=8) return(0);
+
+ trio_sscanf(str,"%02x%02x%02x%02x",boo,boo+1,boo+2,boo+3);
+
+ *c = 0;
+
+ if(1)
+ {
+  *a=(boo[3]<<8)|(boo[2]+0x7F);
+  *v=0;
+ }
+ else
+ {
+  *v=boo[3];
+  *a=boo[2]|(boo[1]<<8);
+ }
+
+ *type = 'S';
+ return(1);
+}
+
+/* name can be NULL if the name isn't going to be changed. */
+int MDFNI_SetCheat(uint32 which, const char *name, uint32 a, uint64 v, uint64 compare, int s, char type, unsigned int length, bool bigendian)
+{
+ CHEATF *next = &cheats[which];
+
+ if(name)
+ {
+  char *t;
+
+  if((t=(char *)realloc(next->name,strlen(name+1))))
+  {
+   next->name=t;
+   strcpy(next->name,name);
+  }
+  else
+   return(0);
+ }
+ next->addr=a;
+ next->val=v;
+ next->status=s;
+ next->compare=compare;
+ next->type=type;
+ next->length = length;
+ next->bigendian = bigendian;
+
+ RebuildSubCheats();
+ savecheats=1;
+
+ return(1);
+}
+
+/* Convenience function. */
+int MDFNI_ToggleCheat(uint32 which)
+{
+ cheats[which].status = !cheats[which].status;
+ savecheats = 1;
+ RebuildSubCheats();
+
+ return(cheats[which].status);
+}
+
+void MDFNI_CheatSearchSetCurrentAsOriginal(void)
+{
+ for(uint32 page = 0; page < NumPages; page++)
+ {
+  if(CheatComp[page])
+  {
+   for(uint32 addr = 0; addr < PageSize; addr++)
+   {
+    if(!CheatComp[page][addr].excluded)
+    {
+     CheatComp[page][addr].value = RAMPtrs[page][addr];
+    }
+   }
+  }
+ }
+}
+
+void MDFNI_CheatSearchShowExcluded(void)
+{
+ for(uint32 page = 0; page < NumPages; page++)
+ {
+  if(CheatComp[page])
+  {
+   for(uint32 addr = 0; addr < PageSize; addr++)
+   {
+    CheatComp[page][addr].excluded = 0;
+   }
+  }
+ }
+}
+
+
+int32 MDFNI_CheatSearchGetCount(void)
+{
+ uint32 count = 0;
+
+ for(uint32 page = 0; page < NumPages; page++)
+ {
+  if(CheatComp[page])
+  {
+   for(uint32 addr = 0; addr < PageSize; addr++)
+   {
+    if(!CheatComp[page][addr].excluded)
+     count++;
+   }
+  }
+ }
+ return count;
+}
+
+/* This function will give the initial value of the search and the current value at a location. */
+
+void MDFNI_CheatSearchGet(int (*callb)(uint32 a, uint64 last, uint64 current, void *data), void *data)
+{
+ for(uint32 page = 0; page < NumPages; page++)
+ {
+  if(CheatComp[page])
+  {
+   for(uint32 addr = 0; addr < PageSize; addr++)
+   {
+    if(!CheatComp[page][addr].excluded)
+    {
+     uint64 ccval;
+     uint64 ramval;
+
+     ccval = ramval = 0;
+     for(unsigned int x = 0; x < resultsbytelen; x++)
+     {
+      uint32 curpage = (page + (addr + x) / PageSize) % NumPages;
+      if(CheatComp[curpage])
+      {
+       unsigned int shiftie;
+
+       if(resultsbigendian)
+        shiftie = (resultsbytelen - 1 - x) * 8;
+       else
+        shiftie = x * 8;
+       ccval |= CheatComp[curpage][(addr + x) % PageSize].value << shiftie;
+       ramval |= RAMPtrs[curpage][(addr + x) % PageSize] << shiftie;
+      }
+     }
+
+     if(!callb(page * PageSize + addr, ccval, ramval, data))
+      return;
+    }
+   }
+  }
+ }
+}
+
+void MDFNI_CheatSearchBegin(void)
+{
+ resultsbytelen = 1;
+ resultsbigendian = 0;
+
+ for(uint32 page = 0; page < NumPages; page++)
+ {
+  if(RAMPtrs[page])
+  {
+   if(!CheatComp[page])
+    CheatComp[page] = (CompareStruct *)calloc(PageSize, sizeof(CompareStruct));
+
+   for(uint32 addr = 0; addr < PageSize; addr++)
+   {
+    CheatComp[page][addr].excluded = 0;
+    CheatComp[page][addr].value = RAMPtrs[page][addr];
+   }
+  }
+ }
+}
+
+
+static uint64 INLINE CAbs(uint64 x)
+{
+ if(x < 0)
+  return(0 - x);
+ return x;
+}
+
+void MDFNI_CheatSearchEnd(int type, uint64 v1, uint64 v2, unsigned int bytelen, bool bigendian)
+{
+ v1 &= (~0ULL) >> (8 - bytelen);
+ v2 &= (~0ULL) >> (8 - bytelen);
+
+ resultsbytelen = bytelen;
+ resultsbigendian = bigendian;
+
+ for(uint32 page = 0; page < NumPages; page++)
+ {
+  if(CheatComp[page])
+  {
+   for(uint32 addr = 0; addr < PageSize; addr++)
+   {
+    if(!CheatComp[page][addr].excluded)
+    {
+     bool doexclude = 0;
+     uint64 ccval;
+     uint64 ramval;
+
+     ccval = ramval = 0;
+     for(unsigned int x = 0; x < bytelen; x++)
+     {
+      uint32 curpage = (page + (addr + x) / PageSize) % NumPages;
+      if(CheatComp[curpage])
+      {
+       unsigned int shiftie;
+
+       if(bigendian)
+        shiftie = (bytelen - 1 - x) * 8;
+       else
+        shiftie = x * 8;
+       ccval |= CheatComp[curpage][(addr + x) % PageSize].value << shiftie;
+       ramval |= RAMPtrs[curpage][(addr + x) % PageSize] << shiftie;
+      }
+     }
+
+     switch(type)
+     {
+      case 0: // Change to a specific value.
+	if(!(ccval == v1 && ramval == v2))
+	 doexclude = 1;
+	break;
+	 
+      case 1: // Search for relative change(between values).
+	if(!(ccval == v1 && CAbs(ccval - ramval) == v2))
+	 doexclude = 1;
+	break;
+
+      case 2: // Purely relative change.
+	if(!(CAbs(ccval - ramval) == v2))
+	 doexclude = 1;
+	break;
+      case 3: // Any change
+        if(!(ccval != ramval))
+         doexclude = 1;
+        break;
+      case 4: // Value decreased
+        if(ramval >= ccval)
+         doexclude = 1;
+        break;
+      case 5: // Value increased
+        if(ramval <= ccval)
+         doexclude = 1;
+        break;
+     }
+     if(doexclude)
+      CheatComp[page][addr].excluded = TRUE;
+    }
+   }
+  }
+ }
+
+ if(type >= 4)
+  MDFNI_CheatSearchSetCurrentAsOriginal();
+}
+
+static void SettingChanged(const char *name)
+{
+ MDFNMP_RemoveReadPatches();
+
+ CheatsActive = MDFN_GetSettingB("cheats");
+
+ RebuildSubCheats();
+
+ MDFNMP_InstallReadPatches();
+}
+
+
+MDFNSetting MDFNMP_Settings[] =
+{
+ { "cheats", MDFNSF_NOFLAGS, "Enable cheats.", NULL, MDFNST_BOOL, "1", NULL, NULL, NULL, SettingChanged },
+ { NULL}
+};
+
+MDFN_Error::MDFN_Error() throw()
+{
+ abort();
+}
+
+MDFN_Error::MDFN_Error(int errno_code_new, const char *format, ...) throw()
+{
+ errno_code = errno_code_new;
+
+ va_list ap;
+ va_start(ap, format);
+ error_message = trio_vaprintf(format, ap);
+ va_end(ap);
+}
+
+
+MDFN_Error::MDFN_Error(const ErrnoHolder &enh)
+{
+ errno_code = enh.Errno();
+
+ error_message = trio_aprintf("%s", enh.StrError());
+}
+
+
+MDFN_Error::~MDFN_Error() throw()
+{
+ if(error_message)
+ {
+  free(error_message);
+  error_message = NULL;
+ }
+}
+
+MDFN_Error::MDFN_Error(const MDFN_Error &ze_error) throw()
+{
+ if(ze_error.error_message)
+  error_message = strdup(ze_error.error_message);
+ else
+  error_message = NULL;
+
+ errno_code = ze_error.errno_code;
+}
+
+MDFN_Error& MDFN_Error::operator=(const MDFN_Error &ze_error) throw()
+{
+ char *new_error_message = ze_error.error_message ? strdup(ze_error.error_message) : NULL;
+ int new_errno_code = ze_error.errno_code;
+
+ if(error_message)
+  free(error_message);
+
+ error_message = new_error_message;
+ errno_code = new_errno_code;
+
+ return(*this);
+}
+
+
+const char * MDFN_Error::what(void) const throw()
+{
+ if(!error_message)
+  return("Error allocating memory for the error message!");
+
+ return(error_message);
+}
+
+int MDFN_Error::GetErrno(void) const throw()
+{
+ return(errno_code);
+}
+
+static const char *srr_wrap(int ret, const char *local_strerror)
+{
+ if(ret == -1)
+  return("ERROR IN strerror_r()!!!");
+
+ return(local_strerror);
+}
+
+static const char *srr_wrap(const char *ret, const char *local_strerror)
+{
+ if(ret == NULL)
+  return("ERROR IN strerror_r()!!!");
+
+ return(ret);
+}
+
+void ErrnoHolder::SetErrno(int the_errno)
+{
+ local_errno = the_errno;
+
+ if(the_errno == 0)
+  local_strerror[0] = 0;
+ else
+ {
+   strncpy(local_strerror, strerror(the_errno), 255);
+
+  local_strerror[255] = 0;
+ }
+}
+
+/*
+ * RFC 1321 compliant MD5 implementation,
+ * by Christophe Devine <devine@cr0.net>;
+ * this program is licensed under the GPL.
+ */
+/* Converted to C++ for use in Mednafen */
+
+#define GET_UINT32(n,b,i)                       \
+{                                               \
+    (n) = ( (uint32) (b)[(i) + 3] << 24 )       \
+        | ( (uint32) (b)[(i) + 2] << 16 )       \
+        | ( (uint32) (b)[(i) + 1] <<  8 )       \
+        | ( (uint32) (b)[(i)    ]       );      \
+}
+
+#define PUT_UINT32(n,b,i)                       \
+{                                               \
+    (b)[(i)    ] = (uint8) ( (n)       );       \
+    (b)[(i) + 1] = (uint8) ( (n) >>  8 );       \
+    (b)[(i) + 2] = (uint8) ( (n) >> 16 );       \
+    (b)[(i) + 3] = (uint8) ( (n) >> 24 );       \
+}
+
+md5_context::md5_context(void)
+{
+
+
+}
+
+md5_context::~md5_context(void)
+{
+
+}
+
+void md5_context::starts(void)
+{
+    total[0] = 0;
+    total[1] = 0;
+    state[0] = 0x67452301;
+    state[1] = 0xEFCDAB89;
+    state[2] = 0x98BADCFE;
+    state[3] = 0x10325476;
+}
+
+void md5_context::process(const uint8 data[64])
+{
+    uint32 A, B, C, D, X[16];
+
+    GET_UINT32( X[0],  data,  0 );
+    GET_UINT32( X[1],  data,  4 );
+    GET_UINT32( X[2],  data,  8 );
+    GET_UINT32( X[3],  data, 12 );
+    GET_UINT32( X[4],  data, 16 );
+    GET_UINT32( X[5],  data, 20 );
+    GET_UINT32( X[6],  data, 24 );
+    GET_UINT32( X[7],  data, 28 );
+    GET_UINT32( X[8],  data, 32 );
+    GET_UINT32( X[9],  data, 36 );
+    GET_UINT32( X[10], data, 40 );
+    GET_UINT32( X[11], data, 44 );
+    GET_UINT32( X[12], data, 48 );
+    GET_UINT32( X[13], data, 52 );
+    GET_UINT32( X[14], data, 56 );
+    GET_UINT32( X[15], data, 60 );
+
+#define S(x,n) ((x << n) | ((x & 0xFFFFFFFF) >> (32 - n)))
+
+#define P(a,b,c,d,k,s,t)                                \
+{                                                       \
+    a += F(b,c,d) + X[k] + t; a = S(a,s) + b;           \
+}
+
+    A = state[0];
+    B = state[1];
+    C = state[2];
+    D = state[3];
+
+#define F(x,y,z) (z ^ (x & (y ^ z)))
+
+    P( A, B, C, D,  0,  7, 0xD76AA478 );
+    P( D, A, B, C,  1, 12, 0xE8C7B756 );
+    P( C, D, A, B,  2, 17, 0x242070DB );
+    P( B, C, D, A,  3, 22, 0xC1BDCEEE );
+    P( A, B, C, D,  4,  7, 0xF57C0FAF );
+    P( D, A, B, C,  5, 12, 0x4787C62A );
+    P( C, D, A, B,  6, 17, 0xA8304613 );
+    P( B, C, D, A,  7, 22, 0xFD469501 );
+    P( A, B, C, D,  8,  7, 0x698098D8 );
+    P( D, A, B, C,  9, 12, 0x8B44F7AF );
+    P( C, D, A, B, 10, 17, 0xFFFF5BB1 );
+    P( B, C, D, A, 11, 22, 0x895CD7BE );
+    P( A, B, C, D, 12,  7, 0x6B901122 );
+    P( D, A, B, C, 13, 12, 0xFD987193 );
+    P( C, D, A, B, 14, 17, 0xA679438E );
+    P( B, C, D, A, 15, 22, 0x49B40821 );
+
+#undef F
+
+#define F(x,y,z) (y ^ (z & (x ^ y)))
+
+    P( A, B, C, D,  1,  5, 0xF61E2562 );
+    P( D, A, B, C,  6,  9, 0xC040B340 );
+    P( C, D, A, B, 11, 14, 0x265E5A51 );
+    P( B, C, D, A,  0, 20, 0xE9B6C7AA );
+    P( A, B, C, D,  5,  5, 0xD62F105D );
+    P( D, A, B, C, 10,  9, 0x02441453 );
+    P( C, D, A, B, 15, 14, 0xD8A1E681 );
+    P( B, C, D, A,  4, 20, 0xE7D3FBC8 );
+    P( A, B, C, D,  9,  5, 0x21E1CDE6 );
+    P( D, A, B, C, 14,  9, 0xC33707D6 );
+    P( C, D, A, B,  3, 14, 0xF4D50D87 );
+    P( B, C, D, A,  8, 20, 0x455A14ED );
+    P( A, B, C, D, 13,  5, 0xA9E3E905 );
+    P( D, A, B, C,  2,  9, 0xFCEFA3F8 );
+    P( C, D, A, B,  7, 14, 0x676F02D9 );
+    P( B, C, D, A, 12, 20, 0x8D2A4C8A );
+
+#undef F
+    
+#define F(x,y,z) (x ^ y ^ z)
+
+    P( A, B, C, D,  5,  4, 0xFFFA3942 );
+    P( D, A, B, C,  8, 11, 0x8771F681 );
+    P( C, D, A, B, 11, 16, 0x6D9D6122 );
+    P( B, C, D, A, 14, 23, 0xFDE5380C );
+    P( A, B, C, D,  1,  4, 0xA4BEEA44 );
+    P( D, A, B, C,  4, 11, 0x4BDECFA9 );
+    P( C, D, A, B,  7, 16, 0xF6BB4B60 );
+    P( B, C, D, A, 10, 23, 0xBEBFBC70 );
+    P( A, B, C, D, 13,  4, 0x289B7EC6 );
+    P( D, A, B, C,  0, 11, 0xEAA127FA );
+    P( C, D, A, B,  3, 16, 0xD4EF3085 );
+    P( B, C, D, A,  6, 23, 0x04881D05 );
+    P( A, B, C, D,  9,  4, 0xD9D4D039 );
+    P( D, A, B, C, 12, 11, 0xE6DB99E5 );
+    P( C, D, A, B, 15, 16, 0x1FA27CF8 );
+    P( B, C, D, A,  2, 23, 0xC4AC5665 );
+
+#undef F
+
+#define F(x,y,z) (y ^ (x | ~z))
+
+    P( A, B, C, D,  0,  6, 0xF4292244 );
+    P( D, A, B, C,  7, 10, 0x432AFF97 );
+    P( C, D, A, B, 14, 15, 0xAB9423A7 );
+    P( B, C, D, A,  5, 21, 0xFC93A039 );
+    P( A, B, C, D, 12,  6, 0x655B59C3 );
+    P( D, A, B, C,  3, 10, 0x8F0CCC92 );
+    P( C, D, A, B, 10, 15, 0xFFEFF47D );
+    P( B, C, D, A,  1, 21, 0x85845DD1 );
+    P( A, B, C, D,  8,  6, 0x6FA87E4F );
+    P( D, A, B, C, 15, 10, 0xFE2CE6E0 );
+    P( C, D, A, B,  6, 15, 0xA3014314 );
+    P( B, C, D, A, 13, 21, 0x4E0811A1 );
+    P( A, B, C, D,  4,  6, 0xF7537E82 );
+    P( D, A, B, C, 11, 10, 0xBD3AF235 );
+    P( C, D, A, B,  2, 15, 0x2AD7D2BB );
+    P( B, C, D, A,  9, 21, 0xEB86D391 );
+
+#undef F
+
+    state[0] += A;
+    state[1] += B;
+    state[2] += C;
+    state[3] += D;
+}
+
+void md5_context::update(const uint8 *input, uint32 length )
+{
+    uint32 left, fill;
+
+    if( ! length ) return;
+
+    left = ( total[0] >> 3 ) & 0x3F;
+    fill = 64 - left;
+
+    total[0] += length <<  3;
+    total[1] += length >> 29;
+
+    total[0] &= 0xFFFFFFFF;
+    total[1] += total[0] < ( length << 3 );
+
+    if( left && length >= fill )
+    {
+        memcpy( (void *) (buffer + left), (void *) input, fill );
+        process(buffer );
+        length -= fill;
+        input  += fill;
+        left = 0;
+    }
+
+    while( length >= 64 )
+    {
+        process(input );
+        length -= 64;
+        input  += 64;
+    }
+
+    if( length )
+    {
+        memcpy( (void *) (buffer + left), (void *) input, length );
+    }
+}
+
+static const uint8 md5_padding[64] =
+{
+ 0x80, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0,
+    0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
+};
+
+void md5_context::finish(uint8 digest[16] )
+{
+    uint32 last, padn;
+    uint8 msglen[8];
+
+    PUT_UINT32( total[0], msglen, 0 );
+    PUT_UINT32( total[1], msglen, 4 );
+
+    last = ( total[0] >> 3 ) & 0x3F;
+    padn = ( last < 56 ) ? ( 56 - last ) : ( 120 - last );
+
+    update( md5_padding, padn );
+    update( msglen, 8 );
+
+    PUT_UINT32( state[0], digest,  0 );
+    PUT_UINT32( state[1], digest,  4 );
+    PUT_UINT32( state[2], digest,  8 );
+    PUT_UINT32( state[3], digest, 12 );
+}
+
+
+/* Uses a static buffer, so beware of how it's used. */
+//static 
+std::string md5_context::asciistr(const uint8 digest[16], bool borked_order)
+{
+ static char str[33];
+ static char trans[16]={'0','1','2','3','4','5','6','7','8','9','a','b','c','d','e','f'};
+ int x;
+
+ for(x=0;x<16;x++)
+ {
+  if(borked_order)
+  {
+   str[x*2]=trans[digest[x]&0x0F];
+   str[x*2+1]=trans[digest[x]>>4];
+  }
+  else
+  {
+   str[x*2+1]=trans[digest[x]&0x0F];
+   str[x*2]=trans[digest[x]>>4];
+  }
+ }
+ return(std::string(str));
+}
+
+const int OKIADPCM_StepSizes[49] =
+{
+ 16, 17, 19, 21, 23, 25, 28, 31, 34, 37, 41, 45, 50,
+ 55, 60, 66, 73, 80, 88, 97, 107, 118, 130, 143, 157,
+ 173, 190,  209, 230, 253, 279, 307, 337, 371, 408, 449,
+ 494, 544, 598, 658, 724, 796, 876, 963, 1060, 1166, 1282, 1411, 1552,
+};
+
+const int OKIADPCM_StepIndexDeltas[16] =
+{
+ -1, -1, -1, -1, 2, 4, 6, 8,
+ -1, -1, -1, -1, 2, 4, 6, 8
+};
+
+const int32 OKIADPCM_DeltaTable[49][16] =
+{
+ #ifndef OKIADPCM_GENERATE_DELTATABLE
+ #include "okiadpcm-deltatable.h"
+ #endif
+};
